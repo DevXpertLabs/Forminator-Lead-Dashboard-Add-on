@@ -8,16 +8,17 @@ if (!defined('ABSPATH')) {
 }
 
 if (!FLD_Roles::is_admin()) {
-    wp_die(__('You do not have permission to access this page.', 'forminator-lead-dashboard'));
+    wp_die(esc_html__('You do not have permission to access this page.', 'lead-dashboard-for-forminator'));
 }
 
 // Handle form submission
-if (isset($_POST['fld_save_settings']) && wp_verify_nonce($_POST['fld_settings_nonce'], 'fld_save_settings')) {
+$fld_settings_nonce = isset($_POST['fld_settings_nonce']) ? sanitize_text_field(wp_unslash($_POST['fld_settings_nonce'])) : '';
+if (isset($_POST['fld_save_settings']) && wp_verify_nonce($fld_settings_nonce, 'fld_save_settings')) {
     update_option('fld_email_notifications', isset($_POST['fld_email_notifications']) ? 1 : 0);
-    update_option('fld_notification_email', sanitize_email($_POST['fld_notification_email']));
+    update_option('fld_notification_email', sanitize_email(wp_unslash($_POST['fld_notification_email'] ?? '')));
     update_option('fld_auto_assign', isset($_POST['fld_auto_assign']) ? 1 : 0);
-    update_option('fld_default_assignee', intval($_POST['fld_default_assignee']));
-    update_option('fld_leads_per_page', intval($_POST['fld_leads_per_page']));
+    update_option('fld_default_assignee', isset($_POST['fld_default_assignee']) ? intval($_POST['fld_default_assignee']) : 0);
+    update_option('fld_leads_per_page', isset($_POST['fld_leads_per_page']) ? intval($_POST['fld_leads_per_page']) : 20);
 
     // Brevo SMTP / OTP settings
     update_option('fld_smtp_host',          sanitize_text_field(wp_unslash($_POST['fld_smtp_host'] ?? '')));
@@ -32,7 +33,7 @@ if (isset($_POST['fld_save_settings']) && wp_verify_nonce($_POST['fld_settings_n
     update_option('fld_brevo_sender_email', sanitize_email(wp_unslash($_POST['fld_brevo_sender_email'] ?? '')));
     update_option('fld_otp_enabled_forms',  array_map('intval', (array) ($_POST['fld_otp_enabled_forms'] ?? [])));
 
-    echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved successfully!', 'forminator-lead-dashboard' ) . '</p></div>';
+    echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved successfully!', 'lead-dashboard-for-forminator' ) . '</p></div>';
 }
 
 $email_notifications = get_option('fld_email_notifications', 0);
@@ -58,7 +59,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
 <div class="wrap fld-settings-page">
     <h1 class="fld-page-title">
         <span class="dashicons dashicons-admin-settings"></span>
-        <?php _e('Lead Dashboard Settings', 'forminator-lead-dashboard'); ?>
+        <?php esc_html_e('Lead Dashboard Settings', 'lead-dashboard-for-forminator'); ?>
     </h1>
 
     <form method="post" class="fld-settings-form">
@@ -66,17 +67,17 @@ $sales_admins  = FLD_Roles::get_sales_admins();
 
         <!-- General Settings -->
         <div class="fld-settings-section">
-            <h2><?php _e('General Settings', 'forminator-lead-dashboard'); ?></h2>
+            <h2><?php esc_html_e('General Settings', 'lead-dashboard-for-forminator'); ?></h2>
 
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_leads_per_page"><?php _e('Leads Per Page', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_leads_per_page"><?php esc_html_e('Leads Per Page', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <input type="number" id="fld_leads_per_page" name="fld_leads_per_page"
                                value="<?php echo esc_attr($leads_per_page); ?>" min="10" max="100">
-                        <p class="description"><?php _e('Number of leads to show per page in the leads list.', 'forminator-lead-dashboard'); ?></p>
+                        <p class="description"><?php esc_html_e('Number of leads to show per page in the leads list.', 'lead-dashboard-for-forminator'); ?></p>
                     </td>
                 </tr>
             </table>
@@ -84,29 +85,29 @@ $sales_admins  = FLD_Roles::get_sales_admins();
 
         <!-- Notification Settings -->
         <div class="fld-settings-section">
-            <h2><?php _e('Notification Settings', 'forminator-lead-dashboard'); ?></h2>
+            <h2><?php esc_html_e('Notification Settings', 'lead-dashboard-for-forminator'); ?></h2>
 
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_email_notifications"><?php _e('Email Notifications', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_email_notifications"><?php esc_html_e('Email Notifications', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <label>
                             <input type="checkbox" id="fld_email_notifications" name="fld_email_notifications"
                                    value="1" <?php checked($email_notifications, 1); ?>>
-                            <?php _e('Send email notifications for new leads', 'forminator-lead-dashboard'); ?>
+                            <?php esc_html_e('Send email notifications for new leads', 'lead-dashboard-for-forminator'); ?>
                         </label>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_notification_email"><?php _e('Notification Email', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_notification_email"><?php esc_html_e('Notification Email', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <input type="email" id="fld_notification_email" name="fld_notification_email"
                                value="<?php echo esc_attr($notification_email); ?>" class="regular-text">
-                        <p class="description"><?php _e('Email address to receive new lead notifications.', 'forminator-lead-dashboard'); ?></p>
+                        <p class="description"><?php esc_html_e('Email address to receive new lead notifications.', 'lead-dashboard-for-forminator'); ?></p>
                     </td>
                 </tr>
             </table>
@@ -114,35 +115,35 @@ $sales_admins  = FLD_Roles::get_sales_admins();
 
         <!-- Assignment Settings -->
         <div class="fld-settings-section">
-            <h2><?php _e('Lead Assignment', 'forminator-lead-dashboard'); ?></h2>
+            <h2><?php esc_html_e('Lead Assignment', 'lead-dashboard-for-forminator'); ?></h2>
 
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_auto_assign"><?php _e('Auto-Assign Leads', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_auto_assign"><?php esc_html_e('Auto-Assign Leads', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <label>
                             <input type="checkbox" id="fld_auto_assign" name="fld_auto_assign"
                                    value="1" <?php checked($auto_assign, 1); ?>>
-                            <?php _e('Automatically assign new leads to a team member', 'forminator-lead-dashboard'); ?>
+                            <?php esc_html_e('Automatically assign new leads to a team member', 'lead-dashboard-for-forminator'); ?>
                         </label>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_default_assignee"><?php _e('Default Assignee', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_default_assignee"><?php esc_html_e('Default Assignee', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <select id="fld_default_assignee" name="fld_default_assignee">
-                            <option value="0"><?php _e('— Select —', 'forminator-lead-dashboard'); ?></option>
+                            <option value="0"><?php esc_html_e('— Select —', 'lead-dashboard-for-forminator'); ?></option>
                             <?php foreach ($team_users as $user): ?>
                                 <option value="<?php echo esc_attr($user->ID); ?>" <?php selected($default_assignee, $user->ID); ?>>
                                     <?php echo esc_html($user->display_name); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <p class="description"><?php _e('Team member to auto-assign new leads to.', 'forminator-lead-dashboard'); ?></p>
+                        <p class="description"><?php esc_html_e('Team member to auto-assign new leads to.', 'lead-dashboard-for-forminator'); ?></p>
                     </td>
                 </tr>
             </table>
@@ -150,49 +151,49 @@ $sales_admins  = FLD_Roles::get_sales_admins();
 
         <!-- Status Labels -->
         <div class="fld-settings-section">
-            <h2><?php _e('Lead Statuses', 'forminator-lead-dashboard'); ?></h2>
-            <p class="description"><?php _e('These are the available lead statuses:', 'forminator-lead-dashboard'); ?></p>
+            <h2><?php esc_html_e('Lead Statuses', 'lead-dashboard-for-forminator'); ?></h2>
+            <p class="description"><?php esc_html_e('These are the available lead statuses:', 'lead-dashboard-for-forminator'); ?></p>
 
             <div class="fld-status-list">
                 <div class="fld-status-item">
-                    <span class="fld-status-badge fld-status-new"><?php _e('New', 'forminator-lead-dashboard'); ?></span>
-                    <span class="fld-status-desc"><?php _e('Newly submitted leads', 'forminator-lead-dashboard'); ?></span>
+                    <span class="fld-status-badge fld-status-new"><?php esc_html_e('New', 'lead-dashboard-for-forminator'); ?></span>
+                    <span class="fld-status-desc"><?php esc_html_e('Newly submitted leads', 'lead-dashboard-for-forminator'); ?></span>
                 </div>
                 <div class="fld-status-item">
-                    <span class="fld-status-badge fld-status-positive"><?php _e('Positive', 'forminator-lead-dashboard'); ?></span>
-                    <span class="fld-status-desc"><?php _e('Qualified, interested leads', 'forminator-lead-dashboard'); ?></span>
+                    <span class="fld-status-badge fld-status-positive"><?php esc_html_e('Positive', 'lead-dashboard-for-forminator'); ?></span>
+                    <span class="fld-status-desc"><?php esc_html_e('Qualified, interested leads', 'lead-dashboard-for-forminator'); ?></span>
                 </div>
                 <div class="fld-status-item">
-                    <span class="fld-status-badge fld-status-negative"><?php _e('Negative', 'forminator-lead-dashboard'); ?></span>
-                    <span class="fld-status-desc"><?php _e('Unqualified or uninterested leads', 'forminator-lead-dashboard'); ?></span>
+                    <span class="fld-status-badge fld-status-negative"><?php esc_html_e('Negative', 'lead-dashboard-for-forminator'); ?></span>
+                    <span class="fld-status-desc"><?php esc_html_e('Unqualified or uninterested leads', 'lead-dashboard-for-forminator'); ?></span>
                 </div>
                 <div class="fld-status-item">
-                    <span class="fld-status-badge fld-status-follow_up"><?php _e('Follow Up', 'forminator-lead-dashboard'); ?></span>
-                    <span class="fld-status-desc"><?php _e('Requires follow-up action', 'forminator-lead-dashboard'); ?></span>
+                    <span class="fld-status-badge fld-status-follow_up"><?php esc_html_e('Follow Up', 'lead-dashboard-for-forminator'); ?></span>
+                    <span class="fld-status-desc"><?php esc_html_e('Requires follow-up action', 'lead-dashboard-for-forminator'); ?></span>
                 </div>
                 <div class="fld-status-item">
-                    <span class="fld-status-badge fld-status-converted"><?php _e('Converted', 'forminator-lead-dashboard'); ?></span>
-                    <span class="fld-status-desc"><?php _e('Lead converted to customer', 'forminator-lead-dashboard'); ?></span>
+                    <span class="fld-status-badge fld-status-converted"><?php esc_html_e('Converted', 'lead-dashboard-for-forminator'); ?></span>
+                    <span class="fld-status-desc"><?php esc_html_e('Lead converted to customer', 'lead-dashboard-for-forminator'); ?></span>
                 </div>
                 <div class="fld-status-item">
-                    <span class="fld-status-badge fld-status-closed"><?php _e('Closed', 'forminator-lead-dashboard'); ?></span>
-                    <span class="fld-status-desc"><?php _e('Lead closed/archived', 'forminator-lead-dashboard'); ?></span>
+                    <span class="fld-status-badge fld-status-closed"><?php esc_html_e('Closed', 'lead-dashboard-for-forminator'); ?></span>
+                    <span class="fld-status-desc"><?php esc_html_e('Lead closed/archived', 'lead-dashboard-for-forminator'); ?></span>
                 </div>
             </div>
         </div>
 
         <!-- Spam Prevention — Brevo SMTP OTP -->
         <div class="fld-settings-section">
-            <h2><?php _e('Spam Prevention — Email OTP', 'forminator-lead-dashboard'); ?></h2>
+            <h2><?php esc_html_e('Spam Prevention — Email OTP', 'lead-dashboard-for-forminator'); ?></h2>
             <p class="description">
-                <?php _e('Require visitors to verify their email via a one-time code sent through Brevo SMTP before a form submission becomes a lead.', 'forminator-lead-dashboard'); ?>
+                <?php esc_html_e('Require visitors to verify their email via a one-time code sent through Brevo SMTP before a form submission becomes a lead.', 'lead-dashboard-for-forminator'); ?>
             </p>
 
-            <h3 style="margin-top:16px;"><?php _e('Brevo SMTP Settings', 'forminator-lead-dashboard'); ?></h3>
+            <h3 style="margin-top:16px;"><?php esc_html_e('Brevo SMTP Settings', 'lead-dashboard-for-forminator'); ?></h3>
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_host"><?php _e('SMTP Host', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_smtp_host"><?php esc_html_e('SMTP Host', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <input type="text" id="fld_smtp_host" name="fld_smtp_host"
@@ -201,7 +202,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_port"><?php _e('SMTP Port', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_smtp_port"><?php esc_html_e('SMTP Port', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <input type="number" id="fld_smtp_port" name="fld_smtp_port"
@@ -210,7 +211,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_encryption"><?php _e('Encryption', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_smtp_encryption"><?php esc_html_e('Encryption', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <select id="fld_smtp_encryption" name="fld_smtp_encryption">
@@ -222,7 +223,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_username"><?php _e('SMTP Username', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_smtp_username"><?php esc_html_e('SMTP Username', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <input type="text" id="fld_smtp_username" name="fld_smtp_username"
@@ -232,22 +233,22 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_password"><?php _e('SMTP Password', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_smtp_password"><?php esc_html_e('SMTP Password', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <input type="password" id="fld_smtp_password" name="fld_smtp_password"
-                               value="" placeholder="<?php esc_attr_e('Leave blank to keep current password', 'forminator-lead-dashboard'); ?>"
+                               value="" placeholder="<?php esc_attr_e('Leave blank to keep current password', 'lead-dashboard-for-forminator'); ?>"
                                class="regular-text" autocomplete="new-password">
-                        <p class="description"><?php _e('Leave blank to keep the saved password. Enter a new value only if you want to change it.', 'forminator-lead-dashboard'); ?></p>
+                        <p class="description"><?php esc_html_e('Leave blank to keep the saved password. Enter a new value only if you want to change it.', 'lead-dashboard-for-forminator'); ?></p>
                     </td>
                 </tr>
             </table>
 
-            <h3 style="margin-top:20px;"><?php _e('Sender Identity', 'forminator-lead-dashboard'); ?></h3>
+            <h3 style="margin-top:20px;"><?php esc_html_e('Sender Identity', 'lead-dashboard-for-forminator'); ?></h3>
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_brevo_sender_name"><?php _e('From Name', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_brevo_sender_name"><?php esc_html_e('From Name', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <input type="text" id="fld_brevo_sender_name" name="fld_brevo_sender_name"
@@ -256,23 +257,23 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_brevo_sender_email"><?php _e('From Email', 'forminator-lead-dashboard'); ?></label>
+                        <label for="fld_brevo_sender_email"><?php esc_html_e('From Email', 'lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <input type="email" id="fld_brevo_sender_email" name="fld_brevo_sender_email"
                                value="<?php echo esc_attr($brevo_sender_email); ?>" class="regular-text">
-                        <p class="description"><?php _e('Must match a verified sender in your Brevo account.', 'forminator-lead-dashboard'); ?></p>
+                        <p class="description"><?php esc_html_e('Must match a verified sender in your Brevo account.', 'lead-dashboard-for-forminator'); ?></p>
                     </td>
                 </tr>
             </table>
 
-            <h3 style="margin-top:20px;"><?php _e('Enable OTP for Forms', 'forminator-lead-dashboard'); ?></h3>
+            <h3 style="margin-top:20px;"><?php esc_html_e('Enable OTP for Forms', 'lead-dashboard-for-forminator'); ?></h3>
             <table class="form-table">
                 <tr>
-                    <th scope="row"><?php _e('Protected Forms', 'forminator-lead-dashboard'); ?></th>
+                    <th scope="row"><?php esc_html_e('Protected Forms', 'lead-dashboard-for-forminator'); ?></th>
                     <td>
                         <?php if (empty($all_forms)): ?>
-                            <p class="description"><?php _e('No Forminator forms found.', 'forminator-lead-dashboard'); ?></p>
+                            <p class="description"><?php esc_html_e('No Forminator forms found.', 'lead-dashboard-for-forminator'); ?></p>
                         <?php else: ?>
                             <?php foreach ($all_forms as $form): ?>
                                 <label style="display:block;margin-bottom:6px;">
@@ -285,7 +286,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                                 </label>
                             <?php endforeach; ?>
                             <p class="description" style="margin-top:8px;">
-                                <?php _e('Checked forms require email verification before submission is accepted as a lead.', 'forminator-lead-dashboard'); ?>
+                                <?php esc_html_e('Checked forms require email verification before submission is accepted as a lead.', 'lead-dashboard-for-forminator'); ?>
                             </p>
                         <?php endif; ?>
                     </td>
@@ -295,7 +296,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
 
         <p class="submit">
             <input type="submit" name="fld_save_settings" class="button button-primary button-large"
-                   value="<?php _e('Save Settings', 'forminator-lead-dashboard'); ?>">
+                   value="<?php esc_attr_e('Save Settings', 'lead-dashboard-for-forminator'); ?>">
         </p>
     </form>
 
@@ -303,12 +304,12 @@ $sales_admins  = FLD_Roles::get_sales_admins();
          Sales Admin User Management — visible to administrators only
          ============================================================ -->
     <div class="fld-settings-section fld-user-management">
-        <h2><?php _e('Sales Admin Users', 'forminator-lead-dashboard'); ?></h2>
+        <h2><?php esc_html_e('Sales Admin Users', 'lead-dashboard-for-forminator'); ?></h2>
         <p class="description">
             <?php
             printf(
                 /* translators: 1: opening <strong> tag, 2: closing </strong> tag */
-                esc_html__( 'Users with the %1$sSales Admin%2$s role can log in and access the Lead Dashboard. They can view all leads and add feedback. Only Administrators can access Settings.', 'forminator-lead-dashboard' ),
+                esc_html__( 'Users with the %1$sSales Admin%2$s role can log in and access the Lead Dashboard. They can view all leads and add feedback. Only Administrators can access Settings.', 'lead-dashboard-for-forminator' ),
                 '<strong>',
                 '</strong>'
             );
@@ -316,19 +317,19 @@ $sales_admins  = FLD_Roles::get_sales_admins();
         </p>
 
         <!-- Current Sales Admins -->
-        <h3><?php _e('Current Sales Admins', 'forminator-lead-dashboard'); ?></h3>
+        <h3><?php esc_html_e('Current Sales Admins', 'lead-dashboard-for-forminator'); ?></h3>
         <table class="wp-list-table widefat fixed striped" id="fld-sales-admin-table">
             <thead>
                 <tr>
-                    <th><?php _e('Name', 'forminator-lead-dashboard'); ?></th>
-                    <th><?php _e('Email', 'forminator-lead-dashboard'); ?></th>
-                    <th><?php _e('Action', 'forminator-lead-dashboard'); ?></th>
+                    <th><?php esc_html_e('Name', 'lead-dashboard-for-forminator'); ?></th>
+                    <th><?php esc_html_e('Email', 'lead-dashboard-for-forminator'); ?></th>
+                    <th><?php esc_html_e('Action', 'lead-dashboard-for-forminator'); ?></th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($sales_admins)): ?>
                     <tr id="fld-no-sales-admins">
-                        <td colspan="3"><?php _e('No Sales Admin users yet.', 'forminator-lead-dashboard'); ?></td>
+                        <td colspan="3"><?php esc_html_e('No Sales Admin users yet.', 'lead-dashboard-for-forminator'); ?></td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($sales_admins as $sa_user): ?>
@@ -339,7 +340,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                                 <button class="button fld-remove-sales-admin"
                                         data-id="<?php echo esc_attr($sa_user->ID); ?>"
                                         data-name="<?php echo esc_attr($sa_user->display_name); ?>">
-                                    <?php _e('Remove', 'forminator-lead-dashboard'); ?>
+                                    <?php esc_html_e('Remove', 'lead-dashboard-for-forminator'); ?>
                                 </button>
                             </td>
                         </tr>
@@ -349,15 +350,15 @@ $sales_admins  = FLD_Roles::get_sales_admins();
         </table>
 
         <!-- Add Sales Admin -->
-        <h3 style="margin-top:24px;"><?php _e('Add Sales Admin', 'forminator-lead-dashboard'); ?></h3>
-        <p class="description"><?php _e('Assign the Sales Admin role to any existing WordPress user (except administrators).', 'forminator-lead-dashboard'); ?></p>
+        <h3 style="margin-top:24px;"><?php esc_html_e('Add Sales Admin', 'lead-dashboard-for-forminator'); ?></h3>
+        <p class="description"><?php esc_html_e('Assign the Sales Admin role to any existing WordPress user (except administrators).', 'lead-dashboard-for-forminator'); ?></p>
 
         <div class="fld-add-sales-admin-form">
             <select id="fld-assign-user-select" style="min-width:280px;">
-                <option value=""><?php _e('— Select a user —', 'forminator-lead-dashboard'); ?></option>
+                <option value=""><?php esc_html_e('— Select a user —', 'lead-dashboard-for-forminator'); ?></option>
             </select>
             <button id="fld-assign-sales-admin" class="button button-primary">
-                <?php _e('Add as Sales Admin', 'forminator-lead-dashboard'); ?>
+                <?php esc_html_e('Add as Sales Admin', 'lead-dashboard-for-forminator'); ?>
             </button>
             <span id="fld-assign-status" style="margin-left:12px;"></span>
         </div>
@@ -365,15 +366,15 @@ $sales_admins  = FLD_Roles::get_sales_admins();
 
     <!-- Database Tools -->
     <div class="fld-settings-section fld-danger-zone">
-        <h2><?php _e('Database Tools', 'forminator-lead-dashboard'); ?></h2>
-        <p class="description"><?php _e('Use these tools with caution.', 'forminator-lead-dashboard'); ?></p>
+        <h2><?php esc_html_e('Database Tools', 'lead-dashboard-for-forminator'); ?></h2>
+        <p class="description"><?php esc_html_e('Use these tools with caution.', 'lead-dashboard-for-forminator'); ?></p>
 
         <div class="fld-tools">
             <button id="fld-clear-activity" class="button">
-                <?php _e('Clear Activity Log', 'forminator-lead-dashboard'); ?>
+                <?php esc_html_e('Clear Activity Log', 'lead-dashboard-for-forminator'); ?>
             </button>
             <button id="fld-reset-statuses" class="button">
-                <?php _e('Reset All Statuses', 'forminator-lead-dashboard'); ?>
+                <?php esc_html_e('Reset All Statuses', 'lead-dashboard-for-forminator'); ?>
             </button>
         </div>
     </div>
@@ -391,7 +392,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
         $('#fld-assign-sales-admin').on('click', function() {
             var userId = $('#fld-assign-user-select').val();
             if (!userId) {
-                setStatus('warning', '<?php echo esc_js( __( 'Please select a user.', 'forminator-lead-dashboard' ) ); ?>');
+                setStatus('warning', '<?php echo esc_js( __( 'Please select a user.', 'lead-dashboard-for-forminator' ) ); ?>');
                 return;
             }
             assignSalesAdmin(userId);
@@ -401,7 +402,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
         $(document).on('click', '.fld-remove-sales-admin', function() {
             var userId = $(this).data('id');
             var name   = $(this).data('name');
-            if (!confirm('<?php echo esc_js(__('Remove Sales Admin role from', 'forminator-lead-dashboard')); ?> ' + name + '?')) {
+            if (!confirm('<?php echo esc_js(__('Remove Sales Admin role from', 'lead-dashboard-for-forminator')); ?> ' + name + '?')) {
                 return;
             }
             removeSalesAdmin(userId);
@@ -427,7 +428,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
     }
 
     function assignSalesAdmin(userId) {
-        setStatus('info', '<?php echo esc_js(__('Saving…', 'forminator-lead-dashboard')); ?>');
+        setStatus('info', '<?php echo esc_js(__('Saving…', 'lead-dashboard-for-forminator')); ?>');
         $.ajax({
             url: fld_ajax.ajax_url,
             type: 'POST',
@@ -456,7 +457,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                     // Show "no users" row if table is now empty
                     if ($('#fld-sales-admin-table tbody tr').length === 0) {
                         $('#fld-sales-admin-table tbody').append(
-                            '<tr id="fld-no-sales-admins"><td colspan="3"><?php echo esc_js(__('No Sales Admin users yet.', 'forminator-lead-dashboard')); ?></td></tr>'
+                            '<tr id="fld-no-sales-admins"><td colspan="3"><?php echo esc_js(__('No Sales Admin users yet.', 'lead-dashboard-for-forminator')); ?></td></tr>'
                         );
                     }
                     setStatus('success', response.data.message);
@@ -482,7 +483,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
             '<tr id="fld-sa-row-' + userId + '">' +
             '<td>' + $('<span>').text(name).html() + '</td>' +
             '<td>' + $('<span>').text(email).html() + '</td>' +
-            '<td><button class="button fld-remove-sales-admin" data-id="' + userId + '" data-name="' + $('<span>').text(name).html() + '"><?php echo esc_js(__('Remove', 'forminator-lead-dashboard')); ?></button></td>' +
+            '<td><button class="button fld-remove-sales-admin" data-id="' + userId + '" data-name="' + $('<span>').text(name).html() + '"><?php echo esc_js(__('Remove', 'lead-dashboard-for-forminator')); ?></button></td>' +
             '</tr>'
         );
     }

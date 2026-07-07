@@ -1,8 +1,8 @@
-=== Forminator Lead Dashboard ===
+=== Lead Dashboard for Forminator ===
 Contributors: anupkankale
 Tags: forminator, leads, crm, dashboard, lead management
 Requires at least: 5.0
-Tested up to: 6.5
+Tested up to: 6.8
 Stable tag: 1.0.1
 Requires PHP: 7.4
 License: GPLv2 or later
@@ -12,7 +12,7 @@ A Lead Management Dashboard for Forminator. Track, categorise, and manage form s
 
 == Description ==
 
-**Forminator Lead Dashboard** turns every Forminator form submission into a tracked lead. Instead of leads piling up with no follow-through, your sales team gets a purpose-built dashboard inside WordPress where they can act on every enquiry.
+**Lead Dashboard for Forminator** turns every Forminator form submission into a tracked lead. Instead of leads piling up with no follow-through, your sales team gets a purpose-built dashboard inside WordPress where they can act on every enquiry.
 
 = Key Features =
 
@@ -36,7 +36,7 @@ A Lead Management Dashboard for Forminator. Track, categorise, and manage form s
 
 1. Make sure the **Forminator** plugin is installed and activated.
 2. Upload the `forminator-lead-dashboard` folder to `/wp-content/plugins/`.
-3. Activate **Forminator Lead Dashboard** from the WordPress Plugins screen.
+3. Activate **Lead Dashboard for Forminator** from the WordPress Plugins screen.
 4. The plugin creates its database tables automatically on activation.
 5. A **Lead Dashboard** menu item will appear in the WordPress admin sidebar.
 
@@ -79,6 +79,15 @@ Lead *status*, *feedback*, and *activity* data are stored in three custom tables
 2. All Leads page with filters and search.
 3. Lead detail modal showing form fields, status selector, and feedback panel.
 4. Settings page — General, Notification, OTP Spam Prevention, and User Management sections.
+
+== Third-Party Libraries ==
+
+This plugin bundles **Chart.js** (v4.4.0) to render the dashboard charts locally, so no
+external CDN is contacted. Chart.js is released under the MIT License.
+
+* File: `assets/js/chart.min.js`
+* Source & unminified code: https://github.com/chartjs/Chart.js/releases/tag/v4.4.0
+* Project home: https://www.chartjs.org/
 
 == Changelog ==
 

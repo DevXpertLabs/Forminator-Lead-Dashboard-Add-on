@@ -15,16 +15,16 @@ $users = FLD_Roles::get_team_users();
 <div class="wrap fld-leads-page">
     <h1 class="fld-page-title">
         <span class="dashicons dashicons-id"></span>
-        <?php _e('All Leads', 'forminator-lead-dashboard'); ?>
+        <?php esc_html_e('All Leads', 'lead-dashboard-for-forminator'); ?>
     </h1>
 
     <!-- Filters -->
     <div class="fld-filters">
         <div class="fld-filter-row">
             <div class="fld-filter-item">
-                <label><?php _e('Form:', 'forminator-lead-dashboard'); ?></label>
+                <label><?php esc_html_e('Form:', 'lead-dashboard-for-forminator'); ?></label>
                 <select id="fld-filter-form">
-                    <option value=""><?php _e('All Forms', 'forminator-lead-dashboard'); ?></option>
+                    <option value=""><?php esc_html_e('All Forms', 'lead-dashboard-for-forminator'); ?></option>
                     <?php foreach ($forms as $form): ?>
                         <option value="<?php echo esc_attr($form['id']); ?>">
                             <?php echo esc_html($form['name']); ?>
@@ -34,9 +34,9 @@ $users = FLD_Roles::get_team_users();
             </div>
 
             <div class="fld-filter-item">
-                <label><?php _e('Status:', 'forminator-lead-dashboard'); ?></label>
+                <label><?php esc_html_e('Status:', 'lead-dashboard-for-forminator'); ?></label>
                 <select id="fld-filter-status">
-                    <option value=""><?php _e('All Statuses', 'forminator-lead-dashboard'); ?></option>
+                    <option value=""><?php esc_html_e('All Statuses', 'lead-dashboard-for-forminator'); ?></option>
                     <?php foreach ($statuses as $key => $label): ?>
                         <option value="<?php echo esc_attr($key); ?>"><?php echo esc_html($label); ?></option>
                     <?php endforeach; ?>
@@ -44,30 +44,30 @@ $users = FLD_Roles::get_team_users();
             </div>
 
             <div class="fld-filter-item">
-                <label><?php _e('Date From:', 'forminator-lead-dashboard'); ?></label>
+                <label><?php esc_html_e('Date From:', 'lead-dashboard-for-forminator'); ?></label>
                 <input type="date" id="fld-filter-date-from">
             </div>
 
             <div class="fld-filter-item">
-                <label><?php _e('Date To:', 'forminator-lead-dashboard'); ?></label>
+                <label><?php esc_html_e('Date To:', 'lead-dashboard-for-forminator'); ?></label>
                 <input type="date" id="fld-filter-date-to">
             </div>
 
             <div class="fld-filter-item">
-                <label><?php _e('Search:', 'forminator-lead-dashboard'); ?></label>
-                <input type="text" id="fld-filter-search" placeholder="<?php _e('Search leads...', 'forminator-lead-dashboard'); ?>">
+                <label><?php esc_html_e('Search:', 'lead-dashboard-for-forminator'); ?></label>
+                <input type="text" id="fld-filter-search" placeholder="<?php esc_attr_e('Search leads...', 'lead-dashboard-for-forminator'); ?>">
             </div>
 
             <div class="fld-filter-actions">
                 <button id="fld-apply-filters" class="button button-primary">
-                    <?php _e('Apply Filters', 'forminator-lead-dashboard'); ?>
+                    <?php esc_html_e('Apply Filters', 'lead-dashboard-for-forminator'); ?>
                 </button>
                 <button id="fld-reset-filters" class="button">
-                    <?php _e('Reset', 'forminator-lead-dashboard'); ?>
+                    <?php esc_html_e('Reset', 'lead-dashboard-for-forminator'); ?>
                 </button>
                 <button id="fld-export-leads" class="button">
                     <span class="dashicons dashicons-download"></span>
-                    <?php _e('Export CSV', 'forminator-lead-dashboard'); ?>
+                    <?php esc_html_e('Export CSV', 'lead-dashboard-for-forminator'); ?>
                 </button>
             </div>
         </div>
@@ -76,15 +76,18 @@ $users = FLD_Roles::get_team_users();
     <!-- Bulk Actions -->
     <div class="fld-bulk-actions">
         <select id="fld-bulk-action">
-            <option value=""><?php _e('Bulk Actions', 'forminator-lead-dashboard'); ?></option>
+            <option value=""><?php esc_html_e('Bulk Actions', 'lead-dashboard-for-forminator'); ?></option>
             <?php foreach ($statuses as $key => $label): ?>
                 <option value="status_<?php echo esc_attr($key); ?>">
-                    <?php printf(__('Mark as %s', 'forminator-lead-dashboard'), $label); ?>
+                    <?php
+                    /* translators: %s: lead status label (e.g. New, Positive, Converted) */
+                    echo esc_html( sprintf( __( 'Mark as %s', 'lead-dashboard-for-forminator' ), $label ) );
+                    ?>
                 </option>
             <?php endforeach; ?>
         </select>
-        <button id="fld-apply-bulk" class="button"><?php _e('Apply', 'forminator-lead-dashboard'); ?></button>
-        <span id="fld-selected-count">0 <?php _e('selected', 'forminator-lead-dashboard'); ?></span>
+        <button id="fld-apply-bulk" class="button"><?php esc_html_e('Apply', 'lead-dashboard-for-forminator'); ?></button>
+        <span id="fld-selected-count">0 <?php esc_html_e('selected', 'lead-dashboard-for-forminator'); ?></span>
     </div>
 
     <!-- Leads Table -->
@@ -95,13 +98,13 @@ $users = FLD_Roles::get_team_users();
                     <th class="fld-col-check">
                         <input type="checkbox" id="fld-select-all">
                     </th>
-                    <th class="fld-col-id"><?php _e('ID', 'forminator-lead-dashboard'); ?></th>
-                    <th class="fld-col-date"><?php _e('Date', 'forminator-lead-dashboard'); ?></th>
-                    <th class="fld-col-form"><?php _e('Form', 'forminator-lead-dashboard'); ?></th>
-                    <th class="fld-col-contact"><?php _e('Contact Info', 'forminator-lead-dashboard'); ?></th>
-                    <th class="fld-col-status"><?php _e('Status', 'forminator-lead-dashboard'); ?></th>
-                    <th class="fld-col-feedback"><?php _e('Feedback', 'forminator-lead-dashboard'); ?></th>
-                    <th class="fld-col-actions"><?php _e('Actions', 'forminator-lead-dashboard'); ?></th>
+                    <th class="fld-col-id"><?php esc_html_e('ID', 'lead-dashboard-for-forminator'); ?></th>
+                    <th class="fld-col-date"><?php esc_html_e('Date', 'lead-dashboard-for-forminator'); ?></th>
+                    <th class="fld-col-form"><?php esc_html_e('Form', 'lead-dashboard-for-forminator'); ?></th>
+                    <th class="fld-col-contact"><?php esc_html_e('Contact Info', 'lead-dashboard-for-forminator'); ?></th>
+                    <th class="fld-col-status"><?php esc_html_e('Status', 'lead-dashboard-for-forminator'); ?></th>
+                    <th class="fld-col-feedback"><?php esc_html_e('Feedback', 'lead-dashboard-for-forminator'); ?></th>
+                    <th class="fld-col-actions"><?php esc_html_e('Actions', 'lead-dashboard-for-forminator'); ?></th>
                 </tr>
             </thead>
             <tbody id="fld-leads-tbody">
@@ -118,7 +121,7 @@ $users = FLD_Roles::get_team_users();
     <!-- Loading Overlay -->
     <div id="fld-loading" class="fld-loading" style="display: none;">
         <div class="fld-spinner"></div>
-        <p><?php _e('Loading...', 'forminator-lead-dashboard'); ?></p>
+        <p><?php esc_html_e('Loading...', 'lead-dashboard-for-forminator'); ?></p>
     </div>
 </div>
 
@@ -126,14 +129,14 @@ $users = FLD_Roles::get_team_users();
 <div id="fld-lead-modal" class="fld-modal" style="display: none;">
     <div class="fld-modal-content fld-modal-large">
         <div class="fld-modal-header">
-            <h2><?php _e('Lead Details', 'forminator-lead-dashboard'); ?> #<span id="fld-modal-lead-id"></span></h2>
+            <h2><?php esc_html_e('Lead Details', 'lead-dashboard-for-forminator'); ?> #<span id="fld-modal-lead-id"></span></h2>
             <button class="fld-modal-close">&times;</button>
         </div>
         <div class="fld-modal-body">
             <div class="fld-lead-detail-grid">
                 <!-- Lead Info -->
                 <div class="fld-lead-info">
-                    <h4><?php _e('Submission Details', 'forminator-lead-dashboard'); ?></h4>
+                    <h4><?php esc_html_e('Submission Details', 'lead-dashboard-for-forminator'); ?></h4>
                     <div id="fld-lead-meta">
                         <!-- Populated by JS -->
                     </div>
@@ -141,7 +144,7 @@ $users = FLD_Roles::get_team_users();
 
                 <!-- Status & Actions -->
                 <div class="fld-lead-actions-panel">
-                    <h4><?php _e('Lead Status', 'forminator-lead-dashboard'); ?></h4>
+                    <h4><?php esc_html_e('Lead Status', 'lead-dashboard-for-forminator'); ?></h4>
                     <div class="fld-status-selector">
                         <?php foreach ($statuses as $key => $label): ?>
                             <label class="fld-status-option fld-status-<?php echo esc_attr($key); ?>">
@@ -151,45 +154,45 @@ $users = FLD_Roles::get_team_users();
                         <?php endforeach; ?>
                     </div>
                     <button id="fld-save-status" class="button button-primary button-large">
-                        <?php _e('Save Status', 'forminator-lead-dashboard'); ?>
+                        <?php esc_html_e('Save Status', 'lead-dashboard-for-forminator'); ?>
                     </button>
                 </div>
             </div>
 
             <!-- Feedback Section -->
             <div class="fld-feedback-panel">
-                <h4><?php _e('Sales Team Feedback', 'forminator-lead-dashboard'); ?></h4>
+                <h4><?php esc_html_e('Sales Team Feedback', 'lead-dashboard-for-forminator'); ?></h4>
                 
                 <div id="fld-feedback-list" class="fld-feedback-list">
                     <!-- Populated by JS -->
                 </div>
 
                 <div class="fld-add-feedback-form">
-                    <h5><?php _e('Add New Feedback', 'forminator-lead-dashboard'); ?></h5>
+                    <h5><?php esc_html_e('Add New Feedback', 'lead-dashboard-for-forminator'); ?></h5>
                     <div class="fld-feedback-rating-selector">
                         <label class="fld-rating-option fld-rating-positive">
                             <input type="radio" name="fld-new-rating" value="positive">
-                            <span>👍 <?php _e('Positive', 'forminator-lead-dashboard'); ?></span>
+                            <span>👍 <?php esc_html_e('Positive', 'lead-dashboard-for-forminator'); ?></span>
                         </label>
                         <label class="fld-rating-option fld-rating-neutral">
                             <input type="radio" name="fld-new-rating" value="neutral" checked>
-                            <span>😐 <?php _e('Neutral', 'forminator-lead-dashboard'); ?></span>
+                            <span>😐 <?php esc_html_e('Neutral', 'lead-dashboard-for-forminator'); ?></span>
                         </label>
                         <label class="fld-rating-option fld-rating-negative">
                             <input type="radio" name="fld-new-rating" value="negative">
-                            <span>👎 <?php _e('Negative', 'forminator-lead-dashboard'); ?></span>
+                            <span>👎 <?php esc_html_e('Negative', 'lead-dashboard-for-forminator'); ?></span>
                         </label>
                     </div>
-                    <textarea id="fld-new-feedback" rows="3" placeholder="<?php _e('Enter your feedback about this lead...', 'forminator-lead-dashboard'); ?>"></textarea>
+                    <textarea id="fld-new-feedback" rows="3" placeholder="<?php esc_attr_e('Enter your feedback about this lead...', 'lead-dashboard-for-forminator'); ?>"></textarea>
                     <button id="fld-submit-feedback" class="button button-primary">
-                        <?php _e('Add Feedback', 'forminator-lead-dashboard'); ?>
+                        <?php esc_html_e('Add Feedback', 'lead-dashboard-for-forminator'); ?>
                     </button>
                 </div>
             </div>
 
             <!-- Activity Log -->
             <div class="fld-activity-panel">
-                <h4><?php _e('Activity Log', 'forminator-lead-dashboard'); ?></h4>
+                <h4><?php esc_html_e('Activity Log', 'lead-dashboard-for-forminator'); ?></h4>
                 <div id="fld-activity-log">
                     <!-- Populated by JS -->
                 </div>

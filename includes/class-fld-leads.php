@@ -371,7 +371,9 @@ class FLD_Leads {
         }
         $all_keys = array_unique($all_keys);
 
-        // Build CSV
+        // Build the CSV in an in-memory stream. php://temp is used deliberately
+        // (no file is written to disk); the WP_Filesystem API does not apply here.
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
         $output = fopen('php://temp', 'r+');
 
         // Header row
@@ -404,6 +406,7 @@ class FLD_Leads {
 
         rewind($output);
         $csv = stream_get_contents($output);
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
         fclose($output);
 
         return $csv;
@@ -421,7 +424,7 @@ class FLD_Leads {
             'entry_id' => $entry_id,
             'user_id' => get_current_user_id(),
             'action' => $action,
-            'details' => json_encode($details),
+            'details' => wp_json_encode($details),
             'created_at' => current_time('mysql')
         ));
     }
@@ -448,12 +451,12 @@ class FLD_Leads {
      */
     public static function get_statuses() {
         return array(
-            'new' => __('New', 'forminator-lead-dashboard'),
-            'positive' => __('Positive', 'forminator-lead-dashboard'),
-            'negative' => __('Negative', 'forminator-lead-dashboard'),
-            'follow_up' => __('Follow Up', 'forminator-lead-dashboard'),
-            'converted' => __('Converted', 'forminator-lead-dashboard'),
-            'closed' => __('Closed', 'forminator-lead-dashboard')
+            'new' => __('New', 'lead-dashboard-for-forminator'),
+            'positive' => __('Positive', 'lead-dashboard-for-forminator'),
+            'negative' => __('Negative', 'lead-dashboard-for-forminator'),
+            'follow_up' => __('Follow Up', 'lead-dashboard-for-forminator'),
+            'converted' => __('Converted', 'lead-dashboard-for-forminator'),
+            'closed' => __('Closed', 'lead-dashboard-for-forminator')
         );
     }
 }
