@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Forminator Lead Dashboard by DevXpert
+ * Plugin Name: Lead Dashboard for Forminator
  * Plugin URI: https://www.linkedin.com/in/anupkankale/
  * Description: A powerful Lead Management Dashboard addon for Forminator. Track SEO leads, manage feedback, and categorize leads as positive/negative.
  * Version: 1.0.1
@@ -8,11 +8,12 @@
  * Author URI: https://www.linkedin.com/in/anupkankale/
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: forminator-lead-dashboard
+ * Text Domain: lead-dashboard-for-forminator
  * Domain Path: /languages
  * Requires at least: 5.0
  * Requires PHP: 7.4
- * 
+ * Requires Plugins: forminator
+ *
  * This plugin requires Forminator to be installed and activated.
  */
 
@@ -84,7 +85,7 @@ class Forminator_Lead_Dashboard {
     public function forminator_missing_notice() {
         ?>
         <div class="notice notice-error">
-            <p><?php esc_html_e( 'Forminator Lead Dashboard requires Forminator plugin to be installed and activated.', 'forminator-lead-dashboard' ); ?></p>
+            <p><?php esc_html_e( 'Lead Dashboard for Forminator requires the Forminator plugin to be installed and activated.', 'lead-dashboard-for-forminator' ); ?></p>
         </div>
         <?php
     }
@@ -93,12 +94,9 @@ class Forminator_Lead_Dashboard {
      * Initialize plugin
      */
     public function init() {
-        // Load translations before anything else uses __() or _e().
-        load_plugin_textdomain(
-            'forminator-lead-dashboard',
-            false,
-            dirname( FLD_PLUGIN_BASENAME ) . '/languages'
-        );
+        // Load translations on the `init` hook. WordPress 6.7+ warns
+        // (_load_textdomain_just_in_time) if a text domain is loaded before init.
+        add_action('init', array($this, 'load_textdomain'));
 
         if (!$this->check_forminator()) {
             return;
@@ -160,6 +158,18 @@ class Forminator_Lead_Dashboard {
     }
 
     /**
+     * Load plugin text domain for translations.
+     * Hooked on `init` to satisfy WordPress 6.7+ just-in-time loading rules.
+     */
+    public function load_textdomain() {
+        load_plugin_textdomain(
+            'lead-dashboard-for-forminator',
+            false,
+            dirname( FLD_PLUGIN_BASENAME ) . '/languages'
+        );
+    }
+
+    /**
      * Set up roles and capabilities
      */
     public function setup_roles() {
@@ -212,8 +222,8 @@ class Forminator_Lead_Dashboard {
     public function add_admin_menu() {
         // Main menu — visible to administrators and sales admins
         add_menu_page(
-            __('Lead Dashboard', 'forminator-lead-dashboard'),
-            __('Lead Dashboard', 'forminator-lead-dashboard'),
+            __('Lead Dashboard', 'lead-dashboard-for-forminator'),
+            __('Lead Dashboard', 'lead-dashboard-for-forminator'),
             FLD_Roles::CAP,
             'lead-dashboard',
             array($this, 'render_dashboard_page'),
@@ -224,8 +234,8 @@ class Forminator_Lead_Dashboard {
         // Submenu - Dashboard
         add_submenu_page(
             'lead-dashboard',
-            __('Dashboard', 'forminator-lead-dashboard'),
-            __('Dashboard', 'forminator-lead-dashboard'),
+            __('Dashboard', 'lead-dashboard-for-forminator'),
+            __('Dashboard', 'lead-dashboard-for-forminator'),
             FLD_Roles::CAP,
             'lead-dashboard',
             array($this, 'render_dashboard_page')
@@ -234,8 +244,8 @@ class Forminator_Lead_Dashboard {
         // Submenu - All Leads
         add_submenu_page(
             'lead-dashboard',
-            __('All Leads', 'forminator-lead-dashboard'),
-            __('All Leads', 'forminator-lead-dashboard'),
+            __('All Leads', 'lead-dashboard-for-forminator'),
+            __('All Leads', 'lead-dashboard-for-forminator'),
             FLD_Roles::CAP,
             'lead-dashboard-leads',
             array($this, 'render_leads_page')
@@ -244,8 +254,8 @@ class Forminator_Lead_Dashboard {
         // Submenu - Settings — administrators only
         add_submenu_page(
             'lead-dashboard',
-            __('Settings', 'forminator-lead-dashboard'),
-            __('Settings', 'forminator-lead-dashboard'),
+            __('Settings', 'lead-dashboard-for-forminator'),
+            __('Settings', 'lead-dashboard-for-forminator'),
             'manage_options',
             'lead-dashboard-settings',
             array($this, 'render_settings_page')
@@ -294,10 +304,10 @@ class Forminator_Lead_Dashboard {
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('fld_nonce'),
             'strings' => array(
-                'confirm_delete' => __('Are you sure you want to delete this?', 'forminator-lead-dashboard'),
-                'loading' => __('Loading...', 'forminator-lead-dashboard'),
-                'error' => __('An error occurred. Please try again.', 'forminator-lead-dashboard'),
-                'success' => __('Success!', 'forminator-lead-dashboard'),
+                'confirm_delete' => __('Are you sure you want to delete this?', 'lead-dashboard-for-forminator'),
+                'loading' => __('Loading...', 'lead-dashboard-for-forminator'),
+                'error' => __('An error occurred. Please try again.', 'lead-dashboard-for-forminator'),
+                'success' => __('Success!', 'lead-dashboard-for-forminator'),
             )
         ));
     }
@@ -321,7 +331,7 @@ class Forminator_Lead_Dashboard {
      */
     public function render_settings_page() {
         if (!FLD_Roles::is_admin()) {
-            wp_die(__('You do not have permission to access this page.', 'forminator-lead-dashboard'));
+            wp_die(esc_html__('You do not have permission to access this page.', 'lead-dashboard-for-forminator'));
         }
         include FLD_PLUGIN_DIR . 'templates/settings.php';
     }
@@ -412,8 +422,8 @@ class Forminator_Lead_Dashboard {
             return;
         }
 
-        $script       = isset($_SERVER['SCRIPT_NAME']) ? basename(sanitize_text_field($_SERVER['SCRIPT_NAME'])) : '';
-        $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+        $script       = isset($_SERVER['SCRIPT_NAME']) ? basename(sanitize_text_field(wp_unslash($_SERVER['SCRIPT_NAME']))) : '';
+        $current_page = isset($_GET['page']) ? sanitize_text_field(wp_unslash($_GET['page'])) : '';
 
         // Pages Sales Admin is allowed to access
         $allowed_pages = array('lead-dashboard', 'lead-dashboard-leads');
@@ -444,10 +454,10 @@ class Forminator_Lead_Dashboard {
         }
 
         $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
-        $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+        $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : '';
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
         $per_page = isset($_POST['per_page']) ? intval($_POST['per_page']) : 20;
-        $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+        $search = isset($_POST['search']) ? sanitize_text_field(wp_unslash($_POST['search'])) : '';
 
         $leads = FLD_Leads::get_leads(array(
             'form_id' => $form_id,
@@ -496,7 +506,7 @@ class Forminator_Lead_Dashboard {
         }
 
         $entry_id = isset($_POST['entry_id']) ? intval($_POST['entry_id']) : 0;
-        $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+        $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : '';
 
         if (!$entry_id || !in_array($status, array('new', 'positive', 'negative', 'follow_up', 'converted', 'closed'))) {
             wp_send_json_error('Invalid data');
@@ -522,8 +532,8 @@ class Forminator_Lead_Dashboard {
         }
 
         $entry_id = isset($_POST['entry_id']) ? intval($_POST['entry_id']) : 0;
-        $feedback = isset($_POST['feedback']) ? sanitize_textarea_field($_POST['feedback']) : '';
-        $rating = isset($_POST['rating']) ? sanitize_text_field($_POST['rating']) : 'neutral';
+        $feedback = isset($_POST['feedback']) ? sanitize_textarea_field(wp_unslash($_POST['feedback'])) : '';
+        $rating = isset($_POST['rating']) ? sanitize_text_field(wp_unslash($_POST['rating'])) : 'neutral';
 
         if (!$entry_id || empty($feedback)) {
             wp_send_json_error('Invalid data');
@@ -610,7 +620,7 @@ class Forminator_Lead_Dashboard {
             wp_send_json_error('Unauthorized');
         }
 
-        $date_range = isset($_POST['date_range']) ? sanitize_text_field($_POST['date_range']) : '30';
+        $date_range = isset($_POST['date_range']) ? sanitize_text_field(wp_unslash($_POST['date_range'])) : '30';
 
         $stats = FLD_Leads::get_dashboard_stats($date_range);
 
@@ -628,7 +638,7 @@ class Forminator_Lead_Dashboard {
         }
 
         $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
-        $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : '';
+        $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : '';
 
         $csv_data = FLD_Leads::export_leads_csv($form_id, $status);
 
@@ -684,10 +694,10 @@ class Forminator_Lead_Dashboard {
         if (FLD_Roles::assign($user_id)) {
             $user = get_userdata($user_id);
             wp_send_json_success(array(
-                'message' => sprintf(__('%s is now a Sales Admin.', 'forminator-lead-dashboard'), $user->display_name),
+                'message' => sprintf(__('%s is now a Sales Admin.', 'lead-dashboard-for-forminator'), $user->display_name),
             ));
         } else {
-            wp_send_json_error(__('Could not assign role. Administrators cannot be changed.', 'forminator-lead-dashboard'));
+            wp_send_json_error(__('Could not assign role. Administrators cannot be changed.', 'lead-dashboard-for-forminator'));
         }
     }
 
@@ -710,10 +720,10 @@ class Forminator_Lead_Dashboard {
         if (FLD_Roles::remove($user_id)) {
             $user = get_userdata($user_id);
             wp_send_json_success(array(
-                'message' => sprintf(__('%s has been removed from Sales Admin.', 'forminator-lead-dashboard'), $user->display_name),
+                'message' => sprintf(__('%s has been removed from Sales Admin.', 'lead-dashboard-for-forminator'), $user->display_name),
             ));
         } else {
-            wp_send_json_error(__('User is not a Sales Admin.', 'forminator-lead-dashboard'));
+            wp_send_json_error(__('User is not a Sales Admin.', 'lead-dashboard-for-forminator'));
         }
     }
     /**
@@ -745,14 +755,14 @@ class Forminator_Lead_Dashboard {
             'nonce'         => wp_create_nonce('fld_otp_nonce'),
             'enabled_forms' => array_map('intval', (array) $enabled_forms),
             'strings'       => array(
-                'send_otp'     => __('Send Verification Code', 'forminator-lead-dashboard'),
-                'verify'       => __('Verify', 'forminator-lead-dashboard'),
-                'verified'     => __('Email Verified ✓', 'forminator-lead-dashboard'),
-                'otp_sent'     => __('Code sent to your email. Check your inbox.', 'forminator-lead-dashboard'),
-                'invalid_otp'  => __('Invalid or expired code. Please try again.', 'forminator-lead-dashboard'),
-                'enter_email'  => __('Please enter your email address first.', 'forminator-lead-dashboard'),
-                'otp_required' => __('Please verify your email before submitting.', 'forminator-lead-dashboard'),
-                'resend'       => __('Resend Code', 'forminator-lead-dashboard'),
+                'send_otp'     => __('Send Verification Code', 'lead-dashboard-for-forminator'),
+                'verify'       => __('Verify', 'lead-dashboard-for-forminator'),
+                'verified'     => __('Email Verified ✓', 'lead-dashboard-for-forminator'),
+                'otp_sent'     => __('Code sent to your email. Check your inbox.', 'lead-dashboard-for-forminator'),
+                'invalid_otp'  => __('Invalid or expired code. Please try again.', 'lead-dashboard-for-forminator'),
+                'enter_email'  => __('Please enter your email address first.', 'lead-dashboard-for-forminator'),
+                'otp_required' => __('Please verify your email before submitting.', 'lead-dashboard-for-forminator'),
+                'resend'       => __('Resend Code', 'lead-dashboard-for-forminator'),
             ),
         ));
     }
@@ -767,7 +777,7 @@ class Forminator_Lead_Dashboard {
         $form_id = isset($_POST['form_id']) ? intval($_POST['form_id'])                        : 0;
 
         if (!is_email($email) || !FLD_OTP::is_form_enabled($form_id)) {
-            wp_send_json_error(__('Invalid request.', 'forminator-lead-dashboard'));
+            wp_send_json_error(__('Invalid request.', 'lead-dashboard-for-forminator'));
         }
 
         $result = FLD_OTP::send_otp($email, $form_id);
@@ -793,7 +803,7 @@ class Forminator_Lead_Dashboard {
         if ($token) {
             wp_send_json_success(array('token' => $token));
         } else {
-            wp_send_json_error(__('Invalid or expired code.', 'forminator-lead-dashboard'));
+            wp_send_json_error(__('Invalid or expired code.', 'lead-dashboard-for-forminator'));
         }
     }
 
@@ -818,7 +828,7 @@ class Forminator_Lead_Dashboard {
         }
 
         if (!$token || !FLD_OTP::verify_token($token)) {
-            $errors[] = __('Please verify your email address before submitting.', 'forminator-lead-dashboard');
+            $errors[] = __('Please verify your email address before submitting.', 'lead-dashboard-for-forminator');
             return $errors;
         }
 

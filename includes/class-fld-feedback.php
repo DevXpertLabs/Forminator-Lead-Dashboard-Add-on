@@ -152,17 +152,17 @@ class FLD_Feedback {
     public static function get_ratings() {
         return array(
             'positive' => array(
-                'label' => __('Positive', 'forminator-lead-dashboard'),
+                'label' => __('Positive', 'lead-dashboard-for-forminator'),
                 'icon' => '👍',
                 'color' => '#22c55e'
             ),
             'neutral' => array(
-                'label' => __('Neutral', 'forminator-lead-dashboard'),
+                'label' => __('Neutral', 'lead-dashboard-for-forminator'),
                 'icon' => '😐',
                 'color' => '#eab308'
             ),
             'negative' => array(
-                'label' => __('Negative', 'forminator-lead-dashboard'),
+                'label' => __('Negative', 'lead-dashboard-for-forminator'),
                 'icon' => '👎',
                 'color' => '#ef4444'
             )
