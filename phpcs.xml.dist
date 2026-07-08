@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<ruleset name="Lead Dashboard for Forminator">
+    <description>Coding standards for the Lead Dashboard for Forminator plugin.</description>
+
+    <!-- Scan the whole plugin by default. -->
+    <file>.</file>
+
+    <!-- Things that should never be sniffed. -->
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/languages/*</exclude-pattern>
+    <exclude-pattern>*/assets/js/chart.min.js</exclude-pattern>
+
+    <!-- Only PHP files, show sniff codes and progress, run in parallel. -->
+    <arg name="extensions" value="php"/>
+    <arg name="basepath" value="."/>
+    <arg name="parallel" value="8"/>
+    <arg name="colors"/>
+    <arg value="ps"/>
+
+    <!-- Fail the build on errors only; warnings are still reported. -->
+    <config name="ignore_warnings_on_exit" value="1"/>
+
+    <!-- Targets. -->
+    <config name="minimum_wp_version" value="5.0"/>
+    <config name="testVersion" value="7.4-"/>
+
+    <!-- WordPress coding standards. -->
+    <rule ref="WordPress-Extra"/>
+    <rule ref="WordPress-Docs"/>
+
+    <!-- Enforce our text domain. -->
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="lead-dashboard-for-forminator"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- Allow our global prefixes. -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="fld"/>
+                <element value="FLD"/>
+                <element value="Forminator_Lead_Dashboard"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- PHP cross-version compatibility for the versions we support. -->
+    <rule ref="PHPCompatibilityWP"/>
+</ruleset>

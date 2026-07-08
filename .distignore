@@ -1,0 +1,13 @@
+# Files and directories that should NOT ship in the distributed plugin zip.
+# Used by `wp dist-archive` (WP-CLI) when building the release.
+
+/.git
+/.github
+/.claude
+/.gitignore
+/.distignore
+/phpcs.xml.dist
+/README.md
+/node_modules
+/vendor
+/tests
