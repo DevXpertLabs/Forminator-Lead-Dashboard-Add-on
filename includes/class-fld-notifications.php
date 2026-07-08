@@ -116,19 +116,10 @@ class FLD_Notifications {
      * Resolve a Forminator form's display name, falling back to its ID.
      */
     private static function get_form_name($form_id) {
-        $name = 'Form #' . intval($form_id);
+        $names  = FLD_Leads::form_names();
+        $form_id = (int) $form_id;
 
-        if (class_exists('Forminator_API')) {
-            $form = Forminator_API::get_form($form_id);
-            if ($form && !is_wp_error($form)) {
-                $settings = (array) $form->settings;
-                if (!empty($settings['formName'])) {
-                    $name = $settings['formName'];
-                }
-            }
-        }
-
-        return $name;
+        return isset($names[$form_id]) ? $names[$form_id] : ('Form #' . $form_id);
     }
 
     /**

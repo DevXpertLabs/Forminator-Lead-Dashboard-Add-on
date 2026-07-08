@@ -125,12 +125,14 @@ class FLD_Leads {
             $entries = $wpdb->get_results($query);
         }
 
-        // Get entry meta for each entry
+        // Batch-load meta and feedback counts for all entries in two queries
+        // (instead of two queries per row) to avoid an N+1 pattern.
+        $entry_ids = wp_list_pluck($entries, 'entry_id');
+        $meta_map  = self::get_entry_meta_bulk($entry_ids);
+        $count_map = FLD_Feedback::get_feedback_counts($entry_ids);
+
         $leads = array();
         foreach ($entries as $entry) {
-            $meta = self::get_entry_meta($entry->entry_id);
-            $feedback_count = FLD_Feedback::get_feedback_count($entry->entry_id);
-            
             $leads[] = array(
                 'entry_id' => $entry->entry_id,
                 'form_id' => $entry->form_id,
@@ -139,8 +141,8 @@ class FLD_Leads {
                 'assigned_to' => $entry->assigned_to,
                 'priority' => $entry->priority,
                 'source' => $entry->source,
-                'meta' => $meta,
-                'feedback_count' => $feedback_count
+                'meta' => isset($meta_map[$entry->entry_id]) ? $meta_map[$entry->entry_id] : array(),
+                'feedback_count' => isset($count_map[$entry->entry_id]) ? $count_map[$entry->entry_id] : 0
             );
         }
 
@@ -171,6 +173,37 @@ class FLD_Leads {
         }
 
         return $formatted;
+    }
+
+    /**
+     * Bulk-load entry meta for many entries in a single query.
+     *
+     * @param int[] $entry_ids
+     * @return array<int,array<string,mixed>> Map of entry_id => [meta_key => value].
+     */
+    public static function get_entry_meta_bulk($entry_ids) {
+        global $wpdb;
+
+        $entry_ids = array_values(array_unique(array_map('intval', (array) $entry_ids)));
+        if (empty($entry_ids)) {
+            return array();
+        }
+
+        $table_meta   = $wpdb->prefix . 'frmt_form_entry_meta';
+        $placeholders = implode(',', array_fill(0, count($entry_ids), '%d'));
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders are built from a count and passed to prepare().
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT entry_id, meta_key, meta_value FROM $table_meta WHERE entry_id IN ($placeholders)",
+            $entry_ids
+        ));
+
+        $map = array();
+        foreach ($rows as $row) {
+            $map[(int) $row->entry_id][$row->meta_key] = maybe_unserialize($row->meta_value);
+        }
+
+        return $map;
     }
 
     /**
@@ -317,19 +350,12 @@ class FLD_Leads {
             $date_from
         ));
 
-        // Add form names
-        foreach ($leads_by_form as &$item) {
-            $form_name = 'Form #' . $item->form_id;
-            $form = Forminator_API::get_form($item->form_id);
-            if ($form && ! is_wp_error($form)) {
-                $settings = is_object($form->settings) ? (array) $form->settings : (array) $form->settings;
-                if ( ! empty($settings['formName'])) {
-                    $form_name = $settings['formName'];
-                }
-            }
-            $item->form_name = $form_name;
+        // Add form names from the cached map (one API call, not one per form)
+        $names = self::form_names();
+        foreach ($leads_by_form as $item) {
+            $fid = (int) $item->form_id;
+            $item->form_name = isset($names[$fid]) ? $names[$fid] : ('Form #' . $fid);
         }
-        unset($item);
 
         // Conversion rate (positive leads / total)
         $positive_count = isset($status_counts['positive']) ? $status_counts['positive']->count : 0;
@@ -430,19 +456,44 @@ class FLD_Leads {
     }
 
     /**
-     * Get available forms
+     * Cached map of Forminator form ID => form name.
+     * Resolved once per request (one API call) and reused everywhere.
+     *
+     * @return array<int,string>
      */
-    public static function get_forms() {
-        $forms = Forminator_API::get_forms();
-        $list = array();
+    public static function form_names() {
+        static $map = null;
 
-        foreach ($forms as $form) {
-            $list[] = array(
-                'id' => $form->id,
-                'name' => $form->settings['formName']
-            );
+        if ($map !== null) {
+            return $map;
         }
 
+        $map = array();
+
+        if (class_exists('Forminator_API')) {
+            // Pass a high per-page so we get every form, not just the first 10.
+            $forms = Forminator_API::get_forms(null, 1, 999);
+            if (is_array($forms)) {
+                foreach ($forms as $form) {
+                    $settings = (array) $form->settings;
+                    $map[(int) $form->id] = !empty($settings['formName'])
+                        ? $settings['formName']
+                        : ('Form #' . $form->id);
+                }
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Get available forms as a list of id/name pairs (for dropdowns).
+     */
+    public static function get_forms() {
+        $list = array();
+        foreach (self::form_names() as $id => $name) {
+            $list[] = array('id' => $id, 'name' => $name);
+        }
         return $list;
     }
 
