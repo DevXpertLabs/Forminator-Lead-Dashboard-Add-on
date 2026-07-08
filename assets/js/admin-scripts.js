@@ -653,6 +653,7 @@
                 if (response.success) {
                     renderLeadModal(response.data);
                     loadFeedback(entryId);
+                    loadActivity(entryId);
                     $('#fld-lead-modal').show();
                 } else {
                     showNotice('error', fld_ajax.strings.error);
@@ -723,10 +724,11 @@
             return;
         }
 
+        const svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
         const ratingIcons = {
-            'positive': '👍',
-            'neutral': '😐',
-            'negative': '👎'
+            'positive': '<span class="fld-rating-ico fld-rating-ico--positive">' + svg + '<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg></span>',
+            'neutral':  '<span class="fld-rating-ico fld-rating-ico--neutral">'  + svg + '<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg></span>',
+            'negative': '<span class="fld-rating-ico fld-rating-ico--negative">' + svg + '<path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3 3.88Z"/></svg></span>'
         };
 
         feedbackList.forEach(function(feedback) {
@@ -735,7 +737,7 @@
 
             container.append(`
                 <div class="fld-feedback-item">
-                    <div class="fld-feedback-rating">${ratingIcons[feedback.rating] || '😐'}</div>
+                    <div class="fld-feedback-rating">${ratingIcons[feedback.rating] || ratingIcons.neutral}</div>
                     <div class="fld-feedback-content">
                         <p class="fld-feedback-text">${escapeHtml(feedback.feedback)}</p>
                         <div class="fld-feedback-meta">
@@ -744,6 +746,70 @@
                             <button class="fld-feedback-delete" data-id="${feedback.id}">Delete</button>
                         </div>
                     </div>
+                </div>
+            `);
+        });
+    }
+
+    /**
+     * Load the activity log for a lead (only present in the All Leads modal).
+     */
+    function loadActivity(entryId) {
+        const container = $('#fld-activity-log');
+        if (container.length === 0) {
+            return; // no activity panel on this page (e.g. dashboard modal)
+        }
+
+        $.ajax({
+            url: fld_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'fld_get_activity',
+                nonce: fld_ajax.nonce,
+                entry_id: entryId
+            },
+            success: function(response) {
+                if (response.success) {
+                    renderActivity(response.data);
+                }
+            }
+        });
+    }
+
+    /**
+     * Render the activity log timeline.
+     */
+    function renderActivity(list) {
+        const container = $('#fld-activity-log');
+        container.empty();
+
+        if (!list || list.length === 0) {
+            container.html('<p class="fld-empty-state">No activity yet</p>');
+            return;
+        }
+
+        const labels = {
+            'status_change':   'Status changed',
+            'feedback_added':  'Feedback added',
+            'feedback_deleted':'Feedback removed',
+            'assigned':        'Lead assigned'
+        };
+
+        list.forEach(function(item) {
+            const date = new Date(item.created_at);
+            const when = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+
+            let detail = '';
+            try {
+                const d = item.details ? JSON.parse(item.details) : null;
+                if (d && d.new_status) { detail = ' → ' + d.new_status; }
+                else if (d && d.rating) { detail = ' (' + d.rating + ')'; }
+            } catch (e) { /* ignore malformed details */ }
+
+            container.append(`
+                <div class="fld-activity-item">
+                    <span class="fld-activity-action">${escapeHtml((labels[item.action] || item.action) + detail)}</span>
+                    <span class="fld-activity-time">${escapeHtml(item.user_name || 'System')} · ${when}</span>
                 </div>
             `);
         });
@@ -781,6 +847,7 @@
                             .addClass('fld-status-badge fld-status-' + status)
                             .text(formatStatus(status));
                     }
+                    loadActivity(currentLeadId);
                 } else {
                     showNotice('error', response.data || fld_ajax.strings.error);
                 }
@@ -818,6 +885,7 @@
                     showNotice('success', 'Feedback added');
                     $('#fld-new-feedback, #fld-feedback-text').val('');
                     loadFeedback(currentLeadId);
+                    loadActivity(currentLeadId);
                 } else {
                     showNotice('error', response.data || fld_ajax.strings.error);
                 }
@@ -848,6 +916,7 @@
                 if (response.success) {
                     showNotice('success', 'Feedback deleted');
                     loadFeedback(currentLeadId);
+                    loadActivity(currentLeadId);
                 } else {
                     showNotice('error', response.data || fld_ajax.strings.error);
                 }

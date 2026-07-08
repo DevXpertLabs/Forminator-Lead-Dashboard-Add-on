@@ -108,6 +108,9 @@ class Forminator_Lead_Dashboard {
         // Seed SMTP defaults on first load (add_option is a no-op if already set)
         FLD_OTP::init_defaults();
 
+        // New-lead automation: email notifications + auto-assignment
+        FLD_Notifications::init();
+
         // Admin hooks
         if (is_admin()) {
             add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -151,10 +154,16 @@ class Forminator_Lead_Dashboard {
         add_action('wp_ajax_fld_export_leads', array($this, 'ajax_export_leads'));
         add_action('wp_ajax_fld_get_lead', array($this, 'ajax_get_lead'));
 
+        add_action('wp_ajax_fld_get_activity', array($this, 'ajax_get_activity'));
+
         // Role management AJAX — admin only
         add_action('wp_ajax_fld_get_assignable_users', array($this, 'ajax_get_assignable_users'));
         add_action('wp_ajax_fld_assign_sales_admin', array($this, 'ajax_assign_sales_admin'));
         add_action('wp_ajax_fld_remove_sales_admin', array($this, 'ajax_remove_sales_admin'));
+
+        // Database tools AJAX — admin only
+        add_action('wp_ajax_fld_clear_activity_log', array($this, 'ajax_clear_activity_log'));
+        add_action('wp_ajax_fld_reset_statuses', array($this, 'ajax_reset_statuses'));
     }
 
     /**
@@ -186,6 +195,7 @@ class Forminator_Lead_Dashboard {
         require_once FLD_PLUGIN_DIR . 'includes/class-fld-leads.php';
         require_once FLD_PLUGIN_DIR . 'includes/class-fld-feedback.php';
         require_once FLD_PLUGIN_DIR . 'includes/class-fld-otp.php';
+        require_once FLD_PLUGIN_DIR . 'includes/class-fld-notifications.php';
     }
 
     /**
@@ -643,6 +653,61 @@ class Forminator_Lead_Dashboard {
         $csv_data = FLD_Leads::export_leads_csv($form_id, $status);
 
         wp_send_json_success(array('csv' => $csv_data));
+    }
+
+    /**
+     * AJAX: Get the activity log for a single lead
+     */
+    public function ajax_get_activity() {
+        check_ajax_referer('fld_nonce', 'nonce');
+
+        if (!FLD_Roles::can_access()) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $entry_id = isset($_POST['entry_id']) ? intval($_POST['entry_id']) : 0;
+
+        if (!$entry_id) {
+            wp_send_json_error('Invalid entry ID');
+        }
+
+        wp_send_json_success(FLD_Leads::get_activity($entry_id));
+    }
+
+    /**
+     * AJAX: Clear the entire activity log (administrators only)
+     */
+    public function ajax_clear_activity_log() {
+        check_ajax_referer('fld_nonce', 'nonce');
+
+        if (!FLD_Roles::is_admin()) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $removed = FLD_Leads::clear_activity_log();
+
+        wp_send_json_success(array(
+            /* translators: %d: number of activity log rows removed */
+            'message' => sprintf(__('Activity log cleared (%d entries removed).', 'lead-dashboard-for-forminator'), $removed),
+        ));
+    }
+
+    /**
+     * AJAX: Reset all lead statuses to "new" (administrators only)
+     */
+    public function ajax_reset_statuses() {
+        check_ajax_referer('fld_nonce', 'nonce');
+
+        if (!FLD_Roles::is_admin()) {
+            wp_send_json_error('Unauthorized');
+        }
+
+        $removed = FLD_Leads::reset_all_statuses();
+
+        wp_send_json_success(array(
+            /* translators: %d: number of leads reset to "new" */
+            'message' => sprintf(__('All statuses reset to "new" (%d leads affected).', 'lead-dashboard-for-forminator'), $removed),
+        ));
     }
 
     /**

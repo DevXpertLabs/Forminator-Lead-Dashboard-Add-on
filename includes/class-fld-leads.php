@@ -447,6 +447,98 @@ class FLD_Leads {
     }
 
     /**
+     * Get the activity log for a single entry, newest first.
+     */
+    public static function get_activity($entry_id) {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'fld_activity_log';
+
+        $rows = $wpdb->get_results($wpdb->prepare(
+            "SELECT a.action, a.details, a.created_at, u.display_name AS user_name
+             FROM $table a
+             LEFT JOIN {$wpdb->users} u ON a.user_id = u.ID
+             WHERE a.entry_id = %d
+             ORDER BY a.created_at DESC",
+            intval($entry_id)
+        ));
+
+        return is_array($rows) ? $rows : array();
+    }
+
+    /**
+     * Empty the activity log entirely. Administrators only (enforced by caller).
+     *
+     * @return int Number of rows removed.
+     */
+    public static function clear_activity_log() {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'fld_activity_log';
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- deleting all rows from a plugin-owned table; name from trusted prefix.
+        return (int) $wpdb->query( 'DELETE FROM `' . esc_sql( $table ) . '`' );
+    }
+
+    /**
+     * Reset every lead back to "new" by clearing the status table.
+     * Administrators only (enforced by caller).
+     *
+     * @return int Number of status rows removed.
+     */
+    public static function reset_all_statuses() {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'fld_lead_status';
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- deleting all rows from a plugin-owned table; name from trusted prefix.
+        return (int) $wpdb->query( 'DELETE FROM `' . esc_sql( $table ) . '`' );
+    }
+
+    /**
+     * Assign a lead to a user without altering its status.
+     * Creates the status row (status "new") if none exists yet.
+     *
+     * @return bool
+     */
+    public static function assign_lead($entry_id, $form_id, $user_id) {
+        global $wpdb;
+
+        $table    = $wpdb->prefix . 'fld_lead_status';
+        $entry_id = intval($entry_id);
+        $user_id  = intval($user_id);
+
+        $exists = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM $table WHERE entry_id = %d",
+            $entry_id
+        ));
+
+        if ($exists) {
+            $result = $wpdb->update(
+                $table,
+                array('assigned_to' => $user_id, 'updated_at' => current_time('mysql')),
+                array('entry_id' => $entry_id)
+            );
+        } else {
+            $result = $wpdb->insert($table, array(
+                'entry_id'    => $entry_id,
+                'form_id'     => intval($form_id),
+                'status'      => 'new',
+                'assigned_to' => $user_id,
+                'created_at'  => current_time('mysql'),
+                'updated_at'  => current_time('mysql'),
+            ));
+        }
+
+        if ($result !== false) {
+            self::log_activity($entry_id, 'assigned', array('assigned_to' => $user_id));
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Get lead statuses
      */
     public static function get_statuses() {

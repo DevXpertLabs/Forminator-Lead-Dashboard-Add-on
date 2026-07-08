@@ -185,17 +185,20 @@ $statuses = FLD_Leads::get_statuses();
                 <div class="fld-add-feedback">
                     <h5><?php esc_html_e('Add Feedback', 'lead-dashboard-for-forminator'); ?></h5>
                     <div class="fld-feedback-rating">
-                        <label>
-                            <input type="radio" name="fld-feedback-rating" value="positive"> 
-                            👍 <?php esc_html_e('Positive', 'lead-dashboard-for-forminator'); ?>
+                        <label class="fld-rating-option fld-rating-positive">
+                            <input type="radio" name="fld-feedback-rating" value="positive">
+                            <span class="fld-rating-ico fld-rating-ico--positive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg></span>
+                            <span><?php esc_html_e('Positive', 'lead-dashboard-for-forminator'); ?></span>
                         </label>
-                        <label>
-                            <input type="radio" name="fld-feedback-rating" value="neutral" checked> 
-                            😐 <?php esc_html_e('Neutral', 'lead-dashboard-for-forminator'); ?>
+                        <label class="fld-rating-option fld-rating-neutral">
+                            <input type="radio" name="fld-feedback-rating" value="neutral" checked>
+                            <span class="fld-rating-ico fld-rating-ico--neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg></span>
+                            <span><?php esc_html_e('Neutral', 'lead-dashboard-for-forminator'); ?></span>
                         </label>
-                        <label>
-                            <input type="radio" name="fld-feedback-rating" value="negative"> 
-                            👎 <?php esc_html_e('Negative', 'lead-dashboard-for-forminator'); ?>
+                        <label class="fld-rating-option fld-rating-negative">
+                            <input type="radio" name="fld-feedback-rating" value="negative">
+                            <span class="fld-rating-ico fld-rating-ico--negative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3 3.88Z"/></svg></span>
+                            <span><?php esc_html_e('Negative', 'lead-dashboard-for-forminator'); ?></span>
                         </label>
                     </div>
                     <textarea id="fld-feedback-text" placeholder="<?php esc_attr_e('Enter your feedback...', 'lead-dashboard-for-forminator'); ?>"></textarea>

@@ -153,17 +153,17 @@ class FLD_Feedback {
         return array(
             'positive' => array(
                 'label' => __('Positive', 'lead-dashboard-for-forminator'),
-                'icon' => '👍',
+                'icon'  => 'positive', // maps to .fld-rating-ico--positive SVG
                 'color' => '#22c55e'
             ),
             'neutral' => array(
                 'label' => __('Neutral', 'lead-dashboard-for-forminator'),
-                'icon' => '😐',
+                'icon'  => 'neutral', // maps to .fld-rating-ico--neutral SVG
                 'color' => '#eab308'
             ),
             'negative' => array(
                 'label' => __('Negative', 'lead-dashboard-for-forminator'),
-                'icon' => '👎',
+                'icon'  => 'negative', // maps to .fld-rating-ico--negative SVG
                 'color' => '#ef4444'
             )
         );
