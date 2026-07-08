@@ -24,9 +24,11 @@ if (isset($_POST['fld_save_settings']) && wp_verify_nonce($fld_settings_nonce, '
     update_option('fld_smtp_host',          sanitize_text_field(wp_unslash($_POST['fld_smtp_host'] ?? '')));
     update_option('fld_smtp_port',          intval($_POST['fld_smtp_port'] ?? 587));
     update_option('fld_smtp_username',      sanitize_text_field(wp_unslash($_POST['fld_smtp_username'] ?? '')));
-    // Only update password if a new value was actually submitted (non-empty)
+    // Only update password if a new value was actually submitted (non-empty).
+    // Stored encrypted at rest; decrypted only when sending mail.
     if (!empty($_POST['fld_smtp_password'])) {
-        update_option('fld_smtp_password',  sanitize_text_field(wp_unslash($_POST['fld_smtp_password'])));
+        $fld_new_pw = sanitize_text_field(wp_unslash($_POST['fld_smtp_password']));
+        update_option('fld_smtp_password', FLD_OTP::encrypt_secret($fld_new_pw));
     }
     update_option('fld_smtp_encryption',    sanitize_text_field(wp_unslash($_POST['fld_smtp_encryption'] ?? 'tls')));
     update_option('fld_brevo_sender_name',  sanitize_text_field(wp_unslash($_POST['fld_brevo_sender_name'] ?? get_bloginfo('name'))));

@@ -211,7 +211,12 @@ class FLD_Leads {
      */
     public static function update_lead_status($entry_id, $status, $additional = array()) {
         global $wpdb;
-        
+
+        // Defence in depth: only ever persist a known status value.
+        if (!array_key_exists($status, self::get_statuses())) {
+            return false;
+        }
+
         $table = $wpdb->prefix . 'fld_lead_status';
 
         // Check if record exists
@@ -427,6 +432,9 @@ class FLD_Leads {
                 $row[] = $value;
             }
 
+            // Neutralise spreadsheet formula injection before writing.
+            $row = array_map(array(__CLASS__, 'csv_escape'), $row);
+
             fputcsv($output, $row);
         }
 
@@ -436,6 +444,24 @@ class FLD_Leads {
         fclose($output);
 
         return $csv;
+    }
+
+    /**
+     * Neutralise CSV/formula injection: a leading =, +, -, @, tab or CR can be
+     * interpreted as a formula by Excel/Sheets. Prefix such values with a
+     * single quote so they are treated as literal text.
+     *
+     * @param mixed $value
+     * @return string
+     */
+    private static function csv_escape($value) {
+        $value = (string) $value;
+
+        if ($value !== '' && in_array($value[0], array('=', '+', '-', '@', "\t", "\r"), true)) {
+            $value = "'" . $value;
+        }
+
+        return $value;
     }
 
     /**
