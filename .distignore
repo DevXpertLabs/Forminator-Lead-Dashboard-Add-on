@@ -7,7 +7,11 @@
 /.gitignore
 /.distignore
 /phpcs.xml.dist
+/phpunit.xml.dist
+/composer.json
+/composer.lock
 /README.md
+/bin
 /node_modules
 /vendor
 /tests
