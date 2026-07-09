@@ -1,0 +1,717 @@
+# Copyright (C) 2026 Anup Kankale
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Lead Dashboard for Forminator 1.0.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/lead-dashboard-for-forminator\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-08T23:28:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: lead-dashboard-for-forminator\n"
+
+#. Plugin Name of the plugin
+#: lead-dashboard-for-forminator.php
+msgid "Lead Dashboard for Forminator"
+msgstr ""
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: lead-dashboard-for-forminator.php
+msgid "https://www.linkedin.com/in/anupkankale/"
+msgstr ""
+
+#. Description of the plugin
+#: lead-dashboard-for-forminator.php
+msgid "A powerful Lead Management Dashboard addon for Forminator. Track SEO leads, manage feedback, and categorize leads as positive/negative."
+msgstr ""
+
+#. Author of the plugin
+#: lead-dashboard-for-forminator.php
+msgid "Anup Kankale"
+msgstr ""
+
+#: includes/class-fld-feedback.php:186
+#: includes/class-fld-leads.php:624
+#: templates/dashboard.php:191
+#: templates/leads.php:176
+#: templates/settings.php:165
+msgid "Positive"
+msgstr ""
+
+#: includes/class-fld-feedback.php:191
+#: templates/dashboard.php:196
+#: templates/leads.php:181
+msgid "Neutral"
+msgstr ""
+
+#: includes/class-fld-feedback.php:196
+#: includes/class-fld-leads.php:625
+#: templates/dashboard.php:201
+#: templates/leads.php:186
+#: templates/settings.php:169
+msgid "Negative"
+msgstr ""
+
+#: includes/class-fld-leads.php:623
+#: templates/settings.php:161
+msgid "New"
+msgstr ""
+
+#: includes/class-fld-leads.php:626
+#: templates/settings.php:173
+msgid "Follow Up"
+msgstr ""
+
+#: includes/class-fld-leads.php:627
+#: templates/settings.php:177
+msgid "Converted"
+msgstr ""
+
+#: includes/class-fld-leads.php:628
+#: templates/settings.php:181
+msgid "Closed"
+msgstr ""
+
+#: includes/class-fld-notifications.php:84
+#, php-format
+msgid "[%1$s] New lead #%2$d"
+msgstr ""
+
+#: includes/class-fld-notifications.php:90
+#, php-format
+msgid "A new lead was submitted via \"%s\"."
+msgstr ""
+
+#: includes/class-fld-notifications.php:107
+msgid "View in the Lead Dashboard:"
+msgstr ""
+
+#: includes/class-fld-otp.php:52
+msgid "Too many verification requests. Please try again in an hour."
+msgstr ""
+
+#: includes/class-fld-otp.php:64
+#, php-format
+msgid "[%s] Your verification code"
+msgstr ""
+
+#: includes/class-fld-otp.php:125
+msgid "SMTP credentials are not configured."
+msgstr ""
+
+#: includes/class-fld-otp.php:129
+msgid "Sender email address is not valid."
+msgstr ""
+
+#: includes/class-fld-otp.php:147
+msgid "Failed to send OTP email."
+msgstr ""
+
+#: includes/class-fld-roles.php:25
+msgid "Sales Admin"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:88
+msgid "Lead Dashboard for Forminator requires the Forminator plugin to be installed and activated."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:235
+#: lead-dashboard-for-forminator.php:236
+#: templates/dashboard.php:19
+msgid "Lead Dashboard"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:247
+#: lead-dashboard-for-forminator.php:248
+msgid "Dashboard"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:257
+#: lead-dashboard-for-forminator.php:258
+#: templates/leads.php:18
+msgid "All Leads"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:267
+#: lead-dashboard-for-forminator.php:268
+msgid "Settings"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:317
+msgid "Are you sure you want to delete this?"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:318
+#: templates/leads.php:124
+msgid "Loading..."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:319
+msgid "An error occurred. Please try again."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:320
+msgid "Success!"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:344
+#: templates/settings.php:11
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#. translators: %d: number of activity log rows removed
+#: lead-dashboard-for-forminator.php:691
+#, php-format
+msgid "Activity log cleared (%d entries removed)."
+msgstr ""
+
+#. translators: %d: number of leads reset to "new"
+#: lead-dashboard-for-forminator.php:709
+#, php-format
+msgid "All statuses reset to \"new\" (%d leads affected)."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:762
+#, php-format
+msgid "%s is now a Sales Admin."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:765
+msgid "Could not assign role. Administrators cannot be changed."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:788
+#, php-format
+msgid "%s has been removed from Sales Admin."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:791
+msgid "User is not a Sales Admin."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:823
+msgid "Send Verification Code"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:824
+msgid "Verify"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:825
+msgid "Email Verified ✓"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:826
+msgid "Code sent to your email. Check your inbox."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:827
+msgid "Invalid or expired code. Please try again."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:828
+msgid "Please enter your email address first."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:829
+msgid "Please verify your email before submitting."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:830
+msgid "Resend Code"
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:845
+msgid "Invalid request."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:871
+msgid "Invalid or expired code."
+msgstr ""
+
+#: lead-dashboard-for-forminator.php:896
+msgid "Please verify your email address before submitting."
+msgstr ""
+
+#: templates/dashboard.php:25
+msgid "Date Range:"
+msgstr ""
+
+#: templates/dashboard.php:27
+msgid "Last 7 Days"
+msgstr ""
+
+#: templates/dashboard.php:28
+msgid "Last 30 Days"
+msgstr ""
+
+#: templates/dashboard.php:29
+msgid "Last 90 Days"
+msgstr ""
+
+#: templates/dashboard.php:30
+msgid "Last Year"
+msgstr ""
+
+#: templates/dashboard.php:35
+msgid "Refresh"
+msgstr ""
+
+#: templates/dashboard.php:47
+#: templates/dashboard.php:116
+msgid "Total Leads"
+msgstr ""
+
+#: templates/dashboard.php:57
+msgid "New Leads"
+msgstr ""
+
+#: templates/dashboard.php:67
+msgid "Positive Leads"
+msgstr ""
+
+#: templates/dashboard.php:77
+msgid "Negative Leads"
+msgstr ""
+
+#: templates/dashboard.php:87
+msgid "Conversion Rate"
+msgstr ""
+
+#: templates/dashboard.php:95
+msgid "Leads Over Time"
+msgstr ""
+
+#: templates/dashboard.php:102
+msgid "Leads by Status"
+msgstr ""
+
+#: templates/dashboard.php:111
+msgid "Top Forms by Leads"
+msgstr ""
+
+#: templates/dashboard.php:115
+msgid "Form Name"
+msgstr ""
+
+#: templates/dashboard.php:117
+#: templates/dashboard.php:142
+#: templates/leads.php:107
+msgid "Actions"
+msgstr ""
+
+#: templates/dashboard.php:129
+msgid "Recent Leads"
+msgstr ""
+
+#: templates/dashboard.php:131
+msgid "View All"
+msgstr ""
+
+#: templates/dashboard.php:137
+#: templates/leads.php:101
+msgid "ID"
+msgstr ""
+
+#: templates/dashboard.php:138
+#: templates/leads.php:102
+msgid "Date"
+msgstr ""
+
+#: templates/dashboard.php:139
+#: templates/leads.php:103
+msgid "Form"
+msgstr ""
+
+#: templates/dashboard.php:140
+#: templates/leads.php:105
+msgid "Status"
+msgstr ""
+
+#: templates/dashboard.php:141
+#: templates/leads.php:106
+msgid "Feedback"
+msgstr ""
+
+#: templates/dashboard.php:156
+#: templates/leads.php:132
+msgid "Lead Details"
+msgstr ""
+
+#: templates/dashboard.php:166
+#: templates/dashboard.php:173
+msgid "Update Status"
+msgstr ""
+
+#: templates/dashboard.php:179
+#: templates/leads.php:164
+msgid "Sales Team Feedback"
+msgstr ""
+
+#: templates/dashboard.php:186
+#: templates/leads.php:191
+msgid "Add Feedback"
+msgstr ""
+
+#: templates/dashboard.php:204
+msgid "Enter your feedback..."
+msgstr ""
+
+#: templates/dashboard.php:206
+msgid "Submit Feedback"
+msgstr ""
+
+#: templates/leads.php:25
+msgid "Form:"
+msgstr ""
+
+#: templates/leads.php:27
+msgid "All Forms"
+msgstr ""
+
+#: templates/leads.php:37
+msgid "Status:"
+msgstr ""
+
+#: templates/leads.php:39
+msgid "All Statuses"
+msgstr ""
+
+#: templates/leads.php:47
+msgid "Date From:"
+msgstr ""
+
+#: templates/leads.php:52
+msgid "Date To:"
+msgstr ""
+
+#: templates/leads.php:57
+msgid "Search:"
+msgstr ""
+
+#: templates/leads.php:58
+msgid "Search leads..."
+msgstr ""
+
+#: templates/leads.php:63
+msgid "Apply Filters"
+msgstr ""
+
+#: templates/leads.php:66
+msgid "Reset"
+msgstr ""
+
+#: templates/leads.php:70
+msgid "Export CSV"
+msgstr ""
+
+#: templates/leads.php:79
+msgid "Bulk Actions"
+msgstr ""
+
+#. translators: %s: lead status label (e.g. New, Positive, Converted)
+#: templates/leads.php:84
+#, php-format
+msgid "Mark as %s"
+msgstr ""
+
+#: templates/leads.php:89
+msgid "Apply"
+msgstr ""
+
+#: templates/leads.php:90
+msgid "selected"
+msgstr ""
+
+#: templates/leads.php:104
+msgid "Contact Info"
+msgstr ""
+
+#: templates/leads.php:139
+msgid "Submission Details"
+msgstr ""
+
+#: templates/leads.php:147
+msgid "Lead Status"
+msgstr ""
+
+#: templates/leads.php:157
+msgid "Save Status"
+msgstr ""
+
+#: templates/leads.php:171
+msgid "Add New Feedback"
+msgstr ""
+
+#: templates/leads.php:189
+msgid "Enter your feedback about this lead..."
+msgstr ""
+
+#: templates/leads.php:198
+msgid "Activity Log"
+msgstr ""
+
+#: templates/settings.php:38
+msgid "Settings saved successfully!"
+msgstr ""
+
+#: templates/settings.php:64
+msgid "Lead Dashboard Settings"
+msgstr ""
+
+#: templates/settings.php:72
+msgid "General Settings"
+msgstr ""
+
+#: templates/settings.php:77
+msgid "Leads Per Page"
+msgstr ""
+
+#: templates/settings.php:82
+msgid "Number of leads to show per page in the leads list."
+msgstr ""
+
+#: templates/settings.php:90
+msgid "Notification Settings"
+msgstr ""
+
+#: templates/settings.php:95
+msgid "Email Notifications"
+msgstr ""
+
+#: templates/settings.php:101
+msgid "Send email notifications for new leads"
+msgstr ""
+
+#: templates/settings.php:107
+msgid "Notification Email"
+msgstr ""
+
+#: templates/settings.php:112
+msgid "Email address to receive new lead notifications."
+msgstr ""
+
+#: templates/settings.php:120
+msgid "Lead Assignment"
+msgstr ""
+
+#: templates/settings.php:125
+msgid "Auto-Assign Leads"
+msgstr ""
+
+#: templates/settings.php:131
+msgid "Automatically assign new leads to a team member"
+msgstr ""
+
+#: templates/settings.php:137
+msgid "Default Assignee"
+msgstr ""
+
+#: templates/settings.php:141
+msgid "— Select —"
+msgstr ""
+
+#: templates/settings.php:148
+msgid "Team member to auto-assign new leads to."
+msgstr ""
+
+#: templates/settings.php:156
+msgid "Lead Statuses"
+msgstr ""
+
+#: templates/settings.php:157
+msgid "These are the available lead statuses:"
+msgstr ""
+
+#: templates/settings.php:162
+msgid "Newly submitted leads"
+msgstr ""
+
+#: templates/settings.php:166
+msgid "Qualified, interested leads"
+msgstr ""
+
+#: templates/settings.php:170
+msgid "Unqualified or uninterested leads"
+msgstr ""
+
+#: templates/settings.php:174
+msgid "Requires follow-up action"
+msgstr ""
+
+#: templates/settings.php:178
+msgid "Lead converted to customer"
+msgstr ""
+
+#: templates/settings.php:182
+msgid "Lead closed/archived"
+msgstr ""
+
+#: templates/settings.php:189
+msgid "Spam Prevention — Email OTP"
+msgstr ""
+
+#: templates/settings.php:191
+msgid "Require visitors to verify their email via a one-time code sent through Brevo SMTP before a form submission becomes a lead."
+msgstr ""
+
+#: templates/settings.php:194
+msgid "Brevo SMTP Settings"
+msgstr ""
+
+#: templates/settings.php:198
+msgid "SMTP Host"
+msgstr ""
+
+#: templates/settings.php:207
+msgid "SMTP Port"
+msgstr ""
+
+#: templates/settings.php:216
+msgid "Encryption"
+msgstr ""
+
+#: templates/settings.php:228
+msgid "SMTP Username"
+msgstr ""
+
+#: templates/settings.php:238
+msgid "SMTP Password"
+msgstr ""
+
+#: templates/settings.php:242
+msgid "Leave blank to keep current password"
+msgstr ""
+
+#: templates/settings.php:244
+msgid "Leave blank to keep the saved password. Enter a new value only if you want to change it."
+msgstr ""
+
+#: templates/settings.php:249
+msgid "Sender Identity"
+msgstr ""
+
+#: templates/settings.php:253
+msgid "From Name"
+msgstr ""
+
+#: templates/settings.php:262
+msgid "From Email"
+msgstr ""
+
+#: templates/settings.php:267
+msgid "Must match a verified sender in your Brevo account."
+msgstr ""
+
+#: templates/settings.php:272
+msgid "Enable OTP for Forms"
+msgstr ""
+
+#: templates/settings.php:275
+msgid "Protected Forms"
+msgstr ""
+
+#: templates/settings.php:278
+msgid "No Forminator forms found."
+msgstr ""
+
+#: templates/settings.php:291
+msgid "Checked forms require email verification before submission is accepted as a lead."
+msgstr ""
+
+#: templates/settings.php:301
+msgid "Save Settings"
+msgstr ""
+
+#: templates/settings.php:309
+msgid "Sales Admin Users"
+msgstr ""
+
+#. translators: 1: opening <strong> tag, 2: closing </strong> tag
+#: templates/settings.php:314
+#, php-format
+msgid "Users with the %1$sSales Admin%2$s role can log in and access the Lead Dashboard. They can view all leads and add feedback. Only Administrators can access Settings."
+msgstr ""
+
+#: templates/settings.php:322
+msgid "Current Sales Admins"
+msgstr ""
+
+#: templates/settings.php:326
+msgid "Name"
+msgstr ""
+
+#: templates/settings.php:327
+msgid "Email"
+msgstr ""
+
+#: templates/settings.php:328
+msgid "Action"
+msgstr ""
+
+#: templates/settings.php:334
+#: templates/settings.php:498
+msgid "No Sales Admin users yet."
+msgstr ""
+
+#: templates/settings.php:345
+#: templates/settings.php:524
+msgid "Remove"
+msgstr ""
+
+#: templates/settings.php:355
+msgid "Add Sales Admin"
+msgstr ""
+
+#: templates/settings.php:356
+msgid "Assign the Sales Admin role to any existing WordPress user (except administrators)."
+msgstr ""
+
+#: templates/settings.php:360
+msgid "— Select a user —"
+msgstr ""
+
+#: templates/settings.php:363
+msgid "Add as Sales Admin"
+msgstr ""
+
+#: templates/settings.php:371
+msgid "Database Tools"
+msgstr ""
+
+#: templates/settings.php:372
+msgid "Use these tools with caution."
+msgstr ""
+
+#: templates/settings.php:376
+msgid "Clear Activity Log"
+msgstr ""
+
+#: templates/settings.php:379
+msgid "Reset All Statuses"
+msgstr ""
+
+#: templates/settings.php:398
+msgid "Please select a user."
+msgstr ""
+
+#: templates/settings.php:408
+msgid "Remove Sales Admin role from"
+msgstr ""
+
+#: templates/settings.php:416
+msgid "Permanently delete the entire activity log? This cannot be undone."
+msgstr ""
+
+#: templates/settings.php:424
+msgid "Reset every lead back to \"new\"? Assignments and statuses will be cleared. This cannot be undone."
+msgstr ""
+
+#: templates/settings.php:469
+msgid "Saving…"
+msgstr ""

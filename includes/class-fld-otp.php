@@ -117,7 +117,7 @@ class FLD_OTP {
      */
     private static function smtp_send($to_email, $subject, $html) {
         $username     = get_option('fld_smtp_username', '');
-        $password     = get_option('fld_smtp_password', '');
+        $password     = self::decrypt_secret(get_option('fld_smtp_password', ''));
         $sender_name  = get_option('fld_brevo_sender_name', get_bloginfo('name'));
         $sender_email = get_option('fld_brevo_sender_email', get_option('admin_email'));
 
@@ -162,8 +162,70 @@ class FLD_OTP {
         $phpmailer->SMTPAuth   = true;
         $phpmailer->Port       = intval(get_option('fld_smtp_port', 587));
         $phpmailer->Username   = get_option('fld_smtp_username', '');
-        $phpmailer->Password   = get_option('fld_smtp_password', '');
+        $phpmailer->Password   = self::decrypt_secret(get_option('fld_smtp_password', ''));
         $phpmailer->SMTPSecure = get_option('fld_smtp_encryption', 'tls');
+    }
+
+    /**
+     * Encryption marker for stored secrets.
+     */
+    const ENC_PREFIX = 'fldenc:';
+
+    /**
+     * Derive a 32-byte key from the site's auth salt.
+     */
+    private static function secret_key() {
+        return hash('sha256', wp_salt('auth'), true);
+    }
+
+    /**
+     * Encrypt a secret for storage in wp_options.
+     * Falls back to plaintext if OpenSSL is unavailable.
+     *
+     * @param string $plain
+     * @return string
+     */
+    public static function encrypt_secret($plain) {
+        $plain = (string) $plain;
+
+        if ($plain === '' || !function_exists('openssl_encrypt')) {
+            return $plain;
+        }
+
+        $iv     = openssl_random_pseudo_bytes(16);
+        $cipher = openssl_encrypt($plain, 'aes-256-cbc', self::secret_key(), OPENSSL_RAW_DATA, $iv);
+
+        if ($cipher === false) {
+            return $plain;
+        }
+
+        return self::ENC_PREFIX . base64_encode($iv . $cipher);
+    }
+
+    /**
+     * Decrypt a stored secret. Values without the marker are treated as
+     * legacy plaintext and returned unchanged.
+     *
+     * @param string $stored
+     * @return string
+     */
+    public static function decrypt_secret($stored) {
+        $stored = (string) $stored;
+
+        if (strpos($stored, self::ENC_PREFIX) !== 0 || !function_exists('openssl_decrypt')) {
+            return $stored; // legacy plaintext or OpenSSL missing
+        }
+
+        $raw = base64_decode(substr($stored, strlen(self::ENC_PREFIX)), true);
+        if ($raw === false || strlen($raw) <= 16) {
+            return '';
+        }
+
+        $iv     = substr($raw, 0, 16);
+        $cipher = substr($raw, 16);
+        $plain  = openssl_decrypt($cipher, 'aes-256-cbc', self::secret_key(), OPENSSL_RAW_DATA, $iv);
+
+        return $plain === false ? '' : $plain;
     }
 
     /**

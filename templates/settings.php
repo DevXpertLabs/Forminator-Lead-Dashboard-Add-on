@@ -24,9 +24,11 @@ if (isset($_POST['fld_save_settings']) && wp_verify_nonce($fld_settings_nonce, '
     update_option('fld_smtp_host',          sanitize_text_field(wp_unslash($_POST['fld_smtp_host'] ?? '')));
     update_option('fld_smtp_port',          intval($_POST['fld_smtp_port'] ?? 587));
     update_option('fld_smtp_username',      sanitize_text_field(wp_unslash($_POST['fld_smtp_username'] ?? '')));
-    // Only update password if a new value was actually submitted (non-empty)
+    // Only update password if a new value was actually submitted (non-empty).
+    // Stored encrypted at rest; decrypted only when sending mail.
     if (!empty($_POST['fld_smtp_password'])) {
-        update_option('fld_smtp_password',  sanitize_text_field(wp_unslash($_POST['fld_smtp_password'])));
+        $fld_new_pw = sanitize_text_field(wp_unslash($_POST['fld_smtp_password']));
+        update_option('fld_smtp_password', FLD_OTP::encrypt_secret($fld_new_pw));
     }
     update_option('fld_smtp_encryption',    sanitize_text_field(wp_unslash($_POST['fld_smtp_encryption'] ?? 'tls')));
     update_option('fld_brevo_sender_name',  sanitize_text_field(wp_unslash($_POST['fld_brevo_sender_name'] ?? get_bloginfo('name'))));
@@ -376,6 +378,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
             <button id="fld-reset-statuses" class="button">
                 <?php esc_html_e('Reset All Statuses', 'lead-dashboard-for-forminator'); ?>
             </button>
+            <span id="fld-db-tool-status" style="margin-left:12px;"></span>
         </div>
     </div>
 </div>
@@ -407,7 +410,42 @@ $sales_admins  = FLD_Roles::get_sales_admins();
             }
             removeSalesAdmin(userId);
         });
+
+        // Database Tools — Clear Activity Log
+        $('#fld-clear-activity').on('click', function() {
+            if (!confirm('<?php echo esc_js(__('Permanently delete the entire activity log? This cannot be undone.', 'lead-dashboard-for-forminator')); ?>')) {
+                return;
+            }
+            runDbTool($(this), 'fld_clear_activity_log');
+        });
+
+        // Database Tools — Reset All Statuses
+        $('#fld-reset-statuses').on('click', function() {
+            if (!confirm('<?php echo esc_js(__('Reset every lead back to "new"? Assignments and statuses will be cleared. This cannot be undone.', 'lead-dashboard-for-forminator')); ?>')) {
+                return;
+            }
+            runDbTool($(this), 'fld_reset_statuses');
+        });
     });
+
+    function runDbTool($btn, action) {
+        var original = $btn.text();
+        var colors   = { success: '#22c55e', error: '#ef4444' };
+        var $status  = $('#fld-db-tool-status');
+        $btn.prop('disabled', true).text(fld_ajax.strings.loading);
+        $.ajax({
+            url: fld_ajax.ajax_url,
+            type: 'POST',
+            data: { action: action, nonce: fld_ajax.nonce },
+            success: function(response) {
+                var ok = response.success;
+                $status.text(ok ? response.data.message : (response.data || fld_ajax.strings.error))
+                       .css('color', ok ? colors.success : colors.error);
+            },
+            error: function() { $status.text(fld_ajax.strings.error).css('color', colors.error); },
+            complete: function() { $btn.prop('disabled', false).text(original); }
+        });
+    }
 
     function loadAssignableUsers() {
         $.ajax({

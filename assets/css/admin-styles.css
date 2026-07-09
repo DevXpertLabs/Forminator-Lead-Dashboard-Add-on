@@ -641,6 +641,34 @@
 .fld-rating-neutral:has(input:checked)          { border-color: var(--fld-warning); }
 .fld-rating-negative:has(input:checked)         { border-color: var(--fld-danger); }
 
+/* Premium line-style rating icons (replace emoji) */
+.fld-rating-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+}
+.fld-rating-ico svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+.fld-rating-ico--positive { color: var(--fld-success); }
+.fld-rating-ico--neutral  { color: var(--fld-warning); }
+.fld-rating-ico--negative { color: var(--fld-danger); }
+
+/* Slightly larger, in a tinted chip, inside the saved-feedback list */
+.fld-feedback-item .fld-feedback-rating {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--fld-gray-100, #f1f5f9);
+}
+.fld-feedback-item .fld-rating-ico svg { width: 20px; height: 20px; }
+
 .fld-add-feedback-form textarea,
 .fld-add-feedback textarea,
 #fld-new-feedback,
