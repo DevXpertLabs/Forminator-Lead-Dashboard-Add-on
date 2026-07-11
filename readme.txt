@@ -12,6 +12,8 @@ Turn your Forminator form submissions into trackable leads with a simple sales d
 
 == Description ==
 
+**Built to solve a real problem.** A travel agency was collecting leads through their Forminator forms every day — and losing track of them. Spreadsheets got messy fast, and a full CRM was too expensive for what they actually needed. So instead of another monthly subscription, this plugin was born: put every lead in one place, right inside WordPress.
+
 Lead Dashboard for Forminator gives your team one place to manage every Forminator form submission as a lead — so nothing gets missed.
 
 It adds a **Lead Dashboard** menu to your WordPress admin with charts, an all-leads list, and a detail view for each submission.
