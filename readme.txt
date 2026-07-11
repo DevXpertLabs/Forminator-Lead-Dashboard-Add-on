@@ -1,8 +1,8 @@
-=== Lead Dashboard for Forminator ===
+=== DevXpert Lead Dashboard for Forminator ===
 Contributors: anupkankale
 Tags: forminator, leads, crm, lead management, dashboard
 Requires at least: 5.0
-Tested up to: 6.8
+Tested up to: 7.0
 Stable tag: 1.0.1
 Requires PHP: 7.4
 License: GPLv2 or later
@@ -14,7 +14,7 @@ Turn your Forminator form submissions into trackable leads with a simple sales d
 
 **Built to solve a real problem.** A travel agency was collecting leads through their Forminator forms every day — and losing track of them. Spreadsheets got messy fast, and a full CRM was too expensive for what they actually needed. So instead of another monthly subscription, this plugin was born: put every lead in one place, right inside WordPress.
 
-Lead Dashboard for Forminator gives your team one place to manage every Forminator form submission as a lead — so nothing gets missed.
+DevXpert Lead Dashboard for Forminator gives your team one place to manage every Forminator form submission as a lead — so nothing gets missed.
 
 It adds a **Lead Dashboard** menu to your WordPress admin with charts, an all-leads list, and a detail view for each submission.
 
@@ -34,7 +34,7 @@ Requires the free [Forminator](https://wordpress.org/plugins/forminator/) plugin
 == Installation ==
 
 1. Install and activate the free **Forminator** plugin.
-2. Upload the `lead-dashboard-for-forminator` folder to `/wp-content/plugins/`, or install it from the Plugins screen.
+2. Upload the `devxpert-lead-dashboard-for-forminator` folder to `/wp-content/plugins/`, or install it from the Plugins screen.
 3. Activate **Lead Dashboard for Forminator**.
 4. Open the new **Lead Dashboard** menu in your admin sidebar.
 

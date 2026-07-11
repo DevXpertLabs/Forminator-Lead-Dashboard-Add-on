@@ -22,7 +22,7 @@ class FLD_Roles {
         if (!get_role(self::ROLE_SLUG)) {
             add_role(
                 self::ROLE_SLUG,
-                __('Sales Admin', 'lead-dashboard-for-forminator'),
+                __('Sales Admin', 'devxpert-lead-dashboard-for-forminator'),
                 array(
                     'read'    => true,
                     self::CAP => true,

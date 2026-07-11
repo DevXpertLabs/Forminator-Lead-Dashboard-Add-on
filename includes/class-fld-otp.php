@@ -49,7 +49,7 @@ class FLD_OTP {
         $attempts = (int) get_transient($rate_key);
 
         if ($attempts >= self::RATE_MAX) {
-            return new WP_Error('rate_limit', __('Too many verification requests. Please try again in an hour.', 'lead-dashboard-for-forminator'));
+            return new WP_Error('rate_limit', __('Too many verification requests. Please try again in an hour.', 'devxpert-lead-dashboard-for-forminator'));
         }
 
         set_transient($rate_key, $attempts + 1, HOUR_IN_SECONDS);
@@ -61,7 +61,8 @@ class FLD_OTP {
 
         // Build and send email
         $site_name = get_option('fld_brevo_sender_name', get_bloginfo('name'));
-        $subject   = sprintf(__('[%s] Your verification code', 'lead-dashboard-for-forminator'), $site_name);
+        /* translators: %s: site name */
+        $subject   = sprintf(__('[%s] Your verification code', 'devxpert-lead-dashboard-for-forminator'), $site_name);
         $html      = self::build_email_html($code, $site_name);
 
         return self::smtp_send($email, $subject, $html);
@@ -122,11 +123,11 @@ class FLD_OTP {
         $sender_email = get_option('fld_brevo_sender_email', get_option('admin_email'));
 
         if (empty($username) || empty($password)) {
-            return new WP_Error('no_smtp_creds', __('SMTP credentials are not configured.', 'lead-dashboard-for-forminator'));
+            return new WP_Error('no_smtp_creds', __('SMTP credentials are not configured.', 'devxpert-lead-dashboard-for-forminator'));
         }
 
         if (!is_email($sender_email)) {
-            return new WP_Error('invalid_sender', __('Sender email address is not valid.', 'lead-dashboard-for-forminator'));
+            return new WP_Error('invalid_sender', __('Sender email address is not valid.', 'devxpert-lead-dashboard-for-forminator'));
         }
 
         // Hook phpmailer only for this send
@@ -144,7 +145,7 @@ class FLD_OTP {
         if (!$sent) {
             global $phpmailer;
             $error_info = isset($phpmailer) && !empty($phpmailer->ErrorInfo) ? $phpmailer->ErrorInfo : '';
-            return new WP_Error('mail_failed', __('Failed to send OTP email.', 'lead-dashboard-for-forminator') . ($error_info ? ' ' . $error_info : ''));
+            return new WP_Error('mail_failed', __('Failed to send OTP email.', 'devxpert-lead-dashboard-for-forminator') . ($error_info ? ' ' . $error_info : ''));
         }
 
         return true;

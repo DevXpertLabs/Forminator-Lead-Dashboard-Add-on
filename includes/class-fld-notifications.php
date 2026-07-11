@@ -79,15 +79,16 @@ class FLD_Notifications {
         $form_name = self::get_form_name($form_id);
         $lead      = FLD_Leads::get_lead($entry_id);
 
-        /* translators: 1: form name, 2: entry ID */
         $subject = sprintf(
-            __('[%1$s] New lead #%2$d', 'lead-dashboard-for-forminator'),
+            /* translators: 1: form name, 2: entry ID */
+            __('[%1$s] New lead #%2$d', 'devxpert-lead-dashboard-for-forminator'),
             $form_name,
             $entry_id
         );
 
         $lines   = array();
-        $lines[] = sprintf(__('A new lead was submitted via "%s".', 'lead-dashboard-for-forminator'), $form_name);
+        /* translators: %s: form name */
+        $lines[] = sprintf(__('A new lead was submitted via "%s".', 'devxpert-lead-dashboard-for-forminator'), $form_name);
         $lines[] = '';
 
         if ($lead && !empty($lead['meta']) && is_array($lead['meta'])) {
@@ -104,7 +105,7 @@ class FLD_Notifications {
             $lines[] = '';
         }
 
-        $lines[] = __('View in the Lead Dashboard:', 'lead-dashboard-for-forminator');
+        $lines[] = __('View in the Lead Dashboard:', 'devxpert-lead-dashboard-for-forminator');
         $lines[] = admin_url('admin.php?page=lead-dashboard-leads');
 
         $body = implode("\n", $lines);

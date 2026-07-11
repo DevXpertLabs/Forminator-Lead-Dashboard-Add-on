@@ -1,5 +1,5 @@
 # Forminator Lead Dashboard
-![alt text](image.png)
+ ![DashBoard View](image-1.png)
 **A Lead Management addon for the Forminator WordPress plugin.**
 
 Built by [Anup Kankale](https://www.linkedin.com/in/anupkankale/)
@@ -39,6 +39,8 @@ Sales Admin users log in and land directly on the Lead Dashboard. They cannot ac
 - "Leads by Status" pie chart
 - Top forms by lead count
 - Recent leads table
+
+![alt text](image-2.png)
 
 ### All Leads Page
 - Paginated list of every lead
