@@ -93,6 +93,9 @@ class FLD_Leads {
 
         // Count total — wrap in subquery to avoid ONLY_FULL_GROUP_BY issues
         // (the inner SELECT has mixed aggregate + non-aggregate columns)
+        // $query is assembled from hardcoded SQL and {$wpdb->prefix} table names;
+        // all user values are bound through $wpdb->prepare() above.
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         if (!empty($query_args)) {
             $total = $wpdb->get_var(
                 $wpdb->prepare("SELECT COUNT(*) FROM ($query) AS fld_count_subq", $query_args)
@@ -100,6 +103,7 @@ class FLD_Leads {
         } else {
             $total = $wpdb->get_var("SELECT COUNT(*) FROM ($query) AS fld_count_subq");
         }
+        // phpcs:enable
 
         // Order
         $allowed_orderby = array('date_created', 'entry_id', 'lead_status');
@@ -118,12 +122,15 @@ class FLD_Leads {
         $query_args[] = $args['per_page'];
         $query_args[] = $offset;
 
-        // Execute query
+        // Execute query. See note above: table names come from $wpdb->prefix,
+        // all values are bound via $wpdb->prepare().
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         if (!empty($query_args)) {
             $entries = $wpdb->get_results($wpdb->prepare($query, $query_args));
         } else {
             $entries = $wpdb->get_results($query);
         }
+        // phpcs:enable
 
         // Batch-load meta and feedback counts for all entries in two queries
         // (instead of two queries per row) to avoid an N+1 pattern.
@@ -274,8 +281,10 @@ class FLD_Leads {
         $table_entries = $wpdb->prefix . 'frmt_form_entry';
         $table_status = $wpdb->prefix . 'fld_lead_status';
 
+        // Table names come from $wpdb->prefix; entry_id is bound via prepare().
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
         $entry = $wpdb->get_row($wpdb->prepare(
-            "SELECT e.*, 
+            "SELECT e.*,
                     COALESCE(s.status, 'new') as lead_status,
                     s.assigned_to,
                     s.priority,
@@ -620,12 +629,12 @@ class FLD_Leads {
      */
     public static function get_statuses() {
         return array(
-            'new' => __('New', 'lead-dashboard-for-forminator'),
-            'positive' => __('Positive', 'lead-dashboard-for-forminator'),
-            'negative' => __('Negative', 'lead-dashboard-for-forminator'),
-            'follow_up' => __('Follow Up', 'lead-dashboard-for-forminator'),
-            'converted' => __('Converted', 'lead-dashboard-for-forminator'),
-            'closed' => __('Closed', 'lead-dashboard-for-forminator')
+            'new' => __('New', 'devxpert-lead-dashboard-for-forminator'),
+            'positive' => __('Positive', 'devxpert-lead-dashboard-for-forminator'),
+            'negative' => __('Negative', 'devxpert-lead-dashboard-for-forminator'),
+            'follow_up' => __('Follow Up', 'devxpert-lead-dashboard-for-forminator'),
+            'converted' => __('Converted', 'devxpert-lead-dashboard-for-forminator'),
+            'closed' => __('Closed', 'devxpert-lead-dashboard-for-forminator')
         );
     }
 }

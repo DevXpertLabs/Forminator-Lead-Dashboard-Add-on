@@ -15,3 +15,8 @@
 /node_modules
 /vendor
 /tests
+
+# README screenshots (GitHub only; WP.org screenshots live in SVN /assets)
+/image.png
+/image-1.png
+/image-2.png

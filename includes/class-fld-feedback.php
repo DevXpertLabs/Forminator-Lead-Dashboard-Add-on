@@ -183,17 +183,17 @@ class FLD_Feedback {
     public static function get_ratings() {
         return array(
             'positive' => array(
-                'label' => __('Positive', 'lead-dashboard-for-forminator'),
+                'label' => __('Positive', 'devxpert-lead-dashboard-for-forminator'),
                 'icon'  => 'positive', // maps to .fld-rating-ico--positive SVG
                 'color' => '#22c55e'
             ),
             'neutral' => array(
-                'label' => __('Neutral', 'lead-dashboard-for-forminator'),
+                'label' => __('Neutral', 'devxpert-lead-dashboard-for-forminator'),
                 'icon'  => 'neutral', // maps to .fld-rating-ico--neutral SVG
                 'color' => '#eab308'
             ),
             'negative' => array(
-                'label' => __('Negative', 'lead-dashboard-for-forminator'),
+                'label' => __('Negative', 'devxpert-lead-dashboard-for-forminator'),
                 'icon'  => 'negative', // maps to .fld-rating-ico--negative SVG
                 'color' => '#ef4444'
             )

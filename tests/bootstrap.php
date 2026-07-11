@@ -26,7 +26,7 @@ require_once "{$_tests_dir}/includes/functions.php";
 function _fld_manually_load_plugin() {
     $dir = dirname(__DIR__);
 
-    require $dir . '/lead-dashboard-for-forminator.php';
+    require $dir . '/devxpert-lead-dashboard-for-forminator.php';
 
     require_once $dir . '/includes/class-fld-roles.php';
     require_once $dir . '/includes/class-fld-database.php';

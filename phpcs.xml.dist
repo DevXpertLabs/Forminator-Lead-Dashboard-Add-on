@@ -33,7 +33,7 @@
     <rule ref="WordPress.WP.I18n">
         <properties>
             <property name="text_domain" type="array">
-                <element value="lead-dashboard-for-forminator"/>
+                <element value="devxpert-lead-dashboard-for-forminator"/>
             </property>
         </properties>
     </rule>
@@ -44,7 +44,7 @@
             <property name="prefixes" type="array">
                 <element value="fld"/>
                 <element value="FLD"/>
-                <element value="Forminator_Lead_Dashboard"/>
+                <element value="DevXpert_Lead_Dashboard"/>
             </property>
         </properties>
     </rule>
