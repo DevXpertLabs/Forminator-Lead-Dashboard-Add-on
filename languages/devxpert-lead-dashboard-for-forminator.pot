@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: DevXpert Lead Dashboard for Forminator 1.0.1\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/lead-dashboard-for-forminator\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/devxpert-lead-dashboard-for-forminator\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-11T08:11:52+00:00\n"
+"POT-Creation-Date: 2026-07-11T15:02:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: devxpert-lead-dashboard-for-forminator\n"
@@ -20,19 +20,23 @@ msgid "DevXpert Lead Dashboard for Forminator"
 msgstr ""
 
 #. Plugin URI of the plugin
-#. Author URI of the plugin
 #: devxpert-lead-dashboard-for-forminator.php
-msgid "https://www.linkedin.com/in/anupkankale/"
+msgid "https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on"
 msgstr ""
 
 #. Description of the plugin
 #: devxpert-lead-dashboard-for-forminator.php
-msgid "A powerful Lead Management Dashboard addon for Forminator. Track SEO leads, manage feedback, and categorize leads as positive/negative."
+msgid "A Lead Management Dashboard for Forminator. Track form submissions as leads, add feedback, categorize them by status, and export to CSV."
 msgstr ""
 
 #. Author of the plugin
 #: devxpert-lead-dashboard-for-forminator.php
 msgid "Anup Kankale"
+msgstr ""
+
+#. Author URI of the plugin
+#: devxpert-lead-dashboard-for-forminator.php
+msgid "https://anupkankale.com"
 msgstr ""
 
 #: devxpert-lead-dashboard-for-forminator.php:88
@@ -78,84 +82,115 @@ msgstr ""
 msgid "Success!"
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:331
+#: devxpert-lead-dashboard-for-forminator.php:321
+msgid "Please select a user."
+msgstr ""
+
+#: devxpert-lead-dashboard-for-forminator.php:322
+msgid "Remove Sales Admin role from"
+msgstr ""
+
+#: devxpert-lead-dashboard-for-forminator.php:323
+msgid "Permanently delete the entire activity log? This cannot be undone."
+msgstr ""
+
+#: devxpert-lead-dashboard-for-forminator.php:324
+msgid "Reset every lead back to \"new\"? Assignments and statuses will be cleared. This cannot be undone."
+msgstr ""
+
+#: devxpert-lead-dashboard-for-forminator.php:325
+msgid "Saving…"
+msgstr ""
+
+#: devxpert-lead-dashboard-for-forminator.php:326
+#: templates/settings.php:334
+msgid "No Sales Admin users yet."
+msgstr ""
+
+#: devxpert-lead-dashboard-for-forminator.php:327
+#: templates/settings.php:345
+msgid "Remove"
+msgstr ""
+
+#: devxpert-lead-dashboard-for-forminator.php:351
 #: templates/settings.php:11
 msgid "You do not have permission to access this page."
 msgstr ""
 
 #. translators: %d: number of activity log rows removed
-#: devxpert-lead-dashboard-for-forminator.php:680
+#: devxpert-lead-dashboard-for-forminator.php:700
 #, php-format
 msgid "Activity log cleared (%d entries removed)."
 msgstr ""
 
 #. translators: %d: number of leads reset to "new"
-#: devxpert-lead-dashboard-for-forminator.php:698
+#: devxpert-lead-dashboard-for-forminator.php:718
 #, php-format
 msgid "All statuses reset to \"new\" (%d leads affected)."
 msgstr ""
 
 #. translators: %s: user display name
-#: devxpert-lead-dashboard-for-forminator.php:752
+#: devxpert-lead-dashboard-for-forminator.php:772
 #, php-format
 msgid "%s is now a Sales Admin."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:755
+#: devxpert-lead-dashboard-for-forminator.php:775
 msgid "Could not assign role. Administrators cannot be changed."
 msgstr ""
 
 #. translators: %s: user display name
-#: devxpert-lead-dashboard-for-forminator.php:779
+#: devxpert-lead-dashboard-for-forminator.php:799
 #, php-format
 msgid "%s has been removed from Sales Admin."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:782
+#: devxpert-lead-dashboard-for-forminator.php:802
 msgid "User is not a Sales Admin."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:814
+#: devxpert-lead-dashboard-for-forminator.php:834
 msgid "Send Verification Code"
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:815
+#: devxpert-lead-dashboard-for-forminator.php:835
 msgid "Verify"
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:816
+#: devxpert-lead-dashboard-for-forminator.php:836
 msgid "Email Verified ✓"
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:817
+#: devxpert-lead-dashboard-for-forminator.php:837
 msgid "Code sent to your email. Check your inbox."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:818
+#: devxpert-lead-dashboard-for-forminator.php:838
 msgid "Invalid or expired code. Please try again."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:819
+#: devxpert-lead-dashboard-for-forminator.php:839
 msgid "Please enter your email address first."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:820
+#: devxpert-lead-dashboard-for-forminator.php:840
 msgid "Please verify your email before submitting."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:821
+#: devxpert-lead-dashboard-for-forminator.php:841
 msgid "Resend Code"
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:836
+#: devxpert-lead-dashboard-for-forminator.php:856
+#: devxpert-lead-dashboard-for-forminator.php:879
 msgid "Invalid request."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:862
+#: devxpert-lead-dashboard-for-forminator.php:887
 msgid "Invalid or expired code."
 msgstr ""
 
-#: devxpert-lead-dashboard-for-forminator.php:891
+#: devxpert-lead-dashboard-for-forminator.php:916
 msgid "Please verify your email address before submitting."
 msgstr ""
 
@@ -222,20 +257,20 @@ msgid "Too many verification requests. Please try again in an hour."
 msgstr ""
 
 #. translators: %s: site name
-#: includes/class-fld-otp.php:65
+#: includes/class-fld-otp.php:66
 #, php-format
 msgid "[%s] Your verification code"
 msgstr ""
 
-#: includes/class-fld-otp.php:126
+#: includes/class-fld-otp.php:141
 msgid "SMTP credentials are not configured."
 msgstr ""
 
-#: includes/class-fld-otp.php:130
+#: includes/class-fld-otp.php:145
 msgid "Sender email address is not valid."
 msgstr ""
 
-#: includes/class-fld-otp.php:148
+#: includes/class-fld-otp.php:163
 msgid "Failed to send OTP email."
 msgstr ""
 
@@ -659,16 +694,6 @@ msgstr ""
 msgid "Action"
 msgstr ""
 
-#: templates/settings.php:334
-#: templates/settings.php:498
-msgid "No Sales Admin users yet."
-msgstr ""
-
-#: templates/settings.php:345
-#: templates/settings.php:524
-msgid "Remove"
-msgstr ""
-
 #: templates/settings.php:355
 msgid "Add Sales Admin"
 msgstr ""
@@ -699,24 +724,4 @@ msgstr ""
 
 #: templates/settings.php:379
 msgid "Reset All Statuses"
-msgstr ""
-
-#: templates/settings.php:398
-msgid "Please select a user."
-msgstr ""
-
-#: templates/settings.php:408
-msgid "Remove Sales Admin role from"
-msgstr ""
-
-#: templates/settings.php:416
-msgid "Permanently delete the entire activity log? This cannot be undone."
-msgstr ""
-
-#: templates/settings.php:424
-msgid "Reset every lead back to \"new\"? Assignments and statuses will be cleared. This cannot be undone."
-msgstr ""
-
-#: templates/settings.php:469
-msgid "Saving…"
 msgstr ""

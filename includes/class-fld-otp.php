@@ -54,9 +54,10 @@ class FLD_OTP {
 
         set_transient($rate_key, $attempts + 1, HOUR_IN_SECONDS);
 
-        // Generate and store OTP
+        // Generate and store OTP, scoped to this email + form so a code issued
+        // for one protected form cannot satisfy another.
         $code    = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $otp_key = 'fld_otp_' . md5($email);
+        $otp_key = self::otp_key($email, $form_id);
         set_transient($otp_key, $code, self::OTP_TTL);
 
         // Build and send email
@@ -69,14 +70,14 @@ class FLD_OTP {
     }
 
     /**
-     * Verify a submitted OTP code.
+     * Verify a submitted OTP code for a specific form.
      * Returns a one-time token on success, false on failure.
      *
      * @return string|false
      */
-    public static function verify_otp($email, $code) {
+    public static function verify_otp($email, $code, $form_id) {
         $email   = strtolower(trim($email));
-        $otp_key = 'fld_otp_' . md5($email);
+        $otp_key = self::otp_key($email, $form_id);
         $stored  = get_transient($otp_key);
 
         if ($stored === false || trim($code) !== $stored) {
@@ -86,22 +87,36 @@ class FLD_OTP {
         // Invalidate OTP immediately after use
         delete_transient($otp_key);
 
-        // Issue a one-time verification token
+        // Issue a one-time verification token, bound to this email + form.
         $token     = wp_generate_password(32, false);
         $token_key = 'fld_otp_token_' . $token;
-        set_transient($token_key, $email, self::TOKEN_TTL);
+        set_transient($token_key, $email . '|' . intval($form_id), self::TOKEN_TTL);
 
         return $token;
     }
 
     /**
-     * Check whether a verification token is still valid.
+     * Check whether a verification token is valid AND bound to the given form.
      */
-    public static function verify_token($token) {
+    public static function verify_token($token, $form_id) {
         if (empty($token)) {
             return false;
         }
-        return get_transient('fld_otp_token_' . sanitize_text_field($token)) !== false;
+        $stored = get_transient('fld_otp_token_' . sanitize_text_field($token));
+        if ($stored === false) {
+            return false;
+        }
+        $parts = explode('|', $stored);
+        $token_form_id = isset($parts[1]) ? intval($parts[1]) : 0;
+
+        return $token_form_id === intval($form_id);
+    }
+
+    /**
+     * Build the transient key for an email + form pair.
+     */
+    private static function otp_key($email, $form_id) {
+        return 'fld_otp_' . md5(strtolower(trim($email)) . '|' . intval($form_id));
     }
 
     /**

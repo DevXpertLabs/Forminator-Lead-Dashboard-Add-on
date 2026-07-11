@@ -155,10 +155,11 @@
                 url: cfg.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'fld_verify_otp',
-                    nonce:  cfg.nonce,
-                    email:  email,
-                    code:   code
+                    action:  'fld_verify_otp',
+                    nonce:   cfg.nonce,
+                    email:   email,
+                    code:    code,
+                    form_id: formId
                 },
                 success: function (res) {
                     if (res.success && res.data && res.data.token) {

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DevXpert Lead Dashboard for Forminator
  * Plugin URI: https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on
- * Description: A powerful Lead Management Dashboard addon for Forminator. Track SEO leads, manage feedback, and categorize leads as positive/negative.
+ * Description: A Lead Management Dashboard for Forminator. Track form submissions as leads, add feedback, categorize them by status, and export to CSV.
  * Version: 1.0.1
  * Author: Anup Kankale
  * Author URI: https://anupkankale.com
@@ -280,10 +280,10 @@ class DevXpert_Lead_Dashboard {
 
         // Chart.js — bundled locally (WP.org does not permit external CDN scripts).
         wp_enqueue_script(
-            'chartjs',
+            'fld-chartjs',
             FLD_PLUGIN_URL . 'assets/js/chart.min.js',
             array(),
-            '4.4.0',
+            '4.5.1',
             true
         );
 
@@ -291,7 +291,7 @@ class DevXpert_Lead_Dashboard {
         wp_enqueue_script(
             'fld-admin-scripts',
             FLD_PLUGIN_URL . 'assets/js/admin-scripts.js',
-            array('jquery', 'chartjs'),
+            array('jquery', 'fld-chartjs'),
             FLD_VERSION,
             true
         );
@@ -307,6 +307,26 @@ class DevXpert_Lead_Dashboard {
                 'success' => __('Success!', 'devxpert-lead-dashboard-for-forminator'),
             )
         ));
+
+        // Settings page: user-management + database-tools script (was inline).
+        if (strpos($hook, 'lead-dashboard-settings') !== false) {
+            wp_enqueue_script(
+                'fld-settings',
+                FLD_PLUGIN_URL . 'assets/js/fld-settings.js',
+                array('jquery', 'fld-admin-scripts'),
+                FLD_VERSION,
+                true
+            );
+            wp_localize_script('fld-settings', 'fld_settings_l10n', array(
+                'select_user'    => __('Please select a user.', 'devxpert-lead-dashboard-for-forminator'),
+                'remove_confirm' => __('Remove Sales Admin role from', 'devxpert-lead-dashboard-for-forminator'),
+                'clear_confirm'  => __('Permanently delete the entire activity log? This cannot be undone.', 'devxpert-lead-dashboard-for-forminator'),
+                'reset_confirm'  => __('Reset every lead back to "new"? Assignments and statuses will be cleared. This cannot be undone.', 'devxpert-lead-dashboard-for-forminator'),
+                'saving'         => __('Saving…', 'devxpert-lead-dashboard-for-forminator'),
+                'no_admins'      => __('No Sales Admin users yet.', 'devxpert-lead-dashboard-for-forminator'),
+                'remove'         => __('Remove', 'devxpert-lead-dashboard-for-forminator'),
+            ));
+        }
     }
 
     /**
@@ -851,10 +871,15 @@ class DevXpert_Lead_Dashboard {
     public function ajax_verify_otp() {
         check_ajax_referer('fld_otp_nonce', 'nonce');
 
-        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email']))    : '';
-        $code  = isset($_POST['code'])  ? sanitize_text_field(wp_unslash($_POST['code'])) : '';
+        $email   = isset($_POST['email'])   ? sanitize_email(wp_unslash($_POST['email']))    : '';
+        $code    = isset($_POST['code'])    ? sanitize_text_field(wp_unslash($_POST['code'])) : '';
+        $form_id = isset($_POST['form_id']) ? intval($_POST['form_id'])                        : 0;
 
-        $token = FLD_OTP::verify_otp($email, $code);
+        if (!FLD_OTP::is_form_enabled($form_id)) {
+            wp_send_json_error(__('Invalid request.', 'devxpert-lead-dashboard-for-forminator'));
+        }
+
+        $token = FLD_OTP::verify_otp($email, $code, $form_id);
 
         if ($token) {
             wp_send_json_success(array('token' => $token));
@@ -887,7 +912,7 @@ class DevXpert_Lead_Dashboard {
         }
         // phpcs:enable WordPress.Security.NonceVerification.Missing
 
-        if (!$token || !FLD_OTP::verify_token($token)) {
+        if (!$token || !FLD_OTP::verify_token($token, $form_id)) {
             $errors[] = __('Please verify your email address before submitting.', 'devxpert-lead-dashboard-for-forminator');
             return $errors;
         }
