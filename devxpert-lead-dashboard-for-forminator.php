@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: DevXpert Lead Dashboard for Forminator
- * Plugin URI: https://www.linkedin.com/in/anupkankale/
+ * Plugin URI: https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on
  * Description: A powerful Lead Management Dashboard addon for Forminator. Track SEO leads, manage feedback, and categorize leads as positive/negative.
  * Version: 1.0.1
  * Author: Anup Kankale
- * Author URI: https://www.linkedin.com/in/anupkankale/
+ * Author URI: https://anupkankale.com
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: devxpert-lead-dashboard-for-forminator
