@@ -7,55 +7,55 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-if (!FLD_Roles::is_admin()) {
+if (!DXLEDA_Roles::is_admin()) {
     wp_die(esc_html__('You do not have permission to access this page.', 'devxpert-lead-dashboard-for-forminator'));
 }
 
 // Handle form submission
-$fld_settings_nonce = isset($_POST['fld_settings_nonce']) ? sanitize_text_field(wp_unslash($_POST['fld_settings_nonce'])) : '';
-if (isset($_POST['fld_save_settings']) && wp_verify_nonce($fld_settings_nonce, 'fld_save_settings')) {
-    update_option('fld_email_notifications', isset($_POST['fld_email_notifications']) ? 1 : 0);
-    update_option('fld_notification_email', sanitize_email(wp_unslash($_POST['fld_notification_email'] ?? '')));
-    update_option('fld_auto_assign', isset($_POST['fld_auto_assign']) ? 1 : 0);
-    update_option('fld_default_assignee', isset($_POST['fld_default_assignee']) ? intval($_POST['fld_default_assignee']) : 0);
-    update_option('fld_leads_per_page', isset($_POST['fld_leads_per_page']) ? intval($_POST['fld_leads_per_page']) : 20);
+$dxleda_settings_nonce = isset($_POST['dxleda_settings_nonce']) ? sanitize_text_field(wp_unslash($_POST['dxleda_settings_nonce'])) : '';
+if (isset($_POST['dxleda_save_settings']) && wp_verify_nonce($dxleda_settings_nonce, 'dxleda_save_settings')) {
+    update_option('dxleda_email_notifications', isset($_POST['dxleda_email_notifications']) ? 1 : 0);
+    update_option('dxleda_notification_email', sanitize_email(wp_unslash($_POST['dxleda_notification_email'] ?? '')));
+    update_option('dxleda_auto_assign', isset($_POST['dxleda_auto_assign']) ? 1 : 0);
+    update_option('dxleda_default_assignee', isset($_POST['dxleda_default_assignee']) ? intval($_POST['dxleda_default_assignee']) : 0);
+    update_option('dxleda_leads_per_page', isset($_POST['dxleda_leads_per_page']) ? intval($_POST['dxleda_leads_per_page']) : 20);
 
     // Brevo SMTP / OTP settings
-    update_option('fld_smtp_host',          sanitize_text_field(wp_unslash($_POST['fld_smtp_host'] ?? '')));
-    update_option('fld_smtp_port',          intval($_POST['fld_smtp_port'] ?? 587));
-    update_option('fld_smtp_username',      sanitize_text_field(wp_unslash($_POST['fld_smtp_username'] ?? '')));
+    update_option('dxleda_smtp_host',          sanitize_text_field(wp_unslash($_POST['dxleda_smtp_host'] ?? '')));
+    update_option('dxleda_smtp_port',          intval($_POST['dxleda_smtp_port'] ?? 587));
+    update_option('dxleda_smtp_username',      sanitize_text_field(wp_unslash($_POST['dxleda_smtp_username'] ?? '')));
     // Only update password if a new value was actually submitted (non-empty).
     // Stored encrypted at rest; decrypted only when sending mail.
-    if (!empty($_POST['fld_smtp_password'])) {
-        $fld_new_pw = sanitize_text_field(wp_unslash($_POST['fld_smtp_password']));
-        update_option('fld_smtp_password', FLD_OTP::encrypt_secret($fld_new_pw));
+    if (!empty($_POST['dxleda_smtp_password'])) {
+        $dxleda_new_pw = sanitize_text_field(wp_unslash($_POST['dxleda_smtp_password']));
+        update_option('dxleda_smtp_password', DXLEDA_OTP::encrypt_secret($dxleda_new_pw));
     }
-    update_option('fld_smtp_encryption',    sanitize_text_field(wp_unslash($_POST['fld_smtp_encryption'] ?? 'tls')));
-    update_option('fld_brevo_sender_name',  sanitize_text_field(wp_unslash($_POST['fld_brevo_sender_name'] ?? get_bloginfo('name'))));
-    update_option('fld_brevo_sender_email', sanitize_email(wp_unslash($_POST['fld_brevo_sender_email'] ?? '')));
-    update_option('fld_otp_enabled_forms',  array_map('intval', (array) ($_POST['fld_otp_enabled_forms'] ?? [])));
+    update_option('dxleda_smtp_encryption',    sanitize_text_field(wp_unslash($_POST['dxleda_smtp_encryption'] ?? 'tls')));
+    update_option('dxleda_brevo_sender_name',  sanitize_text_field(wp_unslash($_POST['dxleda_brevo_sender_name'] ?? get_bloginfo('name'))));
+    update_option('dxleda_brevo_sender_email', sanitize_email(wp_unslash($_POST['dxleda_brevo_sender_email'] ?? '')));
+    update_option('dxleda_otp_enabled_forms',  array_map('intval', (array) ($_POST['dxleda_otp_enabled_forms'] ?? [])));
 
     echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved successfully!', 'devxpert-lead-dashboard-for-forminator' ) . '</p></div>';
 }
 
-$email_notifications = get_option('fld_email_notifications', 0);
-$notification_email  = get_option('fld_notification_email', get_option('admin_email'));
-$auto_assign         = get_option('fld_auto_assign', 0);
-$default_assignee    = get_option('fld_default_assignee', 0);
-$leads_per_page      = get_option('fld_leads_per_page', 20);
+$email_notifications = get_option('dxleda_email_notifications', 0);
+$notification_email  = get_option('dxleda_notification_email', get_option('admin_email'));
+$auto_assign         = get_option('dxleda_auto_assign', 0);
+$default_assignee    = get_option('dxleda_default_assignee', 0);
+$leads_per_page      = get_option('dxleda_leads_per_page', 20);
 
 // Brevo SMTP / OTP settings
-$smtp_host          = get_option('fld_smtp_host',          'smtp-relay.brevo.com');
-$smtp_port          = get_option('fld_smtp_port',          587);
-$smtp_username      = get_option('fld_smtp_username',      '');
-$smtp_encryption    = get_option('fld_smtp_encryption',    'tls');
-$brevo_sender_name  = get_option('fld_brevo_sender_name',  get_bloginfo('name'));
-$brevo_sender_email = get_option('fld_brevo_sender_email', get_option('admin_email'));
-$otp_enabled_forms  = array_map('intval', (array) get_option('fld_otp_enabled_forms', array()));
-$all_forms          = FLD_Leads::get_forms();
+$smtp_host          = get_option('dxleda_smtp_host',          'smtp-relay.brevo.com');
+$smtp_port          = get_option('dxleda_smtp_port',          587);
+$smtp_username      = get_option('dxleda_smtp_username',      '');
+$smtp_encryption    = get_option('dxleda_smtp_encryption',    'tls');
+$brevo_sender_name  = get_option('dxleda_brevo_sender_name',  get_bloginfo('name'));
+$brevo_sender_email = get_option('dxleda_brevo_sender_email', get_option('admin_email'));
+$otp_enabled_forms  = array_map('intval', (array) get_option('dxleda_otp_enabled_forms', array()));
+$all_forms          = DXLEDA_Leads::get_forms();
 
-$team_users    = FLD_Roles::get_team_users();
-$sales_admins  = FLD_Roles::get_sales_admins();
+$team_users    = DXLEDA_Roles::get_team_users();
+$sales_admins  = DXLEDA_Roles::get_sales_admins();
 ?>
 
 <div class="wrap fld-settings-page">
@@ -65,7 +65,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
     </h1>
 
     <form method="post" class="fld-settings-form">
-        <?php wp_nonce_field('fld_save_settings', 'fld_settings_nonce'); ?>
+        <?php wp_nonce_field('dxleda_save_settings', 'dxleda_settings_nonce'); ?>
 
         <!-- General Settings -->
         <div class="fld-settings-section">
@@ -74,10 +74,10 @@ $sales_admins  = FLD_Roles::get_sales_admins();
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_leads_per_page"><?php esc_html_e('Leads Per Page', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_leads_per_page"><?php esc_html_e('Leads Per Page', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <input type="number" id="fld_leads_per_page" name="fld_leads_per_page"
+                        <input type="number" id="dxleda_leads_per_page" name="dxleda_leads_per_page"
                                value="<?php echo esc_attr($leads_per_page); ?>" min="10" max="100">
                         <p class="description"><?php esc_html_e('Number of leads to show per page in the leads list.', 'devxpert-lead-dashboard-for-forminator'); ?></p>
                     </td>
@@ -92,11 +92,11 @@ $sales_admins  = FLD_Roles::get_sales_admins();
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_email_notifications"><?php esc_html_e('Email Notifications', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_email_notifications"><?php esc_html_e('Email Notifications', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <label>
-                            <input type="checkbox" id="fld_email_notifications" name="fld_email_notifications"
+                            <input type="checkbox" id="dxleda_email_notifications" name="dxleda_email_notifications"
                                    value="1" <?php checked($email_notifications, 1); ?>>
                             <?php esc_html_e('Send email notifications for new leads', 'devxpert-lead-dashboard-for-forminator'); ?>
                         </label>
@@ -104,10 +104,10 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_notification_email"><?php esc_html_e('Notification Email', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_notification_email"><?php esc_html_e('Notification Email', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <input type="email" id="fld_notification_email" name="fld_notification_email"
+                        <input type="email" id="dxleda_notification_email" name="dxleda_notification_email"
                                value="<?php echo esc_attr($notification_email); ?>" class="regular-text">
                         <p class="description"><?php esc_html_e('Email address to receive new lead notifications.', 'devxpert-lead-dashboard-for-forminator'); ?></p>
                     </td>
@@ -122,11 +122,11 @@ $sales_admins  = FLD_Roles::get_sales_admins();
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_auto_assign"><?php esc_html_e('Auto-Assign Leads', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_auto_assign"><?php esc_html_e('Auto-Assign Leads', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
                         <label>
-                            <input type="checkbox" id="fld_auto_assign" name="fld_auto_assign"
+                            <input type="checkbox" id="dxleda_auto_assign" name="dxleda_auto_assign"
                                    value="1" <?php checked($auto_assign, 1); ?>>
                             <?php esc_html_e('Automatically assign new leads to a team member', 'devxpert-lead-dashboard-for-forminator'); ?>
                         </label>
@@ -134,10 +134,10 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_default_assignee"><?php esc_html_e('Default Assignee', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_default_assignee"><?php esc_html_e('Default Assignee', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <select id="fld_default_assignee" name="fld_default_assignee">
+                        <select id="dxleda_default_assignee" name="dxleda_default_assignee">
                             <option value="0"><?php esc_html_e('— Select —', 'devxpert-lead-dashboard-for-forminator'); ?></option>
                             <?php foreach ($team_users as $user): ?>
                                 <option value="<?php echo esc_attr($user->ID); ?>" <?php selected($default_assignee, $user->ID); ?>>
@@ -195,28 +195,28 @@ $sales_admins  = FLD_Roles::get_sales_admins();
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_host"><?php esc_html_e('SMTP Host', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_smtp_host"><?php esc_html_e('SMTP Host', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <input type="text" id="fld_smtp_host" name="fld_smtp_host"
+                        <input type="text" id="dxleda_smtp_host" name="dxleda_smtp_host"
                                value="<?php echo esc_attr($smtp_host); ?>" class="regular-text">
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_port"><?php esc_html_e('SMTP Port', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_smtp_port"><?php esc_html_e('SMTP Port', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <input type="number" id="fld_smtp_port" name="fld_smtp_port"
+                        <input type="number" id="dxleda_smtp_port" name="dxleda_smtp_port"
                                value="<?php echo esc_attr($smtp_port); ?>" min="1" max="65535" style="width:100px;">
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_encryption"><?php esc_html_e('Encryption', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_smtp_encryption"><?php esc_html_e('Encryption', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <select id="fld_smtp_encryption" name="fld_smtp_encryption">
+                        <select id="dxleda_smtp_encryption" name="dxleda_smtp_encryption">
                             <option value="tls"  <?php selected($smtp_encryption, 'tls');  ?>>TLS (STARTTLS — Port 587)</option>
                             <option value="ssl"  <?php selected($smtp_encryption, 'ssl');  ?>>SSL — Port 465</option>
                             <option value=""     <?php selected($smtp_encryption, '');     ?>>None</option>
@@ -225,20 +225,20 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_username"><?php esc_html_e('SMTP Username', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_smtp_username"><?php esc_html_e('SMTP Username', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <input type="text" id="fld_smtp_username" name="fld_smtp_username"
+                        <input type="text" id="dxleda_smtp_username" name="dxleda_smtp_username"
                                value="<?php echo esc_attr($smtp_username); ?>" class="regular-text"
                                autocomplete="off">
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_smtp_password"><?php esc_html_e('SMTP Password', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_smtp_password"><?php esc_html_e('SMTP Password', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <input type="password" id="fld_smtp_password" name="fld_smtp_password"
+                        <input type="password" id="dxleda_smtp_password" name="dxleda_smtp_password"
                                value="" placeholder="<?php esc_attr_e('Leave blank to keep current password', 'devxpert-lead-dashboard-for-forminator'); ?>"
                                class="regular-text" autocomplete="new-password">
                         <p class="description"><?php esc_html_e('Leave blank to keep the saved password. Enter a new value only if you want to change it.', 'devxpert-lead-dashboard-for-forminator'); ?></p>
@@ -250,19 +250,19 @@ $sales_admins  = FLD_Roles::get_sales_admins();
             <table class="form-table">
                 <tr>
                     <th scope="row">
-                        <label for="fld_brevo_sender_name"><?php esc_html_e('From Name', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_brevo_sender_name"><?php esc_html_e('From Name', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <input type="text" id="fld_brevo_sender_name" name="fld_brevo_sender_name"
+                        <input type="text" id="dxleda_brevo_sender_name" name="dxleda_brevo_sender_name"
                                value="<?php echo esc_attr($brevo_sender_name); ?>" class="regular-text">
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">
-                        <label for="fld_brevo_sender_email"><?php esc_html_e('From Email', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                        <label for="dxleda_brevo_sender_email"><?php esc_html_e('From Email', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                     </th>
                     <td>
-                        <input type="email" id="fld_brevo_sender_email" name="fld_brevo_sender_email"
+                        <input type="email" id="dxleda_brevo_sender_email" name="dxleda_brevo_sender_email"
                                value="<?php echo esc_attr($brevo_sender_email); ?>" class="regular-text">
                         <p class="description"><?php esc_html_e('Must match a verified sender in your Brevo account.', 'devxpert-lead-dashboard-for-forminator'); ?></p>
                     </td>
@@ -280,7 +280,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
                             <?php foreach ($all_forms as $form): ?>
                                 <label style="display:block;margin-bottom:6px;">
                                     <input type="checkbox"
-                                           name="fld_otp_enabled_forms[]"
+                                           name="dxleda_otp_enabled_forms[]"
                                            value="<?php echo esc_attr($form['id']); ?>"
                                            <?php checked(in_array(intval($form['id']), $otp_enabled_forms, true)); ?>>
                                     <?php echo esc_html($form['name']); ?>
@@ -297,7 +297,7 @@ $sales_admins  = FLD_Roles::get_sales_admins();
         </div>
 
         <p class="submit">
-            <input type="submit" name="fld_save_settings" class="button button-primary button-large"
+            <input type="submit" name="dxleda_save_settings" class="button button-primary button-large"
                    value="<?php esc_attr_e('Save Settings', 'devxpert-lead-dashboard-for-forminator'); ?>">
         </p>
     </form>

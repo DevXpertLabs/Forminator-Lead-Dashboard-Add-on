@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class FLD_Leads {
+class DXLEDA_Leads {
 
     /**
      * Get leads with filters
@@ -34,7 +34,7 @@ class FLD_Leads {
         
         $table_entries = $wpdb->prefix . 'frmt_form_entry';
         $table_meta = $wpdb->prefix . 'frmt_form_entry_meta';
-        $table_status = $wpdb->prefix . 'fld_lead_status';
+        $table_status = $wpdb->prefix . 'dxleda_lead_status';
 
         // Base query
         $query = "SELECT e.*, 
@@ -98,10 +98,10 @@ class FLD_Leads {
         // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         if (!empty($query_args)) {
             $total = $wpdb->get_var(
-                $wpdb->prepare("SELECT COUNT(*) FROM ($query) AS fld_count_subq", $query_args)
+                $wpdb->prepare("SELECT COUNT(*) FROM ($query) AS dxleda_count_subq", $query_args)
             );
         } else {
-            $total = $wpdb->get_var("SELECT COUNT(*) FROM ($query) AS fld_count_subq");
+            $total = $wpdb->get_var("SELECT COUNT(*) FROM ($query) AS dxleda_count_subq");
         }
         // phpcs:enable
 
@@ -136,7 +136,7 @@ class FLD_Leads {
         // (instead of two queries per row) to avoid an N+1 pattern.
         $entry_ids = wp_list_pluck($entries, 'entry_id');
         $meta_map  = self::get_entry_meta_bulk($entry_ids);
-        $count_map = FLD_Feedback::get_feedback_counts($entry_ids);
+        $count_map = DXLEDA_Feedback::get_feedback_counts($entry_ids);
 
         $leads = array();
         foreach ($entries as $entry) {
@@ -224,7 +224,7 @@ class FLD_Leads {
             return false;
         }
 
-        $table = $wpdb->prefix . 'fld_lead_status';
+        $table = $wpdb->prefix . 'dxleda_lead_status';
 
         // Check if record exists
         $exists = $wpdb->get_var($wpdb->prepare(
@@ -279,7 +279,7 @@ class FLD_Leads {
         global $wpdb;
 
         $table_entries = $wpdb->prefix . 'frmt_form_entry';
-        $table_status = $wpdb->prefix . 'fld_lead_status';
+        $table_status = $wpdb->prefix . 'dxleda_lead_status';
 
         // Table names come from $wpdb->prefix; entry_id is bound via prepare().
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
@@ -300,7 +300,7 @@ class FLD_Leads {
         }
 
         $meta = self::get_entry_meta($entry_id);
-        $feedback = FLD_Feedback::get_feedback($entry_id);
+        $feedback = DXLEDA_Feedback::get_feedback($entry_id);
 
         return array(
             'entry_id' => $entry->entry_id,
@@ -322,7 +322,7 @@ class FLD_Leads {
         global $wpdb;
 
         $table_entries = $wpdb->prefix . 'frmt_form_entry';
-        $table_status = $wpdb->prefix . 'fld_lead_status';
+        $table_status = $wpdb->prefix . 'dxleda_lead_status';
 
         $date_from = gmdate( 'Y-m-d', strtotime( "-{$days} days" ) );
 
@@ -479,7 +479,7 @@ class FLD_Leads {
     public static function log_activity($entry_id, $action, $details = array()) {
         global $wpdb;
         
-        $table = $wpdb->prefix . 'fld_activity_log';
+        $table = $wpdb->prefix . 'dxleda_activity_log';
 
         return $wpdb->insert($table, array(
             'entry_id' => $entry_id,
@@ -538,7 +538,7 @@ class FLD_Leads {
     public static function get_activity($entry_id) {
         global $wpdb;
 
-        $table = $wpdb->prefix . 'fld_activity_log';
+        $table = $wpdb->prefix . 'dxleda_activity_log';
 
         $rows = $wpdb->get_results($wpdb->prepare(
             "SELECT a.action, a.details, a.created_at, u.display_name AS user_name
@@ -560,7 +560,7 @@ class FLD_Leads {
     public static function clear_activity_log() {
         global $wpdb;
 
-        $table = $wpdb->prefix . 'fld_activity_log';
+        $table = $wpdb->prefix . 'dxleda_activity_log';
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- deleting all rows from a plugin-owned table; name from trusted prefix.
         return (int) $wpdb->query( 'DELETE FROM `' . esc_sql( $table ) . '`' );
@@ -575,7 +575,7 @@ class FLD_Leads {
     public static function reset_all_statuses() {
         global $wpdb;
 
-        $table = $wpdb->prefix . 'fld_lead_status';
+        $table = $wpdb->prefix . 'dxleda_lead_status';
 
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- deleting all rows from a plugin-owned table; name from trusted prefix.
         return (int) $wpdb->query( 'DELETE FROM `' . esc_sql( $table ) . '`' );
@@ -590,7 +590,7 @@ class FLD_Leads {
     public static function assign_lead($entry_id, $form_id, $user_id) {
         global $wpdb;
 
-        $table    = $wpdb->prefix . 'fld_lead_status';
+        $table    = $wpdb->prefix . 'dxleda_lead_status';
         $entry_id = intval($entry_id);
         $user_id  = intval($user_id);
 

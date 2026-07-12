@@ -1,12 +1,12 @@
 /**
  * DevXpert Lead Dashboard for Forminator — Settings page (Sales Admin user
  * management + Database Tools). Enqueued only on the plugin Settings screen.
- * Depends on the localized objects `fld_ajax` and `fld_settings_l10n`.
+ * Depends on the localized objects `dxleda_ajax` and `dxleda_settings_l10n`.
  */
 (function ($) {
     'use strict';
 
-    var l10n = window.fld_settings_l10n || {};
+    var l10n = window.dxleda_settings_l10n || {};
 
     $(document).ready(function () {
         loadAssignableUsers();
@@ -36,7 +36,7 @@
             if (!confirm(l10n.clear_confirm)) {
                 return;
             }
-            runDbTool($(this), 'fld_clear_activity_log');
+            runDbTool($(this), 'dxleda_clear_activity_log');
         });
 
         // Database Tools — Reset All Statuses
@@ -44,7 +44,7 @@
             if (!confirm(l10n.reset_confirm)) {
                 return;
             }
-            runDbTool($(this), 'fld_reset_statuses');
+            runDbTool($(this), 'dxleda_reset_statuses');
         });
     });
 
@@ -52,26 +52,26 @@
         var original = $btn.text();
         var colors = { success: '#22c55e', error: '#ef4444' };
         var $status = $('#fld-db-tool-status');
-        $btn.prop('disabled', true).text(fld_ajax.strings.loading);
+        $btn.prop('disabled', true).text(dxleda_ajax.strings.loading);
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
-            data: { action: action, nonce: fld_ajax.nonce },
+            data: { action: action, nonce: dxleda_ajax.nonce },
             success: function (response) {
                 var ok = response.success;
-                $status.text(ok ? response.data.message : (response.data || fld_ajax.strings.error))
+                $status.text(ok ? response.data.message : (response.data || dxleda_ajax.strings.error))
                     .css('color', ok ? colors.success : colors.error);
             },
-            error: function () { $status.text(fld_ajax.strings.error).css('color', colors.error); },
+            error: function () { $status.text(dxleda_ajax.strings.error).css('color', colors.error); },
             complete: function () { $btn.prop('disabled', false).text(original); }
         });
     }
 
     function loadAssignableUsers() {
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
-            data: { action: 'fld_get_assignable_users', nonce: fld_ajax.nonce },
+            data: { action: 'dxleda_get_assignable_users', nonce: dxleda_ajax.nonce },
             success: function (response) {
                 if (!response.success) return;
                 var select = $('#fld-assign-user-select');
@@ -88,9 +88,9 @@
     function assignSalesAdmin(userId) {
         setStatus('info', l10n.saving);
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
-            data: { action: 'fld_assign_sales_admin', nonce: fld_ajax.nonce, user_id: userId },
+            data: { action: 'dxleda_assign_sales_admin', nonce: dxleda_ajax.nonce, user_id: userId },
             success: function (response) {
                 if (response.success) {
                     setStatus('success', response.data.message);
@@ -100,15 +100,15 @@
                     setStatus('error', response.data);
                 }
             },
-            error: function () { setStatus('error', fld_ajax.strings.error); }
+            error: function () { setStatus('error', dxleda_ajax.strings.error); }
         });
     }
 
     function removeSalesAdmin(userId) {
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
-            data: { action: 'fld_remove_sales_admin', nonce: fld_ajax.nonce, user_id: userId },
+            data: { action: 'dxleda_remove_sales_admin', nonce: dxleda_ajax.nonce, user_id: userId },
             success: function (response) {
                 if (response.success) {
                     $('#fld-sa-row-' + userId).remove();
@@ -124,7 +124,7 @@
                     setStatus('error', response.data);
                 }
             },
-            error: function () { setStatus('error', fld_ajax.strings.error); }
+            error: function () { setStatus('error', dxleda_ajax.strings.error); }
         });
     }
 

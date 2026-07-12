@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class FLD_Feedback {
+class DXLEDA_Feedback {
 
     /**
      * Add feedback
@@ -17,7 +17,7 @@ class FLD_Feedback {
     public static function add_feedback($args) {
         global $wpdb;
         
-        $table = $wpdb->prefix . 'fld_feedback';
+        $table = $wpdb->prefix . 'dxleda_feedback';
 
         $data = array(
             'entry_id' => intval($args['entry_id']),
@@ -31,7 +31,7 @@ class FLD_Feedback {
 
         if ($result) {
             // Log activity
-            FLD_Leads::log_activity($args['entry_id'], 'feedback_added', array(
+            DXLEDA_Leads::log_activity($args['entry_id'], 'feedback_added', array(
                 'feedback_id' => $wpdb->insert_id,
                 'rating' => $args['rating']
             ));
@@ -48,7 +48,7 @@ class FLD_Feedback {
     public static function get_feedback($entry_id) {
         global $wpdb;
         
-        $table = $wpdb->prefix . 'fld_feedback';
+        $table = $wpdb->prefix . 'dxleda_feedback';
 
         $feedback = $wpdb->get_results($wpdb->prepare(
             "SELECT f.*, u.display_name as user_name
@@ -68,7 +68,7 @@ class FLD_Feedback {
     public static function get_feedback_count($entry_id) {
         global $wpdb;
         
-        $table = $wpdb->prefix . 'fld_feedback';
+        $table = $wpdb->prefix . 'dxleda_feedback';
 
         return intval($wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM $table WHERE entry_id = %d",
@@ -90,7 +90,7 @@ class FLD_Feedback {
             return array();
         }
 
-        $table        = $wpdb->prefix . 'fld_feedback';
+        $table        = $wpdb->prefix . 'dxleda_feedback';
         $placeholders = implode(',', array_fill(0, count($entry_ids), '%d'));
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders are built from a count and passed to prepare().
@@ -116,7 +116,7 @@ class FLD_Feedback {
     public static function get_feedback_owner($feedback_id) {
         global $wpdb;
 
-        $table = $wpdb->prefix . 'fld_feedback';
+        $table = $wpdb->prefix . 'dxleda_feedback';
 
         $user_id = $wpdb->get_var($wpdb->prepare(
             "SELECT user_id FROM $table WHERE id = %d",
@@ -132,7 +132,7 @@ class FLD_Feedback {
     public static function delete_feedback($feedback_id) {
         global $wpdb;
         
-        $table = $wpdb->prefix . 'fld_feedback';
+        $table = $wpdb->prefix . 'dxleda_feedback';
 
         // Get entry_id before deleting
         $entry_id = $wpdb->get_var($wpdb->prepare(
@@ -144,7 +144,7 @@ class FLD_Feedback {
 
         if ($result && $entry_id) {
             // Log activity
-            FLD_Leads::log_activity($entry_id, 'feedback_deleted', array(
+            DXLEDA_Leads::log_activity($entry_id, 'feedback_deleted', array(
                 'feedback_id' => $feedback_id
             ));
         }
@@ -158,7 +158,7 @@ class FLD_Feedback {
     public static function update_feedback($feedback_id, $args) {
         global $wpdb;
         
-        $table = $wpdb->prefix . 'fld_feedback';
+        $table = $wpdb->prefix . 'dxleda_feedback';
 
         $data = array();
 
@@ -206,7 +206,7 @@ class FLD_Feedback {
     public static function get_stats($days = 30) {
         global $wpdb;
         
-        $table = $wpdb->prefix . 'fld_feedback';
+        $table = $wpdb->prefix . 'dxleda_feedback';
         $date_from = gmdate( 'Y-m-d', strtotime( "-{$days} days" ) );
 
         $stats = $wpdb->get_results($wpdb->prepare(

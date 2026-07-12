@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class FLD_OTP {
+class DXLEDA_OTP {
 
     const OTP_TTL   = 600;   // 10 minutes
     const TOKEN_TTL = 1800;  // 30 minutes
@@ -18,20 +18,20 @@ class FLD_OTP {
      * Uses add_option() so existing saved values are never overwritten.
      */
     public static function init_defaults() {
-        add_option( 'fld_smtp_host',          'smtp-relay.brevo.com' );
-        add_option( 'fld_smtp_port',          '587' );
-        add_option( 'fld_smtp_username',      '' );
-        add_option( 'fld_smtp_password',      '' );
-        add_option( 'fld_smtp_encryption',    'tls' );
-        add_option( 'fld_brevo_sender_name',  get_bloginfo( 'name' ) );
-        add_option( 'fld_brevo_sender_email', get_option( 'admin_email' ) );
+        add_option( 'dxleda_smtp_host',          'smtp-relay.brevo.com' );
+        add_option( 'dxleda_smtp_port',          '587' );
+        add_option( 'dxleda_smtp_username',      '' );
+        add_option( 'dxleda_smtp_password',      '' );
+        add_option( 'dxleda_smtp_encryption',    'tls' );
+        add_option( 'dxleda_brevo_sender_name',  get_bloginfo( 'name' ) );
+        add_option( 'dxleda_brevo_sender_email', get_option( 'admin_email' ) );
     }
 
     /**
      * Check whether OTP is enabled for a given form ID.
      */
     public static function is_form_enabled($form_id) {
-        $enabled = get_option('fld_otp_enabled_forms', array());
+        $enabled = get_option('dxleda_otp_enabled_forms', array());
         return in_array(intval($form_id), array_map('intval', (array) $enabled), true);
     }
 
@@ -45,7 +45,7 @@ class FLD_OTP {
 
         // Rate limiting per IP
         $ip       = self::get_client_ip();
-        $rate_key = 'fld_otp_rate_' . md5($ip);
+        $rate_key = 'dxleda_otp_rate_' . md5($ip);
         $attempts = (int) get_transient($rate_key);
 
         if ($attempts >= self::RATE_MAX) {
@@ -61,7 +61,7 @@ class FLD_OTP {
         set_transient($otp_key, $code, self::OTP_TTL);
 
         // Build and send email
-        $site_name = get_option('fld_brevo_sender_name', get_bloginfo('name'));
+        $site_name = get_option('dxleda_brevo_sender_name', get_bloginfo('name'));
         /* translators: %s: site name */
         $subject   = sprintf(__('[%s] Your verification code', 'devxpert-lead-dashboard-for-forminator'), $site_name);
         $html      = self::build_email_html($code, $site_name);
@@ -89,7 +89,7 @@ class FLD_OTP {
 
         // Issue a one-time verification token, bound to this email + form.
         $token     = wp_generate_password(32, false);
-        $token_key = 'fld_otp_token_' . $token;
+        $token_key = 'dxleda_otp_token_' . $token;
         set_transient($token_key, $email . '|' . intval($form_id), self::TOKEN_TTL);
 
         return $token;
@@ -102,7 +102,7 @@ class FLD_OTP {
         if (empty($token)) {
             return false;
         }
-        $stored = get_transient('fld_otp_token_' . sanitize_text_field($token));
+        $stored = get_transient('dxleda_otp_token_' . sanitize_text_field($token));
         if ($stored === false) {
             return false;
         }
@@ -116,14 +116,14 @@ class FLD_OTP {
      * Build the transient key for an email + form pair.
      */
     private static function otp_key($email, $form_id) {
-        return 'fld_otp_' . md5(strtolower(trim($email)) . '|' . intval($form_id));
+        return 'dxleda_otp_' . md5(strtolower(trim($email)) . '|' . intval($form_id));
     }
 
     /**
      * Delete a token after successful form submission.
      */
     public static function consume_token($token) {
-        delete_transient('fld_otp_token_' . sanitize_text_field($token));
+        delete_transient('dxleda_otp_token_' . sanitize_text_field($token));
     }
 
     /**
@@ -132,10 +132,10 @@ class FLD_OTP {
      * @return true|WP_Error
      */
     private static function smtp_send($to_email, $subject, $html) {
-        $username     = get_option('fld_smtp_username', '');
-        $password     = self::decrypt_secret(get_option('fld_smtp_password', ''));
-        $sender_name  = get_option('fld_brevo_sender_name', get_bloginfo('name'));
-        $sender_email = get_option('fld_brevo_sender_email', get_option('admin_email'));
+        $username     = get_option('dxleda_smtp_username', '');
+        $password     = self::decrypt_secret(get_option('dxleda_smtp_password', ''));
+        $sender_name  = get_option('dxleda_brevo_sender_name', get_bloginfo('name'));
+        $sender_email = get_option('dxleda_brevo_sender_email', get_option('admin_email'));
 
         if (empty($username) || empty($password)) {
             return new WP_Error('no_smtp_creds', __('SMTP credentials are not configured.', 'devxpert-lead-dashboard-for-forminator'));
@@ -146,7 +146,7 @@ class FLD_OTP {
         }
 
         // Hook phpmailer only for this send
-        add_action('phpmailer_init', array('FLD_OTP', 'configure_phpmailer'));
+        add_action('phpmailer_init', array('DXLEDA_OTP', 'configure_phpmailer'));
 
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
@@ -155,7 +155,7 @@ class FLD_OTP {
 
         $sent = wp_mail($to_email, $subject, $html, $headers);
 
-        remove_action('phpmailer_init', array('FLD_OTP', 'configure_phpmailer'));
+        remove_action('phpmailer_init', array('DXLEDA_OTP', 'configure_phpmailer'));
 
         if (!$sent) {
             global $phpmailer;
@@ -174,12 +174,12 @@ class FLD_OTP {
      */
     public static function configure_phpmailer($phpmailer) {
         $phpmailer->isSMTP();
-        $phpmailer->Host       = get_option('fld_smtp_host', 'smtp-relay.brevo.com');
+        $phpmailer->Host       = get_option('dxleda_smtp_host', 'smtp-relay.brevo.com');
         $phpmailer->SMTPAuth   = true;
-        $phpmailer->Port       = intval(get_option('fld_smtp_port', 587));
-        $phpmailer->Username   = get_option('fld_smtp_username', '');
-        $phpmailer->Password   = self::decrypt_secret(get_option('fld_smtp_password', ''));
-        $phpmailer->SMTPSecure = get_option('fld_smtp_encryption', 'tls');
+        $phpmailer->Port       = intval(get_option('dxleda_smtp_port', 587));
+        $phpmailer->Username   = get_option('dxleda_smtp_username', '');
+        $phpmailer->Password   = self::decrypt_secret(get_option('dxleda_smtp_password', ''));
+        $phpmailer->SMTPSecure = get_option('dxleda_smtp_encryption', 'tls');
     }
 
     /**

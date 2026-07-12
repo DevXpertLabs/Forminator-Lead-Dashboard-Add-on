@@ -9,8 +9,8 @@ if (!defined('ABSPATH')) {
 
 
 
-$forms = FLD_Leads::get_forms();
-$statuses = FLD_Leads::get_statuses();
+$forms = DXLEDA_Leads::get_forms();
+$statuses = DXLEDA_Leads::get_statuses();
 ?>
 
 <div class="wrap fld-dashboard">
@@ -127,7 +127,7 @@ $statuses = FLD_Leads::get_statuses();
     <div class="fld-table-card">
         <div class="fld-table-header">
             <h3><?php esc_html_e('Recent Leads', 'devxpert-lead-dashboard-for-forminator'); ?></h3>
-            <a href="<?php echo esc_url( admin_url('admin.php?page=lead-dashboard-leads') ); ?>" class="button">
+            <a href="<?php echo esc_url( admin_url('admin.php?page=dxleda-leads') ); ?>" class="button">
                 <?php esc_html_e('View All', 'devxpert-lead-dashboard-for-forminator'); ?>
             </a>
         </div>

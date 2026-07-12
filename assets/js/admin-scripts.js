@@ -53,11 +53,11 @@
         const dateRange = $('#fld-date-range').val() || 30;
 
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_get_dashboard_stats',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_get_dashboard_stats',
+                nonce: dxleda_ajax.nonce,
                 date_range: dateRange
             },
             success: function(response) {
@@ -68,7 +68,7 @@
                 }
             },
             error: function() {
-                showNotice('error', fld_ajax.strings.error);
+                showNotice('error', dxleda_ajax.strings.error);
             }
         });
     }
@@ -210,7 +210,7 @@
                     <td>${escapeHtml(form.form_name)}</td>
                     <td><strong>${form.count}</strong></td>
                     <td>
-                        <a href="admin.php?page=lead-dashboard-leads&form_id=${form.form_id}" class="button button-small">
+                        <a href="admin.php?page=dxleda-leads&form_id=${form.form_id}" class="button button-small">
                             View Leads
                         </a>
                     </td>
@@ -224,11 +224,11 @@
      */
     function loadRecentLeads() {
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_get_leads',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_get_leads',
+                nonce: dxleda_ajax.nonce,
                 page: 1,
                 per_page: 10
             },
@@ -337,11 +337,11 @@
         showLoading(true);
 
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_get_leads',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_get_leads',
+                nonce: dxleda_ajax.nonce,
                 form_id: $('#fld-filter-form').val(),
                 status: $('#fld-filter-status').val(),
                 date_from: $('#fld-filter-date-from').val(),
@@ -359,7 +359,7 @@
             },
             error: function() {
                 showLoading(false);
-                showNotice('error', fld_ajax.strings.error);
+                showNotice('error', dxleda_ajax.strings.error);
             }
         });
     }
@@ -522,11 +522,11 @@
         let completed = 0;
         selected.forEach(function(entryId) {
             $.ajax({
-                url: fld_ajax.ajax_url,
+                url: dxleda_ajax.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'fld_update_lead_status',
-                    nonce: fld_ajax.nonce,
+                    action: 'dxleda_update_lead_status',
+                    nonce: dxleda_ajax.nonce,
                     entry_id: entryId,
                     status: status
                 },
@@ -548,11 +548,11 @@
         showLoading(true);
 
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_export_leads',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_export_leads',
+                nonce: dxleda_ajax.nonce,
                 form_id: $('#fld-filter-form').val(),
                 status: $('#fld-filter-status').val()
             },
@@ -566,7 +566,7 @@
             },
             error: function() {
                 showLoading(false);
-                showNotice('error', fld_ajax.strings.error);
+                showNotice('error', dxleda_ajax.strings.error);
             }
         });
     }
@@ -641,11 +641,11 @@
 
         // Get lead details by exact entry ID
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_get_lead',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_get_lead',
+                nonce: dxleda_ajax.nonce,
                 entry_id: entryId
             },
             success: function(response) {
@@ -656,12 +656,12 @@
                     loadActivity(entryId);
                     $('#fld-lead-modal').show();
                 } else {
-                    showNotice('error', fld_ajax.strings.error);
+                    showNotice('error', dxleda_ajax.strings.error);
                 }
             },
             error: function() {
                 showLoading(false);
-                showNotice('error', fld_ajax.strings.error);
+                showNotice('error', dxleda_ajax.strings.error);
             }
         });
     }
@@ -697,11 +697,11 @@
      */
     function loadFeedback(entryId) {
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_get_feedback',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_get_feedback',
+                nonce: dxleda_ajax.nonce,
                 entry_id: entryId
             },
             success: function(response) {
@@ -761,11 +761,11 @@
         }
 
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_get_activity',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_get_activity',
+                nonce: dxleda_ajax.nonce,
                 entry_id: entryId
             },
             success: function(response) {
@@ -827,11 +827,11 @@
         }
 
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_update_lead_status',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_update_lead_status',
+                nonce: dxleda_ajax.nonce,
                 entry_id: currentLeadId,
                 status: status
             },
@@ -849,11 +849,11 @@
                     }
                     loadActivity(currentLeadId);
                 } else {
-                    showNotice('error', response.data || fld_ajax.strings.error);
+                    showNotice('error', response.data || dxleda_ajax.strings.error);
                 }
             },
             error: function() {
-                showNotice('error', fld_ajax.strings.error);
+                showNotice('error', dxleda_ajax.strings.error);
             }
         });
     }
@@ -871,11 +871,11 @@
         }
 
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_add_feedback',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_add_feedback',
+                nonce: dxleda_ajax.nonce,
                 entry_id: currentLeadId,
                 feedback: feedback,
                 rating: rating || 'neutral'
@@ -887,11 +887,11 @@
                     loadFeedback(currentLeadId);
                     loadActivity(currentLeadId);
                 } else {
-                    showNotice('error', response.data || fld_ajax.strings.error);
+                    showNotice('error', response.data || dxleda_ajax.strings.error);
                 }
             },
             error: function() {
-                showNotice('error', fld_ajax.strings.error);
+                showNotice('error', dxleda_ajax.strings.error);
             }
         });
     }
@@ -900,16 +900,16 @@
      * Delete Feedback
      */
     function deleteFeedback(feedbackId) {
-        if (!confirm(fld_ajax.strings.confirm_delete)) {
+        if (!confirm(dxleda_ajax.strings.confirm_delete)) {
             return;
         }
 
         $.ajax({
-            url: fld_ajax.ajax_url,
+            url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'fld_delete_feedback',
-                nonce: fld_ajax.nonce,
+                action: 'dxleda_delete_feedback',
+                nonce: dxleda_ajax.nonce,
                 feedback_id: feedbackId
             },
             success: function(response) {
@@ -918,11 +918,11 @@
                     loadFeedback(currentLeadId);
                     loadActivity(currentLeadId);
                 } else {
-                    showNotice('error', response.data || fld_ajax.strings.error);
+                    showNotice('error', response.data || dxleda_ajax.strings.error);
                 }
             },
             error: function() {
-                showNotice('error', fld_ajax.strings.error);
+                showNotice('error', dxleda_ajax.strings.error);
             }
         });
     }

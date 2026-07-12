@@ -2,17 +2,17 @@
 /**
  * Roles and Capabilities Handler
  *
- * Manages the custom 'sales_admin' role and 'fld_manage_leads' capability.
+ * Manages the custom 'dxleda_sales_admin' role and 'dxleda_manage_leads' capability.
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class FLD_Roles {
+class DXLEDA_Roles {
 
-    const ROLE_SLUG = 'sales_admin';
-    const CAP       = 'fld_manage_leads';
+    const ROLE_SLUG = 'dxleda_sales_admin';
+    const CAP       = 'dxleda_manage_leads';
 
     /**
      * Register role and ensure administrator has the capability.

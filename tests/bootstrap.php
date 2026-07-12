@@ -23,7 +23,7 @@ require_once "{$_tests_dir}/includes/functions.php";
  * for unit testing we require them directly — Forminator itself is not needed
  * to exercise the plugin's own data layer.
  */
-function _fld_manually_load_plugin() {
+function _dxleda_manually_load_plugin() {
     $dir = dirname(__DIR__);
 
     require $dir . '/devxpert-lead-dashboard-for-forminator.php';
@@ -35,7 +35,7 @@ function _fld_manually_load_plugin() {
     require_once $dir . '/includes/class-fld-otp.php';
     require_once $dir . '/includes/class-fld-notifications.php';
 }
-tests_add_filter('muplugins_loaded', '_fld_manually_load_plugin');
+tests_add_filter('muplugins_loaded', '_dxleda_manually_load_plugin');
 
 // Start up the WP testing environment.
 require "{$_tests_dir}/includes/bootstrap.php";

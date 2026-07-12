@@ -7,9 +7,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$forms = FLD_Leads::get_forms();
-$statuses = FLD_Leads::get_statuses();
-$users = FLD_Roles::get_team_users();
+$forms = DXLEDA_Leads::get_forms();
+$statuses = DXLEDA_Leads::get_statuses();
+$users = DXLEDA_Roles::get_team_users();
 ?>
 
 <div class="wrap fld-leads-page">
