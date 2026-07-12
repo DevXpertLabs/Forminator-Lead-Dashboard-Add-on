@@ -263,8 +263,11 @@ class DevXpert_Lead_Dashboard {
      * Enqueue admin assets
      */
     public function enqueue_admin_assets($hook) {
-        // Only load on our plugin pages
-        if (strpos($hook, 'dxleda-dashboard') === false) {
+        // Only load on our plugin pages. The page hook is built from the
+        // sanitized menu title ("lead-dashboard") + the page slug (e.g.
+        // "dxleda-leads"), so match on our unique "dxleda" prefix, which every
+        // plugin page slug contains.
+        if (strpos($hook, 'dxleda') === false) {
             return;
         }
 
