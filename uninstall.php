@@ -11,19 +11,19 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 global $wpdb;
 
 // Drop custom tables.
-$tables = array(
+$dxleda_tables = array(
 	$wpdb->prefix . 'dxleda_lead_status',
 	$wpdb->prefix . 'dxleda_feedback',
 	$wpdb->prefix . 'dxleda_activity_log',
 );
 
-foreach ( $tables as $table ) {
-	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name is constructed from trusted $wpdb->prefix and a hardcoded suffix.
-	$wpdb->query( 'DROP TABLE IF EXISTS `' . esc_sql( $table ) . '`' );
+foreach ( $dxleda_tables as $dxleda_table ) {
+	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- table name is constructed from trusted $wpdb->prefix and a hardcoded suffix.
+	$wpdb->query( 'DROP TABLE IF EXISTS `' . esc_sql( $dxleda_table ) . '`' );
 }
 
 // Remove all plugin options.
-$options = array(
+$dxleda_options = array(
 	'dxleda_version',
 	'dxleda_db_version',
 	'dxleda_email_notifications',
@@ -41,6 +41,6 @@ $options = array(
 	'dxleda_otp_enabled_forms',
 );
 
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $dxleda_options as $dxleda_option ) {
+	delete_option( $dxleda_option );
 }

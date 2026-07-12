@@ -11,6 +11,11 @@ if (!DXLEDA_Roles::is_admin()) {
     wp_die(esc_html__('You do not have permission to access this page.', 'devxpert-lead-dashboard-for-forminator'));
 }
 
+// Variables here live in the scope of the render_settings_page() method that
+// include()s this template — not the global scope — so the global-prefix rule
+// does not apply.
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+
 // Handle form submission
 $dxleda_settings_nonce = isset($_POST['dxleda_settings_nonce']) ? sanitize_text_field(wp_unslash($_POST['dxleda_settings_nonce'])) : '';
 if (isset($_POST['dxleda_save_settings']) && wp_verify_nonce($dxleda_settings_nonce, 'dxleda_save_settings')) {

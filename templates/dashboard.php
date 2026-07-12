@@ -7,8 +7,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-
-
+// Variables here live in the scope of the render_dashboard_page() method that
+// include()s this template — not the global scope — so the global-prefix rule
+// does not apply.
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 $forms = DXLEDA_Leads::get_forms();
 $statuses = DXLEDA_Leads::get_statuses();
 ?>
