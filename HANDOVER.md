@@ -34,7 +34,7 @@ The plugin was renamed **twice** for WordPress.org compliance — grep for the o
 2. First rename: "Lead Dashboard for Forminator", slug `lead-dashboard-for-forminator` → still risky (generic leading term).
 3. **Current:** "DevXpert Lead Dashboard for Forminator", slug/text-domain `devxpert-lead-dashboard-for-forminator`. Brand-led ("DevXpert") + correct "for Forminator" tail. Main class renamed `Forminator_Lead_Dashboard` → `DevXpert_Lead_Dashboard`.
 
-Internal prefixes were **not** renamed (they're unique and fine): DB tables/options/functions use `fld_`, classes use `FLD_`, constants use `FLD_` (e.g. `FLD_VERSION`, `FLD_PLUGIN_DIR`).
+**Prefix migration (2026-07-12):** all collision-prone globals were prefixed with `dxleda_`/`DXLEDA_` per WordPress.org review — classes (`DXLEDA_Roles`, `DXLEDA_Leads`, `DXLEDA_OTP`, …), constants (`DXLEDA_VERSION`, `DXLEDA_PLUGIN_DIR`, …), options/transients/AJAX actions/nonces, script & style handles (`dxleda-*`), the localized JS objects (`dxleda_ajax`, `dxleda_otp_config`, `dxleda_settings_l10n`), custom tables (`{$wpdb->prefix}dxleda_*`), the role (`dxleda_sales_admin`) and cap (`dxleda_manage_leads`), and admin menu/page slugs (`dxleda-dashboard`, `dxleda-leads`, `dxleda-settings`). **CSS classes/IDs and asset/class filenames are intentionally left as `fld-`/`class-fld-*`** — presentation only, no collision risk. The encrypted-secret value marker is still `fldenc:` (an internal value, not a global).
 
 ## 4. Architecture
 
@@ -51,10 +51,10 @@ Bootstrapped by the `DevXpert_Lead_Dashboard` singleton in the main file. Load o
 | `FLD_OTP` | `class-fld-otp.php` | Email OTP + SMTP + secret encryption |
 | `FLD_Notifications` | `class-fld-notifications.php` | New-lead email + auto-assign |
 
-### Database (3 owned tables, all `{$wpdb->prefix}fld_`)
-- `fld_lead_status` — one row per entry: `status`, `assigned_to`, `priority`, `source`.
-- `fld_feedback` — many rows per entry: text, `rating` (positive/neutral/negative), `user_id`.
-- `fld_activity_log` — append-only log of status/feedback/assignment actions.
+### Database (3 owned tables, all `{$wpdb->prefix}dxleda_`)
+- `dxleda_lead_status` — one row per entry: `status`, `assigned_to`, `priority`, `source`.
+- `dxleda_feedback` — many rows per entry: text, `rating` (positive/neutral/negative), `user_id`.
+- `dxleda_activity_log` — append-only log of status/feedback/assignment actions.
 
 Lead data itself lives in Forminator's `frmt_form_entry` / `frmt_form_entry_meta`. `FLD_Leads::get_leads()` LEFT JOINs these so entries with no status row still show as `new`.
 
