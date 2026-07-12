@@ -7,10 +7,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-
-
-$forms = FLD_Leads::get_forms();
-$statuses = FLD_Leads::get_statuses();
+// Variables here live in the scope of the render_dashboard_page() method that
+// include()s this template — not the global scope — so the global-prefix rule
+// does not apply.
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+$forms = DXLEDA_Leads::get_forms();
+$statuses = DXLEDA_Leads::get_statuses();
 ?>
 
 <div class="wrap fld-dashboard">
@@ -127,7 +129,7 @@ $statuses = FLD_Leads::get_statuses();
     <div class="fld-table-card">
         <div class="fld-table-header">
             <h3><?php esc_html_e('Recent Leads', 'devxpert-lead-dashboard-for-forminator'); ?></h3>
-            <a href="<?php echo esc_url( admin_url('admin.php?page=lead-dashboard-leads') ); ?>" class="button">
+            <a href="<?php echo esc_url( admin_url('admin.php?page=dxleda-leads') ); ?>" class="button">
                 <?php esc_html_e('View All', 'devxpert-lead-dashboard-for-forminator'); ?>
             </a>
         </div>

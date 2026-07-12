@@ -7,9 +7,13 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$forms = FLD_Leads::get_forms();
-$statuses = FLD_Leads::get_statuses();
-$users = FLD_Roles::get_team_users();
+// Variables here live in the scope of the render_leads_page() method that
+// include()s this template — not the global scope — so the global-prefix rule
+// does not apply.
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+$forms = DXLEDA_Leads::get_forms();
+$statuses = DXLEDA_Leads::get_statuses();
+$users = DXLEDA_Roles::get_team_users();
 ?>
 
 <div class="wrap fld-leads-page">

@@ -11,6 +11,8 @@
 /composer.json
 /composer.lock
 /README.md
+/CHANGELOG.md
+/HANDOVER.md
 /bin
 /node_modules
 /vendor

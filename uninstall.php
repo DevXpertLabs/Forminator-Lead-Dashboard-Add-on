@@ -11,36 +11,36 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 global $wpdb;
 
 // Drop custom tables.
-$tables = array(
-	$wpdb->prefix . 'fld_lead_status',
-	$wpdb->prefix . 'fld_feedback',
-	$wpdb->prefix . 'fld_activity_log',
+$dxleda_tables = array(
+	$wpdb->prefix . 'dxleda_lead_status',
+	$wpdb->prefix . 'dxleda_feedback',
+	$wpdb->prefix . 'dxleda_activity_log',
 );
 
-foreach ( $tables as $table ) {
-	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name is constructed from trusted $wpdb->prefix and a hardcoded suffix.
-	$wpdb->query( 'DROP TABLE IF EXISTS `' . esc_sql( $table ) . '`' );
+foreach ( $dxleda_tables as $dxleda_table ) {
+	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- table name is constructed from trusted $wpdb->prefix and a hardcoded suffix.
+	$wpdb->query( 'DROP TABLE IF EXISTS `' . esc_sql( $dxleda_table ) . '`' );
 }
 
 // Remove all plugin options.
-$options = array(
-	'fld_version',
-	'fld_db_version',
-	'fld_email_notifications',
-	'fld_notification_email',
-	'fld_auto_assign',
-	'fld_default_assignee',
-	'fld_leads_per_page',
-	'fld_smtp_host',
-	'fld_smtp_port',
-	'fld_smtp_username',
-	'fld_smtp_password',
-	'fld_smtp_encryption',
-	'fld_brevo_sender_name',
-	'fld_brevo_sender_email',
-	'fld_otp_enabled_forms',
+$dxleda_options = array(
+	'dxleda_version',
+	'dxleda_db_version',
+	'dxleda_email_notifications',
+	'dxleda_notification_email',
+	'dxleda_auto_assign',
+	'dxleda_default_assignee',
+	'dxleda_leads_per_page',
+	'dxleda_smtp_host',
+	'dxleda_smtp_port',
+	'dxleda_smtp_username',
+	'dxleda_smtp_password',
+	'dxleda_smtp_encryption',
+	'dxleda_brevo_sender_name',
+	'dxleda_brevo_sender_email',
+	'dxleda_otp_enabled_forms',
 );
 
-foreach ( $options as $option ) {
-	delete_option( $option );
+foreach ( $dxleda_options as $dxleda_option ) {
+	delete_option( $dxleda_option );
 }

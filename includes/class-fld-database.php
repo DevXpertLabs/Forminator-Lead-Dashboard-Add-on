@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class FLD_Database {
+class DXLEDA_Database {
 
     /**
      * Create custom tables
@@ -20,7 +20,7 @@ class FLD_Database {
         $charset_collate = $wpdb->get_charset_collate();
 
         // Lead status tracking table
-        $table_lead_status = $wpdb->prefix . 'fld_lead_status';
+        $table_lead_status = $wpdb->prefix . 'dxleda_lead_status';
         
         $sql_lead_status = "CREATE TABLE $table_lead_status (
             id bigint(20) NOT NULL AUTO_INCREMENT,
@@ -40,7 +40,7 @@ class FLD_Database {
         ) $charset_collate;";
 
         // Feedback table
-        $table_feedback = $wpdb->prefix . 'fld_feedback';
+        $table_feedback = $wpdb->prefix . 'dxleda_feedback';
         
         $sql_feedback = "CREATE TABLE $table_feedback (
             id bigint(20) NOT NULL AUTO_INCREMENT,
@@ -56,7 +56,7 @@ class FLD_Database {
         ) $charset_collate;";
 
         // Activity log table
-        $table_activity = $wpdb->prefix . 'fld_activity_log';
+        $table_activity = $wpdb->prefix . 'dxleda_activity_log';
         
         $sql_activity = "CREATE TABLE $table_activity (
             id bigint(20) NOT NULL AUTO_INCREMENT,
@@ -77,7 +77,7 @@ class FLD_Database {
         dbDelta($sql_activity);
 
         // Update version
-        update_option('fld_db_version', FLD_VERSION);
+        update_option('dxleda_db_version', DXLEDA_VERSION);
     }
 
     /**
@@ -85,7 +85,7 @@ class FLD_Database {
      */
     public static function get_table($table) {
         global $wpdb;
-        return $wpdb->prefix . 'fld_' . $table;
+        return $wpdb->prefix . 'dxleda_' . $table;
     }
 
     /**
@@ -95,9 +95,9 @@ class FLD_Database {
         global $wpdb;
 
         $tables = array(
-            $wpdb->prefix . 'fld_lead_status',
-            $wpdb->prefix . 'fld_feedback',
-            $wpdb->prefix . 'fld_activity_log',
+            $wpdb->prefix . 'dxleda_lead_status',
+            $wpdb->prefix . 'dxleda_feedback',
+            $wpdb->prefix . 'dxleda_activity_log',
         );
 
         foreach ( $tables as $table ) {
@@ -105,7 +105,7 @@ class FLD_Database {
             $wpdb->query( 'DROP TABLE IF EXISTS `' . esc_sql( $table ) . '`' );
         }
 
-        delete_option( 'fld_db_version' );
-        delete_option( 'fld_version' );
+        delete_option( 'dxleda_db_version' );
+        delete_option( 'dxleda_version' );
     }
 }

@@ -5,7 +5,7 @@
 (function ($) {
     'use strict';
 
-    var cfg = window.fld_otp_config || {};
+    var cfg = window.dxleda_otp_config || {};
 
     // State per form element: 'idle' | 'sending' | 'awaiting_code' | 'verified'
     var formStates = new WeakMap();
@@ -102,7 +102,7 @@
                 url: cfg.ajax_url,
                 type: 'POST',
                 data: {
-                    action:  'fld_send_otp',
+                    action:  'dxleda_send_otp',
                     nonce:   cfg.nonce,
                     email:   email,
                     form_id: formId
@@ -155,10 +155,11 @@
                 url: cfg.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'fld_verify_otp',
-                    nonce:  cfg.nonce,
-                    email:  email,
-                    code:   code
+                    action:  'dxleda_verify_otp',
+                    nonce:   cfg.nonce,
+                    email:   email,
+                    code:    code,
+                    form_id: formId
                 },
                 success: function (res) {
                     if (res.success && res.data && res.data.token) {
@@ -250,11 +251,11 @@
 
     function injectToken(form, token) {
         // Hidden field (for standard form posts)
-        var existing = form.querySelector('input[name="fld_otp_token"]');
+        var existing = form.querySelector('input[name="dxleda_otp_token"]');
         if (existing) existing.remove();
         var hidden = document.createElement('input');
         hidden.type  = 'hidden';
-        hidden.name  = 'fld_otp_token';
+        hidden.name  = 'dxleda_otp_token';
         hidden.value = token;
         form.appendChild(hidden);
 
@@ -262,7 +263,7 @@
         // registered fields, so the hidden input above may be skipped.
         // A cookie is sent automatically with every request, including XHR.
         var expires = new Date(Date.now() + 1800000).toUTCString(); // 30 min
-        document.cookie = 'fld_otp_token=' + encodeURIComponent(token) +
+        document.cookie = 'dxleda_otp_token=' + encodeURIComponent(token) +
             '; expires=' + expires + '; path=/; SameSite=Strict';
     }
 
@@ -279,9 +280,9 @@
         clearStatus(statusEl);
 
         // Remove hidden field and clear cookie
-        var existing = form.querySelector('input[name="fld_otp_token"]');
+        var existing = form.querySelector('input[name="dxleda_otp_token"]');
         if (existing) existing.remove();
-        document.cookie = 'fld_otp_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict';
+        document.cookie = 'dxleda_otp_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict';
     }
 
     function setState(form, state) {

@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class FLD_Notifications {
+class DXLEDA_Notifications {
 
     /**
      * Register the Forminator after-save hook.
@@ -45,39 +45,39 @@ class FLD_Notifications {
      * Assign the lead to the default assignee when auto-assign is enabled.
      */
     private static function maybe_auto_assign($entry_id, $form_id) {
-        if (!get_option('fld_auto_assign', 0)) {
+        if (!get_option('dxleda_auto_assign', 0)) {
             return;
         }
 
-        $assignee = intval(get_option('fld_default_assignee', 0));
+        $assignee = intval(get_option('dxleda_default_assignee', 0));
         if ($assignee <= 0) {
             return;
         }
 
         // Only assign to a user who can actually work leads.
         $user = get_userdata($assignee);
-        if (!$user || (!user_can($user, FLD_Roles::CAP) && !user_can($user, 'manage_options'))) {
+        if (!$user || (!user_can($user, DXLEDA_Roles::CAP) && !user_can($user, 'manage_options'))) {
             return;
         }
 
-        FLD_Leads::assign_lead($entry_id, $form_id, $assignee);
+        DXLEDA_Leads::assign_lead($entry_id, $form_id, $assignee);
     }
 
     /**
      * Email the configured recipient about the new lead when enabled.
      */
     private static function maybe_notify($entry_id, $form_id) {
-        if (!get_option('fld_email_notifications', 0)) {
+        if (!get_option('dxleda_email_notifications', 0)) {
             return;
         }
 
-        $to = sanitize_email(get_option('fld_notification_email', get_option('admin_email')));
+        $to = sanitize_email(get_option('dxleda_notification_email', get_option('admin_email')));
         if (!is_email($to)) {
             return;
         }
 
         $form_name = self::get_form_name($form_id);
-        $lead      = FLD_Leads::get_lead($entry_id);
+        $lead      = DXLEDA_Leads::get_lead($entry_id);
 
         $subject = sprintf(
             /* translators: 1: form name, 2: entry ID */
@@ -106,7 +106,7 @@ class FLD_Notifications {
         }
 
         $lines[] = __('View in the Lead Dashboard:', 'devxpert-lead-dashboard-for-forminator');
-        $lines[] = admin_url('admin.php?page=lead-dashboard-leads');
+        $lines[] = admin_url('admin.php?page=dxleda-leads');
 
         $body = implode("\n", $lines);
 
@@ -117,7 +117,7 @@ class FLD_Notifications {
      * Resolve a Forminator form's display name, falling back to its ID.
      */
     private static function get_form_name($form_id) {
-        $names  = FLD_Leads::form_names();
+        $names  = DXLEDA_Leads::form_names();
         $form_id = (int) $form_id;
 
         return isset($names[$form_id]) ? $names[$form_id] : ('Form #' . $form_id);

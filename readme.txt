@@ -71,8 +71,8 @@ When enabled for a form, visitors get a 6-digit code by email and must enter it 
 
 == Third-Party Libraries ==
 
-Bundles Chart.js v4.4.0 (MIT) for the dashboard charts, loaded locally with no external requests.
-Source: https://github.com/chartjs/Chart.js/releases/tag/v4.4.0
+Bundles Chart.js v4.5.1 (MIT) for the dashboard charts, loaded locally with no external requests.
+Source: https://github.com/chartjs/Chart.js/releases/tag/v4.5.1
 
 == Changelog ==
 

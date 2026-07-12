@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DevXpert Lead Dashboard for Forminator
  * Plugin URI: https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on
- * Description: A powerful Lead Management Dashboard addon for Forminator. Track SEO leads, manage feedback, and categorize leads as positive/negative.
+ * Description: A Lead Management Dashboard for Forminator. Track form submissions as leads, add feedback, categorize them by status, and export to CSV.
  * Version: 1.0.1
  * Author: Anup Kankale
  * Author URI: https://anupkankale.com
@@ -23,10 +23,10 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('FLD_VERSION', '1.0.1');
-define('FLD_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('FLD_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('FLD_PLUGIN_BASENAME', plugin_basename(__FILE__));
+define('DXLEDA_VERSION', '1.0.1');
+define('DXLEDA_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('DXLEDA_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('DXLEDA_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 /**
  * Main Plugin Class
@@ -105,10 +105,10 @@ class DevXpert_Lead_Dashboard {
         $this->includes();
 
         // Seed SMTP defaults on first load (add_option is a no-op if already set)
-        FLD_OTP::init_defaults();
+        DXLEDA_OTP::init_defaults();
 
         // New-lead automation: email notifications + auto-assignment
-        FLD_Notifications::init();
+        DXLEDA_Notifications::init();
 
         // Admin hooks
         if (is_admin()) {
@@ -132,10 +132,10 @@ class DevXpert_Lead_Dashboard {
         add_action('admin_bar_menu', array($this, 'restrict_sales_admin_toolbar'), 999);
 
         // Public OTP endpoints (front-end forms — accessible to guests)
-        add_action('wp_ajax_nopriv_fld_send_otp',   array($this, 'ajax_send_otp'));
-        add_action('wp_ajax_fld_send_otp',           array($this, 'ajax_send_otp'));
-        add_action('wp_ajax_nopriv_fld_verify_otp', array($this, 'ajax_verify_otp'));
-        add_action('wp_ajax_fld_verify_otp',         array($this, 'ajax_verify_otp'));
+        add_action('wp_ajax_nopriv_dxleda_send_otp',   array($this, 'ajax_send_otp'));
+        add_action('wp_ajax_dxleda_send_otp',           array($this, 'ajax_send_otp'));
+        add_action('wp_ajax_nopriv_dxleda_verify_otp', array($this, 'ajax_verify_otp'));
+        add_action('wp_ajax_dxleda_verify_otp',         array($this, 'ajax_verify_otp'));
 
         // Forminator server-side gate (runs before entry is saved)
         add_filter('forminator_custom_form_submit_errors', array($this, 'check_otp_on_submit'), 10, 3);
@@ -144,45 +144,45 @@ class DevXpert_Lead_Dashboard {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_public_assets'));
 
         // AJAX handlers
-        add_action('wp_ajax_fld_get_leads', array($this, 'ajax_get_leads'));
-        add_action('wp_ajax_fld_update_lead_status', array($this, 'ajax_update_lead_status'));
-        add_action('wp_ajax_fld_add_feedback', array($this, 'ajax_add_feedback'));
-        add_action('wp_ajax_fld_get_feedback', array($this, 'ajax_get_feedback'));
-        add_action('wp_ajax_fld_delete_feedback', array($this, 'ajax_delete_feedback'));
-        add_action('wp_ajax_fld_get_dashboard_stats', array($this, 'ajax_get_dashboard_stats'));
-        add_action('wp_ajax_fld_export_leads', array($this, 'ajax_export_leads'));
-        add_action('wp_ajax_fld_get_lead', array($this, 'ajax_get_lead'));
+        add_action('wp_ajax_dxleda_get_leads', array($this, 'ajax_get_leads'));
+        add_action('wp_ajax_dxleda_update_lead_status', array($this, 'ajax_update_lead_status'));
+        add_action('wp_ajax_dxleda_add_feedback', array($this, 'ajax_add_feedback'));
+        add_action('wp_ajax_dxleda_get_feedback', array($this, 'ajax_get_feedback'));
+        add_action('wp_ajax_dxleda_delete_feedback', array($this, 'ajax_delete_feedback'));
+        add_action('wp_ajax_dxleda_get_dashboard_stats', array($this, 'ajax_get_dashboard_stats'));
+        add_action('wp_ajax_dxleda_export_leads', array($this, 'ajax_export_leads'));
+        add_action('wp_ajax_dxleda_get_lead', array($this, 'ajax_get_lead'));
 
-        add_action('wp_ajax_fld_get_activity', array($this, 'ajax_get_activity'));
+        add_action('wp_ajax_dxleda_get_activity', array($this, 'ajax_get_activity'));
 
         // Role management AJAX — admin only
-        add_action('wp_ajax_fld_get_assignable_users', array($this, 'ajax_get_assignable_users'));
-        add_action('wp_ajax_fld_assign_sales_admin', array($this, 'ajax_assign_sales_admin'));
-        add_action('wp_ajax_fld_remove_sales_admin', array($this, 'ajax_remove_sales_admin'));
+        add_action('wp_ajax_dxleda_get_assignable_users', array($this, 'ajax_get_assignable_users'));
+        add_action('wp_ajax_dxleda_assign_sales_admin', array($this, 'ajax_assign_sales_admin'));
+        add_action('wp_ajax_dxleda_remove_sales_admin', array($this, 'ajax_remove_sales_admin'));
 
         // Database tools AJAX — admin only
-        add_action('wp_ajax_fld_clear_activity_log', array($this, 'ajax_clear_activity_log'));
-        add_action('wp_ajax_fld_reset_statuses', array($this, 'ajax_reset_statuses'));
+        add_action('wp_ajax_dxleda_clear_activity_log', array($this, 'ajax_clear_activity_log'));
+        add_action('wp_ajax_dxleda_reset_statuses', array($this, 'ajax_reset_statuses'));
     }
 
     /**
      * Set up roles and capabilities
      */
     public function setup_roles() {
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-roles.php';
-        FLD_Roles::setup();
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
+        DXLEDA_Roles::setup();
     }
 
     /**
      * Include required files
      */
     private function includes() {
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-roles.php';
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-database.php';
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-leads.php';
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-feedback.php';
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-otp.php';
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-notifications.php';
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-database.php';
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-leads.php';
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-feedback.php';
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-otp.php';
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-notifications.php';
     }
 
     /**
@@ -190,15 +190,15 @@ class DevXpert_Lead_Dashboard {
      */
     public function activate() {
         // Set up roles and capabilities
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-roles.php';
-        FLD_Roles::setup();
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
+        DXLEDA_Roles::setup();
 
         // Create custom tables
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-database.php';
-        FLD_Database::create_tables();
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-database.php';
+        DXLEDA_Database::create_tables();
 
         // Set default options
-        add_option('fld_version', FLD_VERSION);
+        add_option('dxleda_version', DXLEDA_VERSION);
 
         // Flush rewrite rules
         flush_rewrite_rules();
@@ -208,8 +208,8 @@ class DevXpert_Lead_Dashboard {
      * Plugin deactivation
      */
     public function deactivate() {
-        require_once FLD_PLUGIN_DIR . 'includes/class-fld-roles.php';
-        FLD_Roles::teardown();
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
+        DXLEDA_Roles::teardown();
         flush_rewrite_rules();
     }
 
@@ -221,8 +221,8 @@ class DevXpert_Lead_Dashboard {
         add_menu_page(
             __('Lead Dashboard', 'devxpert-lead-dashboard-for-forminator'),
             __('Lead Dashboard', 'devxpert-lead-dashboard-for-forminator'),
-            FLD_Roles::CAP,
-            'lead-dashboard',
+            DXLEDA_Roles::CAP,
+            'dxleda-dashboard',
             array($this, 'render_dashboard_page'),
             'dashicons-chart-line',
             30
@@ -230,31 +230,31 @@ class DevXpert_Lead_Dashboard {
 
         // Submenu - Dashboard
         add_submenu_page(
-            'lead-dashboard',
+            'dxleda-dashboard',
             __('Dashboard', 'devxpert-lead-dashboard-for-forminator'),
             __('Dashboard', 'devxpert-lead-dashboard-for-forminator'),
-            FLD_Roles::CAP,
-            'lead-dashboard',
+            DXLEDA_Roles::CAP,
+            'dxleda-dashboard',
             array($this, 'render_dashboard_page')
         );
 
         // Submenu - All Leads
         add_submenu_page(
-            'lead-dashboard',
+            'dxleda-dashboard',
             __('All Leads', 'devxpert-lead-dashboard-for-forminator'),
             __('All Leads', 'devxpert-lead-dashboard-for-forminator'),
-            FLD_Roles::CAP,
-            'lead-dashboard-leads',
+            DXLEDA_Roles::CAP,
+            'dxleda-leads',
             array($this, 'render_leads_page')
         );
 
         // Submenu - Settings — administrators only
         add_submenu_page(
-            'lead-dashboard',
+            'dxleda-dashboard',
             __('Settings', 'devxpert-lead-dashboard-for-forminator'),
             __('Settings', 'devxpert-lead-dashboard-for-forminator'),
             'manage_options',
-            'lead-dashboard-settings',
+            'dxleda-settings',
             array($this, 'render_settings_page')
         );
     }
@@ -263,43 +263,46 @@ class DevXpert_Lead_Dashboard {
      * Enqueue admin assets
      */
     public function enqueue_admin_assets($hook) {
-        // Only load on our plugin pages
-        if (strpos($hook, 'lead-dashboard') === false) {
+        // Only load on our plugin pages. The page hook is built from the
+        // sanitized menu title ("lead-dashboard") + the page slug (e.g.
+        // "dxleda-leads"), so match on our unique "dxleda" prefix, which every
+        // plugin page slug contains.
+        if (strpos($hook, 'dxleda') === false) {
             return;
         }
 
         // CSS
         wp_enqueue_style(
-            'fld-admin-styles',
-            FLD_PLUGIN_URL . 'assets/css/admin-styles.css',
+            'dxleda-admin-styles',
+            DXLEDA_PLUGIN_URL . 'assets/css/admin-styles.css',
             array(),
-            FLD_VERSION
+            DXLEDA_VERSION
         );
 
         
 
         // Chart.js — bundled locally (WP.org does not permit external CDN scripts).
         wp_enqueue_script(
-            'chartjs',
-            FLD_PLUGIN_URL . 'assets/js/chart.min.js',
+            'dxleda-chartjs',
+            DXLEDA_PLUGIN_URL . 'assets/js/chart.min.js',
             array(),
-            '4.4.0',
+            '4.5.1',
             true
         );
 
         // Admin JS
         wp_enqueue_script(
-            'fld-admin-scripts',
-            FLD_PLUGIN_URL . 'assets/js/admin-scripts.js',
-            array('jquery', 'chartjs'),
-            FLD_VERSION,
+            'dxleda-admin-scripts',
+            DXLEDA_PLUGIN_URL . 'assets/js/admin-scripts.js',
+            array('jquery', 'dxleda-chartjs'),
+            DXLEDA_VERSION,
             true
         );
 
         // Localize script
-        wp_localize_script('fld-admin-scripts', 'fld_ajax', array(
+        wp_localize_script('dxleda-admin-scripts', 'dxleda_ajax', array(
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('fld_nonce'),
+            'nonce' => wp_create_nonce('dxleda_nonce'),
             'strings' => array(
                 'confirm_delete' => __('Are you sure you want to delete this?', 'devxpert-lead-dashboard-for-forminator'),
                 'loading' => __('Loading...', 'devxpert-lead-dashboard-for-forminator'),
@@ -307,30 +310,50 @@ class DevXpert_Lead_Dashboard {
                 'success' => __('Success!', 'devxpert-lead-dashboard-for-forminator'),
             )
         ));
+
+        // Settings page: user-management + database-tools script (was inline).
+        if (strpos($hook, 'dxleda-settings') !== false) {
+            wp_enqueue_script(
+                'dxleda-settings',
+                DXLEDA_PLUGIN_URL . 'assets/js/fld-settings.js',
+                array('jquery', 'dxleda-admin-scripts'),
+                DXLEDA_VERSION,
+                true
+            );
+            wp_localize_script('dxleda-settings', 'dxleda_settings_l10n', array(
+                'select_user'    => __('Please select a user.', 'devxpert-lead-dashboard-for-forminator'),
+                'remove_confirm' => __('Remove Sales Admin role from', 'devxpert-lead-dashboard-for-forminator'),
+                'clear_confirm'  => __('Permanently delete the entire activity log? This cannot be undone.', 'devxpert-lead-dashboard-for-forminator'),
+                'reset_confirm'  => __('Reset every lead back to "new"? Assignments and statuses will be cleared. This cannot be undone.', 'devxpert-lead-dashboard-for-forminator'),
+                'saving'         => __('Saving…', 'devxpert-lead-dashboard-for-forminator'),
+                'no_admins'      => __('No Sales Admin users yet.', 'devxpert-lead-dashboard-for-forminator'),
+                'remove'         => __('Remove', 'devxpert-lead-dashboard-for-forminator'),
+            ));
+        }
     }
 
     /**
      * Render Dashboard Page
      */
     public function render_dashboard_page() {
-        include FLD_PLUGIN_DIR . 'templates/dashboard.php';
+        include DXLEDA_PLUGIN_DIR . 'templates/dashboard.php';
     }
 
     /**
      * Render Leads Page
      */
     public function render_leads_page() {
-        include FLD_PLUGIN_DIR . 'templates/leads.php';
+        include DXLEDA_PLUGIN_DIR . 'templates/leads.php';
     }
 
     /**
      * Render Settings Page (administrators only)
      */
     public function render_settings_page() {
-        if (!FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::is_admin()) {
             wp_die(esc_html__('You do not have permission to access this page.', 'devxpert-lead-dashboard-for-forminator'));
         }
-        include FLD_PLUGIN_DIR . 'templates/settings.php';
+        include DXLEDA_PLUGIN_DIR . 'templates/settings.php';
     }
 
     /**
@@ -338,7 +361,7 @@ class DevXpert_Lead_Dashboard {
      * Keeps: site name (home link), user account, logout.
      */
     public function restrict_sales_admin_toolbar($wp_admin_bar) {
-        if (!FLD_Roles::can_access() || FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::can_access() || DXLEDA_Roles::is_admin()) {
             return;
         }
 
@@ -357,8 +380,8 @@ class DevXpert_Lead_Dashboard {
      * Redirect Sales Admin users to the Lead Dashboard immediately after login.
      */
     public function sales_admin_login_redirect($redirect_to, $request, $user) {
-        if ($user instanceof WP_User && in_array(FLD_Roles::ROLE_SLUG, (array) $user->roles, true)) {
-            return admin_url('admin.php?page=lead-dashboard');
+        if ($user instanceof WP_User && in_array(DXLEDA_Roles::ROLE_SLUG, (array) $user->roles, true)) {
+            return admin_url('admin.php?page=dxleda-dashboard');
         }
         return $redirect_to;
     }
@@ -368,8 +391,8 @@ class DevXpert_Lead_Dashboard {
      * wp_login fires on every successful authentication.
      */
     public function sales_admin_wp_login_redirect($user_login, $user) {
-        if ($user instanceof WP_User && in_array(FLD_Roles::ROLE_SLUG, (array) $user->roles, true)) {
-            wp_safe_redirect(admin_url('admin.php?page=lead-dashboard'));
+        if ($user instanceof WP_User && in_array(DXLEDA_Roles::ROLE_SLUG, (array) $user->roles, true)) {
+            wp_safe_redirect(admin_url('admin.php?page=dxleda-dashboard'));
             exit;
         }
     }
@@ -379,8 +402,8 @@ class DevXpert_Lead_Dashboard {
      * woocommerce_login_redirect filter is WooCommerce's final redirect decision.
      */
     public function sales_admin_woo_login_redirect($redirect, $user) {
-        if ($user instanceof WP_User && in_array(FLD_Roles::ROLE_SLUG, (array) $user->roles, true)) {
-            return admin_url('admin.php?page=lead-dashboard');
+        if ($user instanceof WP_User && in_array(DXLEDA_Roles::ROLE_SLUG, (array) $user->roles, true)) {
+            return admin_url('admin.php?page=dxleda-dashboard');
         }
         return $redirect;
     }
@@ -390,7 +413,7 @@ class DevXpert_Lead_Dashboard {
      * Runs at admin_menu priority 999 (after all menus are registered).
      */
     public function restrict_sales_admin_menu() {
-        if (!FLD_Roles::can_access() || FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::can_access() || DXLEDA_Roles::is_admin()) {
             return;
         }
 
@@ -398,7 +421,7 @@ class DevXpert_Lead_Dashboard {
 
         foreach ($menu as $item) {
             $slug = isset($item[2]) ? $item[2] : '';
-            if ($slug && $slug !== 'lead-dashboard') {
+            if ($slug && $slug !== 'dxleda-dashboard') {
                 remove_menu_page($slug);
             }
         }
@@ -410,7 +433,7 @@ class DevXpert_Lead_Dashboard {
      */
     public function restrict_sales_admin_access() {
         // Only applies to Sales Admin (not administrators, not guests)
-        if (!FLD_Roles::can_access() || FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::can_access() || DXLEDA_Roles::is_admin()) {
             return;
         }
 
@@ -425,7 +448,7 @@ class DevXpert_Lead_Dashboard {
         // phpcs:enable WordPress.Security.NonceVerification.Recommended
 
         // Pages Sales Admin is allowed to access
-        $allowed_pages = array('lead-dashboard', 'lead-dashboard-leads');
+        $allowed_pages = array('dxleda-dashboard', 'dxleda-leads');
 
         // Allow our plugin pages
         if ($script === 'admin.php' && in_array($current_page, $allowed_pages, true)) {
@@ -438,7 +461,7 @@ class DevXpert_Lead_Dashboard {
         }
 
         // Everything else → redirect to Lead Dashboard
-        wp_safe_redirect(admin_url('admin.php?page=lead-dashboard'));
+        wp_safe_redirect(admin_url('admin.php?page=dxleda-dashboard'));
         exit;
     }
 
@@ -446,9 +469,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Get Leads
      */
     public function ajax_get_leads() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -458,7 +481,7 @@ class DevXpert_Lead_Dashboard {
         $per_page = isset($_POST['per_page']) ? intval($_POST['per_page']) : 20;
         $search = isset($_POST['search']) ? sanitize_text_field(wp_unslash($_POST['search'])) : '';
 
-        $leads = FLD_Leads::get_leads(array(
+        $leads = DXLEDA_Leads::get_leads(array(
             'form_id' => $form_id,
             'status' => $status,
             'page' => $page,
@@ -473,9 +496,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Get Single Lead by Entry ID
      */
     public function ajax_get_lead() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -485,7 +508,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid entry ID');
         }
 
-        $lead = FLD_Leads::get_lead($entry_id);
+        $lead = DXLEDA_Leads::get_lead($entry_id);
 
         if (!$lead) {
             wp_send_json_error('Lead not found');
@@ -498,9 +521,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Update Lead Status
      */
     public function ajax_update_lead_status() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -511,7 +534,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid data');
         }
 
-        $result = FLD_Leads::update_lead_status($entry_id, $status);
+        $result = DXLEDA_Leads::update_lead_status($entry_id, $status);
 
         if ($result) {
             wp_send_json_success('Status updated');
@@ -524,9 +547,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Add Feedback
      */
     public function ajax_add_feedback() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -538,7 +561,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid data');
         }
 
-        $result = FLD_Feedback::add_feedback(array(
+        $result = DXLEDA_Feedback::add_feedback(array(
             'entry_id' => $entry_id,
             'feedback' => $feedback,
             'rating' => $rating,
@@ -559,9 +582,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Get Feedback
      */
     public function ajax_get_feedback() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -571,7 +594,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid entry ID');
         }
 
-        $feedback = FLD_Feedback::get_feedback($entry_id);
+        $feedback = DXLEDA_Feedback::get_feedback($entry_id);
 
         wp_send_json_success($feedback);
     }
@@ -580,9 +603,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Delete Feedback
      */
     public function ajax_delete_feedback() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -593,14 +616,14 @@ class DevXpert_Lead_Dashboard {
         }
 
         // Sales admins can only delete their own feedback entries
-        if (!FLD_Roles::is_admin()) {
-            $owner = FLD_Feedback::get_feedback_owner($feedback_id);
+        if (!DXLEDA_Roles::is_admin()) {
+            $owner = DXLEDA_Feedback::get_feedback_owner($feedback_id);
             if ($owner !== get_current_user_id()) {
                 wp_send_json_error('You can only delete your own feedback');
             }
         }
 
-        $result = FLD_Feedback::delete_feedback($feedback_id);
+        $result = DXLEDA_Feedback::delete_feedback($feedback_id);
 
         if ($result) {
             wp_send_json_success('Feedback deleted');
@@ -613,15 +636,15 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Get Dashboard Stats
      */
     public function ajax_get_dashboard_stats() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
         $date_range = isset($_POST['date_range']) ? sanitize_text_field(wp_unslash($_POST['date_range'])) : '30';
 
-        $stats = FLD_Leads::get_dashboard_stats($date_range);
+        $stats = DXLEDA_Leads::get_dashboard_stats($date_range);
 
         wp_send_json_success($stats);
     }
@@ -630,16 +653,16 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Export Leads
      */
     public function ajax_export_leads() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
         $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
         $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : '';
 
-        $csv_data = FLD_Leads::export_leads_csv($form_id, $status);
+        $csv_data = DXLEDA_Leads::export_leads_csv($form_id, $status);
 
         wp_send_json_success(array('csv' => $csv_data));
     }
@@ -648,9 +671,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Get the activity log for a single lead
      */
     public function ajax_get_activity() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::can_access()) {
+        if (!DXLEDA_Roles::can_access()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -660,20 +683,20 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid entry ID');
         }
 
-        wp_send_json_success(FLD_Leads::get_activity($entry_id));
+        wp_send_json_success(DXLEDA_Leads::get_activity($entry_id));
     }
 
     /**
      * AJAX: Clear the entire activity log (administrators only)
      */
     public function ajax_clear_activity_log() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::is_admin()) {
             wp_send_json_error('Unauthorized');
         }
 
-        $removed = FLD_Leads::clear_activity_log();
+        $removed = DXLEDA_Leads::clear_activity_log();
 
         wp_send_json_success(array(
             /* translators: %d: number of activity log rows removed */
@@ -685,13 +708,13 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Reset all lead statuses to "new" (administrators only)
      */
     public function ajax_reset_statuses() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::is_admin()) {
             wp_send_json_error('Unauthorized');
         }
 
-        $removed = FLD_Leads::reset_all_statuses();
+        $removed = DXLEDA_Leads::reset_all_statuses();
 
         wp_send_json_success(array(
             /* translators: %d: number of leads reset to "new" */
@@ -703,15 +726,15 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Get all users that can be assigned the sales_admin role
      */
     public function ajax_get_assignable_users() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::is_admin()) {
             wp_send_json_error('Unauthorized');
         }
 
         // All WP users excluding current administrators
         $all_users = get_users(array('orderby' => 'display_name', 'order' => 'ASC'));
-        $sales_admin_ids = array_map(function($u) { return $u->ID; }, FLD_Roles::get_sales_admins());
+        $sales_admin_ids = array_map(function($u) { return $u->ID; }, DXLEDA_Roles::get_sales_admins());
 
         $list = array();
         foreach ($all_users as $user) {
@@ -733,9 +756,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Assign sales_admin role to a user
      */
     public function ajax_assign_sales_admin() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::is_admin()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -745,7 +768,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid user ID');
         }
 
-        if (FLD_Roles::assign($user_id)) {
+        if (DXLEDA_Roles::assign($user_id)) {
             $user = get_userdata($user_id);
             wp_send_json_success(array(
                 /* translators: %s: user display name */
@@ -760,9 +783,9 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Remove sales_admin role from a user
      */
     public function ajax_remove_sales_admin() {
-        check_ajax_referer('fld_nonce', 'nonce');
+        check_ajax_referer('dxleda_nonce', 'nonce');
 
-        if (!FLD_Roles::is_admin()) {
+        if (!DXLEDA_Roles::is_admin()) {
             wp_send_json_error('Unauthorized');
         }
 
@@ -772,7 +795,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid user ID');
         }
 
-        if (FLD_Roles::remove($user_id)) {
+        if (DXLEDA_Roles::remove($user_id)) {
             $user = get_userdata($user_id);
             wp_send_json_success(array(
                 /* translators: %s: user display name */
@@ -786,29 +809,29 @@ class DevXpert_Lead_Dashboard {
      * Enqueue public-facing assets for OTP widget (only when OTP is configured)
      */
     public function enqueue_public_assets() {
-        $enabled_forms = get_option('fld_otp_enabled_forms', array());
+        $enabled_forms = get_option('dxleda_otp_enabled_forms', array());
         if (empty($enabled_forms)) {
             return;
         }
 
         wp_enqueue_style(
-            'fld-otp-styles',
-            FLD_PLUGIN_URL . 'assets/css/fld-otp.css',
+            'dxleda-otp-styles',
+            DXLEDA_PLUGIN_URL . 'assets/css/fld-otp.css',
             array(),
-            FLD_VERSION
+            DXLEDA_VERSION
         );
 
         wp_enqueue_script(
-            'fld-otp-script',
-            FLD_PLUGIN_URL . 'assets/js/fld-otp.js',
+            'dxleda-otp-script',
+            DXLEDA_PLUGIN_URL . 'assets/js/fld-otp.js',
             array('jquery'),
-            FLD_VERSION,
+            DXLEDA_VERSION,
             true
         );
 
-        wp_localize_script('fld-otp-script', 'fld_otp_config', array(
+        wp_localize_script('dxleda-otp-script', 'dxleda_otp_config', array(
             'ajax_url'      => admin_url('admin-ajax.php'),
-            'nonce'         => wp_create_nonce('fld_otp_nonce'),
+            'nonce'         => wp_create_nonce('dxleda_otp_nonce'),
             'enabled_forms' => array_map('intval', (array) $enabled_forms),
             'strings'       => array(
                 'send_otp'     => __('Send Verification Code', 'devxpert-lead-dashboard-for-forminator'),
@@ -827,16 +850,16 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Send OTP to the submitted email address
      */
     public function ajax_send_otp() {
-        check_ajax_referer('fld_otp_nonce', 'nonce');
+        check_ajax_referer('dxleda_otp_nonce', 'nonce');
 
         $email   = isset($_POST['email'])   ? sanitize_email(wp_unslash($_POST['email']))     : '';
         $form_id = isset($_POST['form_id']) ? intval($_POST['form_id'])                        : 0;
 
-        if (!is_email($email) || !FLD_OTP::is_form_enabled($form_id)) {
+        if (!is_email($email) || !DXLEDA_OTP::is_form_enabled($form_id)) {
             wp_send_json_error(__('Invalid request.', 'devxpert-lead-dashboard-for-forminator'));
         }
 
-        $result = FLD_OTP::send_otp($email, $form_id);
+        $result = DXLEDA_OTP::send_otp($email, $form_id);
 
         if (is_wp_error($result)) {
             wp_send_json_error($result->get_error_message());
@@ -849,12 +872,17 @@ class DevXpert_Lead_Dashboard {
      * AJAX: Verify the OTP code and return a one-time token
      */
     public function ajax_verify_otp() {
-        check_ajax_referer('fld_otp_nonce', 'nonce');
+        check_ajax_referer('dxleda_otp_nonce', 'nonce');
 
-        $email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email']))    : '';
-        $code  = isset($_POST['code'])  ? sanitize_text_field(wp_unslash($_POST['code'])) : '';
+        $email   = isset($_POST['email'])   ? sanitize_email(wp_unslash($_POST['email']))    : '';
+        $code    = isset($_POST['code'])    ? sanitize_text_field(wp_unslash($_POST['code'])) : '';
+        $form_id = isset($_POST['form_id']) ? intval($_POST['form_id'])                        : 0;
 
-        $token = FLD_OTP::verify_otp($email, $code);
+        if (!DXLEDA_OTP::is_form_enabled($form_id)) {
+            wp_send_json_error(__('Invalid request.', 'devxpert-lead-dashboard-for-forminator'));
+        }
+
+        $token = DXLEDA_OTP::verify_otp($email, $code, $form_id);
 
         if ($token) {
             wp_send_json_success(array('token' => $token));
@@ -867,11 +895,11 @@ class DevXpert_Lead_Dashboard {
      * Forminator hook: block form submission if OTP is enabled but token is missing/invalid.
      *
      * Forminator AJAX only serializes its own registered fields, so the hidden
-     * fld_otp_token input injected by JS is often absent from $_POST.
+     * dxleda_otp_token input injected by JS is often absent from $_POST.
      * We check the cookie first (always present in XHR) then fall back to $_POST.
      */
     public function check_otp_on_submit($errors, $form_id, $field_data_array) {
-        if (!FLD_OTP::is_form_enabled($form_id)) {
+        if (!DXLEDA_OTP::is_form_enabled($form_id)) {
             return $errors;
         }
 
@@ -879,23 +907,23 @@ class DevXpert_Lead_Dashboard {
         // Forminator verifies its own submission nonce before this filter runs;
         // here we only read our one-time OTP token (itself validated below).
         $token = '';
-        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Forminator validates the form nonce; the OTP token is validated via FLD_OTP::verify_token().
-        if (!empty($_COOKIE['fld_otp_token'])) {
-            $token = sanitize_text_field(wp_unslash($_COOKIE['fld_otp_token']));
-        } elseif (!empty($_POST['fld_otp_token'])) {
-            $token = sanitize_text_field(wp_unslash($_POST['fld_otp_token']));
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- Forminator validates the form nonce; the OTP token is validated via DXLEDA_OTP::verify_token().
+        if (!empty($_COOKIE['dxleda_otp_token'])) {
+            $token = sanitize_text_field(wp_unslash($_COOKIE['dxleda_otp_token']));
+        } elseif (!empty($_POST['dxleda_otp_token'])) {
+            $token = sanitize_text_field(wp_unslash($_POST['dxleda_otp_token']));
         }
         // phpcs:enable WordPress.Security.NonceVerification.Missing
 
-        if (!$token || !FLD_OTP::verify_token($token)) {
+        if (!$token || !DXLEDA_OTP::verify_token($token, $form_id)) {
             $errors[] = __('Please verify your email address before submitting.', 'devxpert-lead-dashboard-for-forminator');
             return $errors;
         }
 
-        FLD_OTP::consume_token($token);
+        DXLEDA_OTP::consume_token($token);
 
         // Clear the cookie server-side so it cannot be reused
-        setcookie('fld_otp_token', '', time() - 3600, '/', '', is_ssl(), false);
+        setcookie('dxleda_otp_token', '', time() - 3600, '/', '', is_ssl(), false);
 
         return $errors;
     }
