@@ -1,7 +1,14 @@
 <?php
 /**
  * PHPUnit bootstrap for the WordPress test suite.
+ *
+ * This file is only ever executed from the command line by PHPUnit. The guard
+ * below blocks any direct web request while still allowing CLI execution.
  */
+
+if ( ! defined( 'ABSPATH' ) && PHP_SAPI !== 'cli' ) {
+    exit;
+}
 
 $_tests_dir = getenv('WP_TESTS_DIR');
 if (!$_tests_dir) {
