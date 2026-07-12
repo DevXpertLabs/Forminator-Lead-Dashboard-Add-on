@@ -1,22 +1,28 @@
-# Forminator Lead Dashboard
- ![DashBoard View](image-1.png)
-**A Lead Management addon for the Forminator WordPress plugin.**
+# DevXpert Lead Dashboard for Forminator
 
-Built by [Anup Kankale](https://www.linkedin.com/in/anupkankale/)
+![Dashboard View](image-1.png)
+
+**A lead-management add-on for the [Forminator](https://wordpress.org/plugins/forminator/) WordPress plugin.**
+
+Built by [Anup Kankale](https://anupkankale.com) · [DevXpert Labs](https://github.com/DevXpertLabs)
+
+> **Status:** Submitted to the WordPress.org plugin directory (slug `devxpert-lead-dashboard-for-forminator`) — in review.
+> Requires WordPress 5.0+, PHP 7.4+, and the free Forminator plugin.
 
 ---
 
 ## What Does This Plugin Do?
 
-When someone fills out a contact form on your website (built with Forminator), that submission becomes a **lead**. This plugin gives your sales team a proper dashboard inside WordPress to:
+When someone fills out a Forminator form on your site, that submission becomes a **lead**. This plugin gives your team a proper dashboard inside WordPress to:
 
 - See all leads in one place
-- Mark leads as positive, negative, or converted
+- Mark leads as positive, negative, converted, and more
 - Add feedback and notes on each lead
-- Track how leads are coming in over time
-- Export lead data to a spreadsheet (CSV)
+- Track how leads come in over time
+- Export lead data to CSV
+- Optionally require **email verification (OTP)** before a submission is accepted — to cut spam
 
-Without this plugin, form submissions just pile up in Forminator with no way to track what happened to them.
+Without it, form submissions just pile up in Forminator with no way to track what happened to them.
 
 ---
 
@@ -25,7 +31,7 @@ Without this plugin, form submissions just pile up in Forminator with no way to 
 | Role | What They Can Do |
 |---|---|
 | **Administrator** | Full access — dashboard, leads, settings, user management |
-| **Sales Admin** | Can view all leads, update statuses, and add feedback — nothing else |
+| **Sales Admin** | View all leads, update statuses, add feedback — nothing else |
 
 Sales Admin users log in and land directly on the Lead Dashboard. They cannot access any other part of the WordPress admin.
 
@@ -34,108 +40,95 @@ Sales Admin users log in and land directly on the Lead Dashboard. They cannot ac
 ## Key Features
 
 ### Dashboard Overview
-- Stats cards showing Total Leads, New Leads, Positive Leads, Negative Leads, and Conversion Rate
-- "Leads Over Time" line chart
-- "Leads by Status" pie chart
-- Top forms by lead count
-- Recent leads table
+Stats cards (Total / New / Positive / Negative / Conversion Rate), a "Leads Over Time" chart, a "Leads by Status" chart, and top forms by lead count.
 
-![alt text](image-2.png)
+![All Leads](image-2.png)
 
-### All Leads Page
-- Paginated list of every lead
-- Filter by form, status, date range, and assigned team member
-- Search through lead data
-- Click any lead to open a full detail panel
+### All Leads
+Paginated, filterable list (form, status, date range, assignee) with search. Click any lead to open its detail panel.
 
-### Lead Detail Panel (Modal)
-- See all form fields submitted
-- Change lead status (New / Positive / Negative / Follow Up / Converted / Closed)
-- Add sales feedback with a rating (positive / neutral / negative)
-- View all previous feedback from your team
-- Activity log showing every status change and action
+### Lead Detail Panel
+All submitted fields, a status selector (New / Positive / Negative / Follow Up / Converted / Closed), rated feedback (positive / neutral / negative), full team feedback history, and an **activity log** of every change.
 
 ### CSV Export
-- Export leads filtered by form and status
-- All form fields are included as columns
+Export any filtered view of leads, with all form fields as columns (spreadsheet-injection safe).
 
-### Sales Admin User Management
-- Admins can promote any WordPress user to Sales Admin directly from the Settings page
-- Sales Admins can be removed just as easily
-- Sales Admin users only see the Lead Dashboard — no clutter from the rest of WordPress
+### New-Lead Automation
+Optionally email your team when a new lead arrives, and/or auto-assign new leads to a default team member.
 
-### Email Notifications *(Settings)*
-- Optionally receive an email when a new lead arrives
-- Configure which email address gets the notification
+### Email OTP Spam Prevention
+Optionally require visitors to verify their email via a one-time code before a submission becomes a lead. Codes are scoped per form + email, expire in 10 minutes, and are rate-limited. Uses `wp_mail()` with your own SMTP settings (pre-filled for Brevo, fully editable). The SMTP password is **encrypted at rest**.
 
-### Auto-Assignment *(Settings)*
-- Automatically assign new leads to a specific team member
+### Sales Admin Role
+Promote any WordPress user to a locked-down **Sales Admin** from the Settings page.
 
 ---
 
-## How to Install
+## Installation
 
-1. Make sure **Forminator** is installed and activated.
-2. Upload this plugin folder to `/wp-content/plugins/`.
-3. Go to **Plugins** in your WordPress admin and activate **Forminator Lead Dashboard**.
-4. The plugin will create its database tables automatically.
-5. A new **Lead Dashboard** menu will appear in your admin sidebar.
-
----
-
-## How to Add a Sales Admin User
-
-1. Go to **Lead Dashboard → Settings**.
-2. Scroll down to **Sales Admin Users**.
-3. Select any existing WordPress user from the dropdown.
-4. Click **Add as Sales Admin**.
-
-That user can now log in and access the Lead Dashboard. They won't see anything else.
-
----
-
-## Lead Statuses Explained
-
-| Status | Meaning |
-|---|---|
-| **New** | Just came in, not reviewed yet |
-| **Positive** | Looks like a good lead |
-| **Negative** | Not a good fit or not interested |
-| **Follow Up** | Needs more contact before deciding |
-| **Converted** | Became a customer |
-| **Closed** | Done — no further action |
+1. Install and activate the free **Forminator** plugin.
+2. Upload the `devxpert-lead-dashboard-for-forminator` folder to `/wp-content/plugins/` (or install the zip from **Plugins → Add New → Upload**).
+3. Activate **DevXpert Lead Dashboard for Forminator**.
+4. The database tables are created automatically; a **Lead Dashboard** menu appears in the sidebar.
+5. Submit a test entry on any Forminator form — it shows up as a new lead.
 
 ---
 
 ## Requirements
 
-- WordPress 5.0 or higher
-- PHP 7.4 or higher
-- [Forminator](https://wpmudev.com/project/forminator-pro/) plugin (free version works)
+- WordPress 5.0+
+- PHP 7.4+
+- [Forminator](https://wordpress.org/plugins/forminator/) (free)
 
 ---
 
-## Plugin Structure
+## Project Structure
 
 ```
-forminator-lead-dashboard/
-├── forminator-lead-dashboard.php   # Main plugin file
+devxpert-lead-dashboard-for-forminator/
+├── devxpert-lead-dashboard-for-forminator.php   # Main plugin file (singleton, hooks, AJAX)
+├── uninstall.php                                # Drops tables + options on delete
+├── readme.txt                                   # WordPress.org readme
 ├── includes/
-│   ├── class-fld-database.php      # Database table setup
-│   ├── class-fld-leads.php         # Lead data & stats queries
-│   ├── class-fld-feedback.php      # Feedback CRUD
-│   └── class-fld-roles.php         # User roles & capabilities
-├── templates/
-│   ├── dashboard.php               # Dashboard page
-│   ├── leads.php                   # All Leads page
-│   └── settings.php                # Settings page
-└── assets/
-    ├── css/admin-styles.css        # Plugin styles
-    └── js/admin-scripts.js         # Plugin JavaScript
+│   ├── class-fld-roles.php          # sales_admin role + capability
+│   ├── class-fld-database.php       # Custom table creation
+│   ├── class-fld-leads.php          # Lead queries, stats, CSV export
+│   ├── class-fld-feedback.php       # Feedback CRUD
+│   ├── class-fld-otp.php            # Email OTP + SMTP + secret encryption
+│   └── class-fld-notifications.php  # New-lead email + auto-assign
+├── templates/                       # dashboard.php, leads.php, settings.php
+├── assets/
+│   ├── css/  (admin-styles.css, fld-otp.css)
+│   └── js/   (admin-scripts.js, fld-settings.js, fld-otp.js, chart.min.js)
+├── languages/                       # .pot translation template
+└── tests/                           # PHPUnit smoke tests (dev only)
 ```
+
+> All PHP globals are prefixed `dxleda_` / `DXLEDA_`; CSS classes/IDs use `fld-`. Data lives in three `{$wpdb->prefix}dxleda_*` tables; the raw submissions stay in Forminator's own tables.
+
+---
+
+## Development
+
+No build step for the plugin — PHP is served directly; CSS/JS are plain enqueued files.
+
+```bash
+composer install                 # dev dependencies (PHPUnit + polyfills)
+composer test                    # run the PHPUnit smoke tests (needs the WP test suite)
+bash bin/install-wp-tests.sh wordpress_test <db_user> <db_pass> localhost latest
+phpcs                            # WordPress-Extra + Docs + I18n + PHPCompatibility (phpcs.xml.dist)
+```
+
+Build a release zip (excludes dev files via `.distignore`):
+
+```bash
+wp dist-archive .
+```
+
+See **[HANDOVER.md](HANDOVER.md)** for full context, architecture notes, and the current TODO list.
 
 ---
 
 ## License
 
-GPL v2 or later — [https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
+GPL-2.0-or-later — <https://www.gnu.org/licenses/gpl-2.0.html>
