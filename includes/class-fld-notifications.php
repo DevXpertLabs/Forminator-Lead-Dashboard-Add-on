@@ -109,8 +109,8 @@ class DXLEDA_Notifications {
         );
 
         $lines   = array();
-        /* translators: 1: form name, 2: form plugin name, e.g. Contact Form 7 */
         $lines[] = sprintf(
+            /* translators: 1: form name, 2: form plugin name, e.g. Contact Form 7 */
             __('A new lead was submitted via "%1$s" (%2$s).', 'devxpert-lead-dashboard-for-forminator'),
             $form_name,
             DXLEDA_Sources::label($source)
