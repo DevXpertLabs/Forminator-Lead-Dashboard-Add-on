@@ -19,8 +19,11 @@ class DXLEDA_Feedback {
         
         $table = $wpdb->prefix . 'dxleda_feedback';
 
+        $source = DXLEDA_Sources::sanitize(isset($args['source']) ? $args['source'] : '');
+
         $data = array(
             'entry_id' => intval($args['entry_id']),
+            'source' => $source,
             'user_id' => intval($args['user_id']),
             'feedback' => sanitize_textarea_field($args['feedback']),
             'rating' => sanitize_text_field($args['rating']),
@@ -34,7 +37,7 @@ class DXLEDA_Feedback {
             DXLEDA_Leads::log_activity($args['entry_id'], 'feedback_added', array(
                 'feedback_id' => $wpdb->insert_id,
                 'rating' => $args['rating']
-            ));
+            ), $source);
 
             return $wpdb->insert_id;
         }
@@ -45,18 +48,19 @@ class DXLEDA_Feedback {
     /**
      * Get feedback for an entry
      */
-    public static function get_feedback($entry_id) {
+    public static function get_feedback($entry_id, $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
-        
+
         $table = $wpdb->prefix . 'dxleda_feedback';
 
         $feedback = $wpdb->get_results($wpdb->prepare(
             "SELECT f.*, u.display_name as user_name
              FROM $table f
              LEFT JOIN {$wpdb->users} u ON f.user_id = u.ID
-             WHERE f.entry_id = %d
+             WHERE f.entry_id = %d AND f.source = %s
              ORDER BY f.created_at DESC",
-            $entry_id
+            $entry_id,
+            DXLEDA_Sources::sanitize($source)
         ));
 
         return $feedback;
@@ -65,24 +69,29 @@ class DXLEDA_Feedback {
     /**
      * Get feedback count for an entry
      */
-    public static function get_feedback_count($entry_id) {
+    public static function get_feedback_count($entry_id, $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
-        
+
         $table = $wpdb->prefix . 'dxleda_feedback';
 
         return intval($wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM $table WHERE entry_id = %d",
-            $entry_id
+            "SELECT COUNT(*) FROM $table WHERE entry_id = %d AND source = %s",
+            $entry_id,
+            DXLEDA_Sources::sanitize($source)
         )));
     }
 
     /**
      * Get feedback counts for many entries in a single query.
      *
-     * @param int[] $entry_ids
+     * All ids must belong to the same source, since entry IDs are only unique
+     * within one form plugin.
+     *
+     * @param int[]  $entry_ids
+     * @param string $source
      * @return array<int,int> Map of entry_id => count (only entries with feedback).
      */
-    public static function get_feedback_counts($entry_ids) {
+    public static function get_feedback_counts($entry_ids, $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
 
         $entry_ids = array_values(array_unique(array_map('intval', (array) $entry_ids)));
@@ -95,8 +104,10 @@ class DXLEDA_Feedback {
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders are built from a count and passed to prepare().
         $rows = $wpdb->get_results($wpdb->prepare(
-            "SELECT entry_id, COUNT(*) AS c FROM $table WHERE entry_id IN ($placeholders) GROUP BY entry_id",
-            $entry_ids
+            "SELECT entry_id, COUNT(*) AS c FROM $table
+             WHERE entry_id IN ($placeholders) AND source = %s
+             GROUP BY entry_id",
+            array_merge($entry_ids, array(DXLEDA_Sources::sanitize($source)))
         ));
 
         $map = array();
@@ -134,19 +145,19 @@ class DXLEDA_Feedback {
         
         $table = $wpdb->prefix . 'dxleda_feedback';
 
-        // Get entry_id before deleting
-        $entry_id = $wpdb->get_var($wpdb->prepare(
-            "SELECT entry_id FROM $table WHERE id = %d",
+        // Get the lead reference before deleting
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT entry_id, source FROM $table WHERE id = %d",
             $feedback_id
         ));
 
         $result = $wpdb->delete($table, array('id' => $feedback_id));
 
-        if ($result && $entry_id) {
+        if ($result && $row) {
             // Log activity
-            DXLEDA_Leads::log_activity($entry_id, 'feedback_deleted', array(
+            DXLEDA_Leads::log_activity($row->entry_id, 'feedback_deleted', array(
                 'feedback_id' => $feedback_id
-            ));
+            ), $row->source);
         }
 
         return $result !== false;

@@ -7,6 +7,9 @@
 
     // Global state
     let currentLeadId = null;
+    // Entry IDs are only unique within one form plugin, so the open lead is
+    // always tracked as the pair (id, source).
+    let currentLeadSource = null;
     let currentPage = 1;
     let leadsChart = null;
     let statusChart = null;
@@ -207,10 +210,13 @@
         forms.forEach(function(form) {
             tbody.append(`
                 <tr>
-                    <td>${escapeHtml(form.form_name)}</td>
+                    <td>
+                        ${escapeHtml(form.form_name)}
+                        <span class="fld-source-badge fld-source-${escapeHtml(form.source)}">${escapeHtml(form.source_label || form.source)}</span>
+                    </td>
                     <td><strong>${form.count}</strong></td>
                     <td>
-                        <a href="admin.php?page=dxleda-leads&form_id=${form.form_id}" class="button button-small">
+                        <a href="admin.php?page=dxleda-leads&form_id=${form.form_id}&source=${encodeURIComponent(form.source)}" class="button button-small">
                             View Leads
                         </a>
                     </td>
@@ -257,14 +263,17 @@
             const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
             tbody.append(`
-                <tr data-entry-id="${lead.entry_id}">
+                <tr data-entry-id="${lead.entry_id}" data-source="${escapeHtml(lead.source)}">
                     <td>#${lead.entry_id}</td>
                     <td>${formattedDate}</td>
-                    <td>Form #${lead.form_id}</td>
+                    <td>
+                        ${escapeHtml(lead.form_name || ('Form #' + lead.form_id))}
+                        <span class="fld-source-badge fld-source-${escapeHtml(lead.source)}">${escapeHtml(lead.source_label || lead.source)}</span>
+                    </td>
                     <td><span class="fld-status-badge fld-status-${lead.status}">${formatStatus(lead.status)}</span></td>
                     <td>${lead.feedback_count} feedback(s)</td>
                     <td>
-                        <button class="fld-action-btn view fld-view-lead" data-id="${lead.entry_id}">View</button>
+                        <button class="fld-action-btn view fld-view-lead" data-id="${lead.entry_id}" data-source="${escapeHtml(lead.source)}">View</button>
                     </td>
                 </tr>
             `);
@@ -286,6 +295,7 @@
         // Reset filters
         $('#fld-reset-filters').on('click', function() {
             $('#fld-filter-form').val('');
+            $('#fld-filter-source').val('');
             $('#fld-filter-status').val('');
             $('#fld-filter-date-from').val('');
             $('#fld-filter-date-to').val('');
@@ -325,16 +335,54 @@
 
         // Check for URL params
         const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('source')) {
+            $('#fld-filter-source').val(urlParams.get('source'));
+        }
         if (urlParams.has('form_id')) {
-            $('#fld-filter-form').val(urlParams.get('form_id'));
+            // The form dropdown is keyed "source|form_id"; without a source in
+            // the URL, fall back to whichever option matches the ID.
+            const wanted = urlParams.get('source')
+                ? urlParams.get('source') + '|' + urlParams.get('form_id')
+                : null;
+
+            if (wanted && $('#fld-filter-form option[value="' + wanted + '"]').length) {
+                $('#fld-filter-form').val(wanted);
+            } else {
+                $('#fld-filter-form option').each(function() {
+                    if (($(this).val() || '').split('|')[1] === urlParams.get('form_id')) {
+                        $('#fld-filter-form').val($(this).val());
+                        return false;
+                    }
+                });
+            }
         }
     }
 
     /**
      * Load Leads
      */
+    /**
+     * Read the current form/source filter selection.
+     *
+     * The form dropdown encodes "source|form_id" because a form ID alone is
+     * ambiguous across plugins. Picking a specific form implies its source and
+     * overrides the standalone source dropdown.
+     */
+    function currentFilterScope() {
+        const formValue = $('#fld-filter-form').val() || '';
+
+        if (formValue.indexOf('|') !== -1) {
+            const parts = formValue.split('|');
+            return { source: parts[0], form_id: parts[1] };
+        }
+
+        return { source: $('#fld-filter-source').val() || '', form_id: '' };
+    }
+
     function loadLeads() {
         showLoading(true);
+
+        const scope = currentFilterScope();
 
         $.ajax({
             url: dxleda_ajax.ajax_url,
@@ -342,7 +390,8 @@
             data: {
                 action: 'dxleda_get_leads',
                 nonce: dxleda_ajax.nonce,
-                form_id: $('#fld-filter-form').val(),
+                form_id: scope.form_id,
+                source: scope.source,
                 status: $('#fld-filter-status').val(),
                 date_from: $('#fld-filter-date-from').val(),
                 date_to: $('#fld-filter-date-to').val(),
@@ -399,14 +448,19 @@
                 if (phone) contactInfo += `${escapeHtml(phone)}`;
             }
 
+            const formLabel = lead.form_name || ('Form #' + lead.form_id);
+
             tbody.append(`
-                <tr data-entry-id="${lead.entry_id}">
+                <tr data-entry-id="${lead.entry_id}" data-source="${escapeHtml(lead.source)}">
                     <td class="fld-col-check">
-                        <input type="checkbox" class="fld-lead-checkbox" value="${lead.entry_id}">
+                        <input type="checkbox" class="fld-lead-checkbox" value="${escapeHtml(lead.source)}|${lead.entry_id}">
                     </td>
                     <td class="fld-col-id">#${lead.entry_id}</td>
                     <td class="fld-col-date">${formattedDate}</td>
-                    <td class="fld-col-form">Form #${lead.form_id}</td>
+                    <td class="fld-col-form">
+                        ${escapeHtml(formLabel)}
+                        <span class="fld-source-badge fld-source-${escapeHtml(lead.source)}">${escapeHtml(lead.source_label || lead.source)}</span>
+                    </td>
                     <td class="fld-col-contact">${contactInfo || 'N/A'}</td>
                     <td class="fld-col-status">
                         <span class="fld-status-badge fld-status-${lead.status}">${formatStatus(lead.status)}</span>
@@ -415,7 +469,7 @@
                         ${lead.feedback_count > 0 ? `<span class="dashicons dashicons-testimonial"></span> ${lead.feedback_count}` : '-'}
                     </td>
                     <td class="fld-col-actions">
-                        <button class="fld-action-btn view fld-view-lead" data-id="${lead.entry_id}">View</button>
+                        <button class="fld-action-btn view fld-view-lead" data-id="${lead.entry_id}" data-source="${escapeHtml(lead.source)}">View</button>
                     </td>
                 </tr>
             `);
@@ -518,16 +572,19 @@
 
         const status = action.replace('status_', '');
 
-        // Update each lead
+        // Update each lead. Checkbox values are "source|entry_id".
         let completed = 0;
-        selected.forEach(function(entryId) {
+        selected.forEach(function(ref) {
+            const parts = ref.split('|');
+
             $.ajax({
                 url: dxleda_ajax.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'dxleda_update_lead_status',
                     nonce: dxleda_ajax.nonce,
-                    entry_id: entryId,
+                    entry_id: parts[1],
+                    source: parts[0],
                     status: status
                 },
                 success: function() {
@@ -553,7 +610,8 @@
             data: {
                 action: 'dxleda_export_leads',
                 nonce: dxleda_ajax.nonce,
-                form_id: $('#fld-filter-form').val(),
+                form_id: currentFilterScope().form_id,
+                source: currentFilterScope().source,
                 status: $('#fld-filter-status').val()
             },
             success: function(response) {
@@ -593,7 +651,8 @@
         // View lead button
         $(document).on('click', '.fld-view-lead', function() {
             const entryId = $(this).data('id');
-            openLeadModal(entryId);
+            const source = $(this).data('source');
+            openLeadModal(entryId, source);
         });
 
         // Close modal
@@ -635,25 +694,27 @@
     /**
      * Open Lead Modal
      */
-    function openLeadModal(entryId) {
+    function openLeadModal(entryId, source) {
         currentLeadId = entryId;
+        currentLeadSource = source;
         showLoading(true);
 
-        // Get lead details by exact entry ID
+        // Get lead details by exact (entry ID, source) pair
         $.ajax({
             url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
                 action: 'dxleda_get_lead',
                 nonce: dxleda_ajax.nonce,
-                entry_id: entryId
+                entry_id: entryId,
+                source: source
             },
             success: function(response) {
                 showLoading(false);
                 if (response.success) {
                     renderLeadModal(response.data);
-                    loadFeedback(entryId);
-                    loadActivity(entryId);
+                    loadFeedback(entryId, source);
+                    loadActivity(entryId, source);
                     $('#fld-lead-modal').show();
                 } else {
                     showNotice('error', dxleda_ajax.strings.error);
@@ -695,14 +756,15 @@
     /**
      * Load Feedback
      */
-    function loadFeedback(entryId) {
+    function loadFeedback(entryId, source) {
         $.ajax({
             url: dxleda_ajax.ajax_url,
             type: 'POST',
             data: {
                 action: 'dxleda_get_feedback',
                 nonce: dxleda_ajax.nonce,
-                entry_id: entryId
+                entry_id: entryId,
+                source: source || currentLeadSource
             },
             success: function(response) {
                 if (response.success) {
@@ -754,7 +816,7 @@
     /**
      * Load the activity log for a lead (only present in the All Leads modal).
      */
-    function loadActivity(entryId) {
+    function loadActivity(entryId, source) {
         const container = $('#fld-activity-log');
         if (container.length === 0) {
             return; // no activity panel on this page (e.g. dashboard modal)
@@ -766,7 +828,8 @@
             data: {
                 action: 'dxleda_get_activity',
                 nonce: dxleda_ajax.nonce,
-                entry_id: entryId
+                entry_id: entryId,
+                source: source || currentLeadSource
             },
             success: function(response) {
                 if (response.success) {
@@ -833,14 +896,15 @@
                 action: 'dxleda_update_lead_status',
                 nonce: dxleda_ajax.nonce,
                 entry_id: currentLeadId,
+                source: currentLeadSource,
                 status: status
             },
             success: function(response) {
                 if (response.success) {
                     showNotice('success', 'Status updated');
-                    
+
                     // Update table row if exists
-                    const row = $(`tr[data-entry-id="${currentLeadId}"]`);
+                    const row = $(`tr[data-entry-id="${currentLeadId}"][data-source="${currentLeadSource}"]`);
                     if (row.length) {
                         row.find('.fld-status-badge')
                             .removeClass()
@@ -877,6 +941,7 @@
                 action: 'dxleda_add_feedback',
                 nonce: dxleda_ajax.nonce,
                 entry_id: currentLeadId,
+                source: currentLeadSource,
                 feedback: feedback,
                 rating: rating || 'neutral'
             },
@@ -933,6 +998,7 @@
     function closeModal() {
         $('#fld-lead-modal').hide();
         currentLeadId = null;
+        currentLeadSource = null;
     }
 
     /**

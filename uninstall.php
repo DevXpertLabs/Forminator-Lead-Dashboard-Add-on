@@ -15,6 +15,8 @@ $dxleda_tables = array(
 	$wpdb->prefix . 'dxleda_lead_status',
 	$wpdb->prefix . 'dxleda_feedback',
 	$wpdb->prefix . 'dxleda_activity_log',
+	$wpdb->prefix . 'dxleda_cf7_entries',
+	$wpdb->prefix . 'dxleda_cf7_entry_meta',
 );
 
 foreach ( $dxleda_tables as $dxleda_table ) {

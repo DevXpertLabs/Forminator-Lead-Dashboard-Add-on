@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: DevXpert Lead Dashboard for Forminator
+ * Plugin Name: DevXpert Lead Dashboard for Forminator & Contact Form 7
  * Plugin URI: https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on
- * Description: A Lead Management Dashboard for Forminator. Track form submissions as leads, add feedback, categorize them by status, and export to CSV.
- * Version: 1.0.1
+ * Description: A Lead Management Dashboard for Forminator and Contact Form 7. Track form submissions as leads, add feedback, categorize them by status, and export to CSV.
+ * Version: 1.1.0
  * Author: Anup Kankale
  * Author URI: https://anupkankale.com
  * License: GPL v2 or later
@@ -12,9 +12,11 @@
  * Domain Path: /languages
  * Requires at least: 5.0
  * Requires PHP: 7.4
- * Requires Plugins: forminator
  *
- * This plugin requires Forminator to be installed and activated.
+ * Requires Forminator or Contact Form 7 (either is enough; both can be used at
+ * once). "Requires Plugins" is deliberately not declared because WordPress has
+ * no way to express an either/or dependency, and declaring Forminator would
+ * block Contact Form 7-only installs.
  */
 
 // Prevent direct access
@@ -23,7 +25,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('DXLEDA_VERSION', '1.0.1');
+define('DXLEDA_VERSION', '1.1.0');
 define('DXLEDA_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('DXLEDA_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('DXLEDA_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -55,8 +57,8 @@ class DevXpert_Lead_Dashboard {
         // Set up roles/caps early (before init)
         add_action('plugins_loaded', array($this, 'setup_roles'), 5);
 
-        // Check if Forminator is active
-        add_action('plugins_loaded', array($this, 'check_forminator'));
+        // Check that at least one supported form plugin is active
+        add_action('plugins_loaded', array($this, 'check_dependencies'));
 
         // Initialize plugin
         add_action('plugins_loaded', array($this, 'init'));
@@ -69,23 +71,29 @@ class DevXpert_Lead_Dashboard {
     }
 
     /**
-     * Check if Forminator is installed and active
+     * Check that at least one supported form plugin is active.
+     *
+     * Either Forminator or Contact Form 7 is enough; the dashboard simply shows
+     * whichever sources are present.
      */
-    public function check_forminator() {
-        if (!class_exists('Forminator')) {
-            add_action('admin_notices', array($this, 'forminator_missing_notice'));
+    public function check_dependencies() {
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-sources.php';
+
+        if (!DXLEDA_Sources::available()) {
+            add_action('admin_notices', array($this, 'dependency_missing_notice'));
             return false;
         }
+
         return true;
     }
 
     /**
-     * Admin notice if Forminator is not installed
+     * Admin notice when no supported form plugin is installed
      */
-    public function forminator_missing_notice() {
+    public function dependency_missing_notice() {
         ?>
         <div class="notice notice-error">
-            <p><?php esc_html_e( 'DevXpert Lead Dashboard for Forminator requires the Forminator plugin to be installed and activated.', 'devxpert-lead-dashboard-for-forminator' ); ?></p>
+            <p><?php esc_html_e( 'DevXpert Lead Dashboard requires either Forminator or Contact Form 7 to be installed and activated.', 'devxpert-lead-dashboard-for-forminator' ); ?></p>
         </div>
         <?php
     }
@@ -97,15 +105,22 @@ class DevXpert_Lead_Dashboard {
         // Translations are loaded automatically by WordPress.org for hosted
         // plugins (WP 4.6+), so no load_plugin_textdomain() call is needed.
 
-        if (!$this->check_forminator()) {
+        if (!$this->check_dependencies()) {
             return;
         }
 
         // Load includes
         $this->includes();
 
+        // Apply any pending schema changes (an in-place plugin update never
+        // re-runs the activation hook).
+        DXLEDA_Database::maybe_upgrade();
+
         // Seed SMTP defaults on first load (add_option is a no-op if already set)
         DXLEDA_OTP::init_defaults();
+
+        // Capture Contact Form 7 submissions, which CF7 itself does not store
+        DXLEDA_CF7::init();
 
         // New-lead automation: email notifications + auto-assignment
         DXLEDA_Notifications::init();
@@ -178,8 +193,10 @@ class DevXpert_Lead_Dashboard {
      */
     private function includes() {
         require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-sources.php';
         require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-database.php';
         require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-leads.php';
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-cf7.php';
         require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-feedback.php';
         require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-otp.php';
         require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-notifications.php';
@@ -194,6 +211,7 @@ class DevXpert_Lead_Dashboard {
         DXLEDA_Roles::setup();
 
         // Create custom tables
+        require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-sources.php';
         require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-database.php';
         DXLEDA_Database::create_tables();
 
@@ -466,6 +484,21 @@ class DevXpert_Lead_Dashboard {
     }
 
     /**
+     * Read the form source from the current AJAX request.
+     *
+     * Falls back to Forminator, which is what every lead created before
+     * multi-source support belongs to.
+     *
+     * @return string
+     */
+    private function posted_source() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- every caller runs check_ajax_referer() first.
+        $raw = isset($_POST['source']) ? sanitize_text_field(wp_unslash($_POST['source'])) : '';
+
+        return DXLEDA_Sources::sanitize($raw);
+    }
+
+    /**
      * AJAX: Get Leads
      */
     public function ajax_get_leads() {
@@ -481,8 +514,14 @@ class DevXpert_Lead_Dashboard {
         $per_page = isset($_POST['per_page']) ? intval($_POST['per_page']) : 20;
         $search = isset($_POST['search']) ? sanitize_text_field(wp_unslash($_POST['search'])) : '';
 
+        // An empty source means "all sources", so this filter is read directly
+        // rather than through posted_source(), which defaults to Forminator.
+        $source = isset($_POST['source']) ? sanitize_text_field(wp_unslash($_POST['source'])) : '';
+        $source = DXLEDA_Sources::is_valid($source) ? $source : '';
+
         $leads = DXLEDA_Leads::get_leads(array(
             'form_id' => $form_id,
+            'source' => $source,
             'status' => $status,
             'page' => $page,
             'per_page' => $per_page,
@@ -508,7 +547,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid entry ID');
         }
 
-        $lead = DXLEDA_Leads::get_lead($entry_id);
+        $lead = DXLEDA_Leads::get_lead($entry_id, $this->posted_source());
 
         if (!$lead) {
             wp_send_json_error('Lead not found');
@@ -534,7 +573,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid data');
         }
 
-        $result = DXLEDA_Leads::update_lead_status($entry_id, $status);
+        $result = DXLEDA_Leads::update_lead_status($entry_id, $status, array(), $this->posted_source());
 
         if ($result) {
             wp_send_json_success('Status updated');
@@ -563,6 +602,7 @@ class DevXpert_Lead_Dashboard {
 
         $result = DXLEDA_Feedback::add_feedback(array(
             'entry_id' => $entry_id,
+            'source' => $this->posted_source(),
             'feedback' => $feedback,
             'rating' => $rating,
             'user_id' => get_current_user_id()
@@ -594,7 +634,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid entry ID');
         }
 
-        $feedback = DXLEDA_Feedback::get_feedback($entry_id);
+        $feedback = DXLEDA_Feedback::get_feedback($entry_id, $this->posted_source());
 
         wp_send_json_success($feedback);
     }
@@ -662,7 +702,11 @@ class DevXpert_Lead_Dashboard {
         $form_id = isset($_POST['form_id']) ? intval($_POST['form_id']) : 0;
         $status = isset($_POST['status']) ? sanitize_text_field(wp_unslash($_POST['status'])) : '';
 
-        $csv_data = DXLEDA_Leads::export_leads_csv($form_id, $status);
+        // Empty means "all sources".
+        $source = isset($_POST['source']) ? sanitize_text_field(wp_unslash($_POST['source'])) : '';
+        $source = DXLEDA_Sources::is_valid($source) ? $source : '';
+
+        $csv_data = DXLEDA_Leads::export_leads_csv($form_id, $status, $source);
 
         wp_send_json_success(array('csv' => $csv_data));
     }
@@ -683,7 +727,7 @@ class DevXpert_Lead_Dashboard {
             wp_send_json_error('Invalid entry ID');
         }
 
-        wp_send_json_success(DXLEDA_Leads::get_activity($entry_id));
+        wp_send_json_success(DXLEDA_Leads::get_activity($entry_id, $this->posted_source()));
     }
 
     /**

@@ -57,7 +57,15 @@ $smtp_encryption    = get_option('dxleda_smtp_encryption',    'tls');
 $brevo_sender_name  = get_option('dxleda_brevo_sender_name',  get_bloginfo('name'));
 $brevo_sender_email = get_option('dxleda_brevo_sender_email', get_option('admin_email'));
 $otp_enabled_forms  = array_map('intval', (array) get_option('dxleda_otp_enabled_forms', array()));
-$all_forms          = DXLEDA_Leads::get_forms();
+// OTP verification is gated on Forminator's submit-errors filter, so only
+// Forminator forms can be protected. Contact Form 7 forms are deliberately
+// excluded rather than listed and silently ignored.
+$all_forms          = array_values(array_filter(
+    DXLEDA_Leads::get_forms(),
+    function ($form) {
+        return $form['source'] === DXLEDA_Sources::FORMINATOR;
+    }
+));
 
 $team_users    = DXLEDA_Roles::get_team_users();
 $sales_admins  = DXLEDA_Roles::get_sales_admins();
@@ -275,6 +283,9 @@ $sales_admins  = DXLEDA_Roles::get_sales_admins();
             </table>
 
             <h3 style="margin-top:20px;"><?php esc_html_e('Enable OTP for Forms', 'devxpert-lead-dashboard-for-forminator'); ?></h3>
+            <p class="description" style="margin-bottom:10px;">
+                <?php esc_html_e('Email verification is currently available for Forminator forms only.', 'devxpert-lead-dashboard-for-forminator'); ?>
+            </p>
             <table class="form-table">
                 <tr>
                     <th scope="row"><?php esc_html_e('Protected Forms', 'devxpert-lead-dashboard-for-forminator'); ?></th>
