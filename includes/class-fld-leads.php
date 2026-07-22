@@ -176,7 +176,7 @@ class DXLEDA_Leads {
 		// (the inner SELECT has mixed aggregate + non-aggregate columns)
 		// $query is assembled from hardcoded SQL, {$wpdb->prefix} table names and
 		// our own source constants; all user values are bound through prepare().
-        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		if ( ! empty( $query_args ) ) {
 			$total = $wpdb->get_var(
 				$wpdb->prepare( "SELECT COUNT(*) FROM ($query) AS dxleda_count_subq", $query_args )
@@ -188,7 +188,7 @@ class DXLEDA_Leads {
 
 		// Order.
 		$allowed_orderby = array( 'date_created', 'entry_id', 'lead_status' );
-		$orderby         = in_array( $args['orderby'], $allowed_orderby ) ? $args['orderby'] : 'date_created';
+		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'date_created';
 		$order           = strtoupper( $args['order'] ) === 'ASC' ? 'ASC' : 'DESC';
 
 		if ( 'date_created' === $orderby ) {
@@ -205,7 +205,7 @@ class DXLEDA_Leads {
 
 		// Execute query. See note above: table names come from $wpdb->prefix,
 		// all values are bound via $wpdb->prepare().
-        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		if ( ! empty( $query_args ) ) {
 			$rows = $wpdb->get_results( $wpdb->prepare( $query, $query_args ) );
 		} else {
@@ -292,13 +292,14 @@ class DXLEDA_Leads {
 
 		$placeholders = implode( ',', array_fill( 0, count( $entry_ids ), '%d' ) );
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders are built from a count and passed to prepare().
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- table name from $wpdb->prefix; IN() placeholders are built from a count and bound via prepare().
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT entry_id, meta_key, meta_value FROM $table_meta WHERE entry_id IN ($placeholders)",
 				$entry_ids
 			)
 		);
+		// phpcs:enable
 
 		$map = array();
 		foreach ( $rows as $row ) {
@@ -327,6 +328,7 @@ class DXLEDA_Leads {
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from trusted prefix; entry_id bound via prepare().
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT form_id FROM $table WHERE entry_id = %d",
 				(int) $entry_id
 			)
@@ -357,6 +359,7 @@ class DXLEDA_Leads {
 		// Check if record exists.
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT id FROM $table WHERE entry_id = %d AND source = %s",
 				$entry_id,
 				$source
@@ -433,7 +436,7 @@ class DXLEDA_Leads {
 
 		// Table names come from $wpdb->prefix and our own source constants;
 		// entry_id is bound via prepare().
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		$entry = $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT e.*,
@@ -448,6 +451,7 @@ class DXLEDA_Leads {
 				$entry_id
 			)
 		);
+		// phpcs:enable
 
 		if ( ! $entry ) {
 			return null;
@@ -782,6 +786,7 @@ class DXLEDA_Leads {
 
 		$table = $wpdb->prefix . 'dxleda_activity_log';
 
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT a.action, a.details, a.created_at, u.display_name AS user_name
@@ -793,6 +798,7 @@ class DXLEDA_Leads {
 				DXLEDA_Sources::sanitize( $source )
 			)
 		);
+		// phpcs:enable
 
 		return is_array( $rows ) ? $rows : array();
 	}
@@ -846,6 +852,7 @@ class DXLEDA_Leads {
 
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT id FROM $table WHERE entry_id = %d AND source = %s",
 				$entry_id,
 				$source

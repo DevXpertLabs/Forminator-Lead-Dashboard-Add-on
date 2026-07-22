@@ -34,6 +34,7 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 
 		$forminator = $wpdb->get_var(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT status FROM $table WHERE entry_id = %d AND source = %s",
 				500,
 				DXLEDA_Sources::FORMINATOR
@@ -41,6 +42,7 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 		);
 		$cf7        = $wpdb->get_var(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT status FROM $table WHERE entry_id = %d AND source = %s",
 				500,
 				DXLEDA_Sources::CF7
@@ -105,6 +107,7 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT source, assigned_to FROM $table WHERE entry_id = %d ORDER BY source",
 				800
 			),

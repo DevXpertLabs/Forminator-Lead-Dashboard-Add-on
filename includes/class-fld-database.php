@@ -229,9 +229,9 @@ class DXLEDA_Database {
 	/**
 	 * Run pending schema upgrades.
 	 *
-	 * create_tables() only runs on activation, so a plugin updated in place
-	 * (via WordPress.org) would never pick up a new schema. Called on every
-	 * load; the version check makes it a no-op in the common case.
+	 * The create_tables() routine only runs on activation, so a plugin updated
+	 * in place (via WordPress.org) would never pick up a new schema. Called on
+	 * every load; the version check makes it a no-op in the common case.
 	 *
 	 * @return void
 	 */

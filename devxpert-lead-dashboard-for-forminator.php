@@ -36,7 +36,9 @@ define( 'DXLEDA_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 class DevXpert_Lead_Dashboard {
 
 	/**
-	 * Single instance of the class
+	 * Single instance of the class.
+	 *
+	 * @var DevXpert_Lead_Dashboard|null
 	 */
 	private static $instance = null;
 
@@ -586,7 +588,7 @@ class DevXpert_Lead_Dashboard {
 		$entry_id = isset( $_POST['entry_id'] ) ? intval( $_POST['entry_id'] ) : 0;
 		$status   = isset( $_POST['status'] ) ? sanitize_text_field( wp_unslash( $_POST['status'] ) ) : '';
 
-		if ( ! $entry_id || ! in_array( $status, array( 'new', 'positive', 'negative', 'follow_up', 'converted', 'closed' ) ) ) {
+		if ( ! $entry_id || ! in_array( $status, array( 'new', 'positive', 'negative', 'follow_up', 'converted', 'closed' ), true ) ) {
 			wp_send_json_error( 'Invalid data' );
 		}
 
@@ -985,6 +987,7 @@ class DevXpert_Lead_Dashboard {
 	 * dxleda_otp_token input injected by JS is often absent from $_POST.
 	 * We check the cookie first (always present in XHR) then fall back to $_POST.
 	 */
+	// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature is fixed by Forminator's submit-errors filter.
 	public function check_otp_on_submit( $errors, $form_id, $field_data_array ) {
 		if ( ! DXLEDA_OTP::is_form_enabled( $form_id ) ) {
 			return $errors;

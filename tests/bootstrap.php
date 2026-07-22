@@ -10,18 +10,19 @@ if ( ! defined( 'ABSPATH' ) && PHP_SAPI !== 'cli' ) {
 	exit;
 }
 
-$_tests_dir = getenv( 'WP_TESTS_DIR' );
-if ( ! $_tests_dir ) {
-	$_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
+$dxleda_tests_dir = getenv( 'WP_TESTS_DIR' );
+if ( ! $dxleda_tests_dir ) {
+	$dxleda_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
 }
 
-if ( ! file_exists( "{$_tests_dir}/includes/functions.php" ) ) {
-	echo "Could not find {$_tests_dir}/includes/functions.php — run bin/install-wp-tests.sh first." . PHP_EOL;
+if ( ! file_exists( "{$dxleda_tests_dir}/includes/functions.php" ) ) {
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CLI-only bootstrap; WordPress is not loaded yet.
+	echo "Could not find {$dxleda_tests_dir}/includes/functions.php — run bin/install-wp-tests.sh first." . PHP_EOL;
 	exit( 1 );
 }
 
 // Give access to tests_add_filter() before the test suite loads.
-require_once "{$_tests_dir}/includes/functions.php";
+require_once "{$dxleda_tests_dir}/includes/functions.php";
 
 /**
  * Load the plugin under test.
@@ -30,7 +31,7 @@ require_once "{$_tests_dir}/includes/functions.php";
  * active, so for unit testing we require them directly — neither Forminator nor
  * Contact Form 7 is needed to exercise the plugin's own data layer.
  */
-function _dxleda_manually_load_plugin() {
+function dxleda_manually_load_plugin() {
 	$dir = dirname( __DIR__ );
 
 	require $dir . '/devxpert-lead-dashboard-for-forminator.php';
@@ -44,7 +45,7 @@ function _dxleda_manually_load_plugin() {
 	require_once $dir . '/includes/class-fld-otp.php';
 	require_once $dir . '/includes/class-fld-notifications.php';
 }
-tests_add_filter( 'muplugins_loaded', '_dxleda_manually_load_plugin' );
+tests_add_filter( 'muplugins_loaded', 'dxleda_manually_load_plugin' );
 
 // Start up the WP testing environment.
-require "{$_tests_dir}/includes/bootstrap.php";
+require "{$dxleda_tests_dir}/includes/bootstrap.php";

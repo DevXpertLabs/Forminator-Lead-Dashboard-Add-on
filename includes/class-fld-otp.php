@@ -159,6 +159,7 @@ class DXLEDA_OTP {
 
 		if ( ! $sent ) {
 			global $phpmailer;
+			// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- ErrorInfo is PHPMailer's own property name.
 			$error_info = isset( $phpmailer ) && ! empty( $phpmailer->ErrorInfo ) ? $phpmailer->ErrorInfo : '';
 			return new WP_Error( 'mail_failed', __( 'Failed to send OTP email.', 'devxpert-lead-dashboard-for-forminator' ) . ( $error_info ? ' ' . $error_info : '' ) );
 		}
@@ -173,6 +174,7 @@ class DXLEDA_OTP {
 	 * @param PHPMailer\PHPMailer\PHPMailer $phpmailer
 	 */
 	public static function configure_phpmailer( $phpmailer ) {
+		// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- PHPMailer's own property names.
 		$phpmailer->isSMTP();
 		$phpmailer->Host       = get_option( 'dxleda_smtp_host', 'smtp-relay.brevo.com' );
 		$phpmailer->SMTPAuth   = true;
@@ -180,6 +182,7 @@ class DXLEDA_OTP {
 		$phpmailer->Username   = get_option( 'dxleda_smtp_username', '' );
 		$phpmailer->Password   = self::decrypt_secret( get_option( 'dxleda_smtp_password', '' ) );
 		$phpmailer->SMTPSecure = get_option( 'dxleda_smtp_encryption', 'tls' );
+		// phpcs:enable
 	}
 
 	/**
@@ -215,6 +218,7 @@ class DXLEDA_OTP {
 			return $plain;
 		}
 
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- binary-safe storage encoding for the encrypted secret, not obfuscation.
 		return self::ENC_PREFIX . base64_encode( $iv . $cipher );
 	}
 
@@ -232,6 +236,7 @@ class DXLEDA_OTP {
 			return $stored; // legacy plaintext or OpenSSL missing.
 		}
 
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- decoding our own stored ciphertext, not obfuscated code.
 		$raw = base64_decode( substr( $stored, strlen( self::ENC_PREFIX ) ), true );
 		if ( false === $raw || strlen( $raw ) <= 16 ) {
 			return '';

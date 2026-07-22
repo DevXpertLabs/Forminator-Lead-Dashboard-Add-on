@@ -58,6 +58,7 @@ class DXLEDA_Feedback {
 
 		$table = $wpdb->prefix . 'dxleda_feedback';
 
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 		$feedback = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT f.*, u.display_name as user_name
@@ -69,6 +70,7 @@ class DXLEDA_Feedback {
 				DXLEDA_Sources::sanitize( $source )
 			)
 		);
+		// phpcs:enable
 
 		return $feedback;
 	}
@@ -84,6 +86,7 @@ class DXLEDA_Feedback {
 		return intval(
 			$wpdb->get_var(
 				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 					"SELECT COUNT(*) FROM $table WHERE entry_id = %d AND source = %s",
 					$entry_id,
 					DXLEDA_Sources::sanitize( $source )
@@ -113,7 +116,7 @@ class DXLEDA_Feedback {
 		$table        = $wpdb->prefix . 'dxleda_feedback';
 		$placeholders = implode( ',', array_fill( 0, count( $entry_ids ), '%d' ) );
 
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders are built from a count and passed to prepare().
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from $wpdb->prefix; IN() placeholders are built from a count and bound via prepare().
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT entry_id, COUNT(*) AS c FROM $table
@@ -122,6 +125,7 @@ class DXLEDA_Feedback {
 				array_merge( $entry_ids, array( DXLEDA_Sources::sanitize( $source ) ) )
 			)
 		);
+		// phpcs:enable
 
 		$map = array();
 		foreach ( $rows as $row ) {
@@ -144,6 +148,7 @@ class DXLEDA_Feedback {
 
 		$user_id = $wpdb->get_var(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT user_id FROM $table WHERE id = %d",
 				intval( $feedback_id )
 			)
@@ -163,6 +168,7 @@ class DXLEDA_Feedback {
 		// Get the lead reference before deleting.
 		$row = $wpdb->get_row(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT entry_id, source FROM $table WHERE id = %d",
 				$feedback_id
 			)
@@ -242,6 +248,7 @@ class DXLEDA_Feedback {
 		$table     = $wpdb->prefix . 'dxleda_feedback';
 		$date_from = gmdate( 'Y-m-d', strtotime( "-{$days} days" ) );
 
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 		$stats = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT rating, COUNT(*) as count
@@ -252,6 +259,7 @@ class DXLEDA_Feedback {
 			),
 			OBJECT_K
 		);
+		// phpcs:enable
 
 		return $stats;
 	}
