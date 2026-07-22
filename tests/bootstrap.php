@@ -26,9 +26,9 @@ require_once "{$_tests_dir}/includes/functions.php";
 /**
  * Load the plugin under test.
  *
- * The plugin skips loading its class files when Forminator is not active, so
- * for unit testing we require them directly — Forminator itself is not needed
- * to exercise the plugin's own data layer.
+ * The plugin skips loading its class files when no supported form plugin is
+ * active, so for unit testing we require them directly — neither Forminator nor
+ * Contact Form 7 is needed to exercise the plugin's own data layer.
  */
 function _dxleda_manually_load_plugin() {
     $dir = dirname(__DIR__);
@@ -36,8 +36,10 @@ function _dxleda_manually_load_plugin() {
     require $dir . '/devxpert-lead-dashboard-for-forminator.php';
 
     require_once $dir . '/includes/class-fld-roles.php';
+    require_once $dir . '/includes/class-fld-sources.php';
     require_once $dir . '/includes/class-fld-database.php';
     require_once $dir . '/includes/class-fld-leads.php';
+    require_once $dir . '/includes/class-fld-cf7.php';
     require_once $dir . '/includes/class-fld-feedback.php';
     require_once $dir . '/includes/class-fld-otp.php';
     require_once $dir . '/includes/class-fld-notifications.php';

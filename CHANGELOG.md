@@ -1,8 +1,48 @@
 # Changelog
 
-All notable changes to **DevXpert Lead Dashboard for Forminator** are documented here.
+All notable changes to **DevXpert Lead Dashboard for Forminator & Contact Form 7** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/); this project
 follows the version in the plugin header / `readme.txt` `Stable tag`.
+
+## [1.1.0] — Contact Form 7 support
+
+### Added
+- **Contact Form 7 as a lead source.** CF7 does not persist submissions — it mails
+  them and discards them — so the plugin now captures them itself via
+  `wpcf7_submit` into `dxleda_cf7_entries` / `dxleda_cf7_entry_meta`
+  (`class-fld-cf7.php`). Only submissions received after upgrading are captured;
+  there is no history to import.
+- **`DXLEDA_Sources`** (`class-fld-sources.php`) — a source registry describing
+  each supported form plugin's tables, availability, and form list. Nothing
+  outside it names a vendor's tables or API.
+- **Source filter and source badges** in the leads list and dashboard, shown only
+  when more than one form plugin is active.
+- `dxleda_lead_captured` action — the shared entry point both sources fire, so
+  notifications and auto-assignment work identically for either.
+- Tests covering the ID-collision cases (`tests/test-sources.php`).
+
+### Changed
+- **A lead is now identified by `(entry_id, source)`, not `entry_id` alone.**
+  Entry IDs are only unique within one form plugin, so Forminator entry #5 and
+  CF7 entry #5 would otherwise have shared status, feedback, and activity. The
+  `source` column was added to `dxleda_lead_status`, `dxleda_feedback`, and
+  `dxleda_activity_log`, and the unique key on `dxleda_lead_status` became
+  `(entry_id, source)`.
+- `dxleda_lead_status.source` (the lead's marketing origin) was renamed to
+  `lead_source` to free the name for the form plugin identifier. Existing values
+  are migrated.
+- Schema upgrades now run on load via `DXLEDA_Database::maybe_upgrade()`, since an
+  in-place plugin update never re-runs the activation hook.
+- **Forminator is no longer required.** Either Forminator or Contact Form 7 is
+  enough. The `Requires Plugins: forminator` header was removed because WordPress
+  cannot express an either/or dependency and it would block CF7-only installs.
+- Plugin renamed to *DevXpert Lead Dashboard for Forminator & Contact Form 7*.
+  The directory slug is unchanged.
+- CSV export gained Source and Form Name columns.
+
+### Notes
+- Email verification (OTP) remains Forminator-only; the Settings form list is
+  filtered accordingly rather than listing CF7 forms that would be ignored.
 
 ## [Unreleased] — WordPress.org submission prep
 

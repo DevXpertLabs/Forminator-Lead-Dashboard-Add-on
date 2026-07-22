@@ -1,8 +1,12 @@
 <?php
 /**
  * Leads Handler Class
- * 
- * Manages leads from Forminator entries
+ *
+ * Manages leads from every supported form plugin. Which tables a lead lives in
+ * is decided by DXLEDA_Sources; nothing here names a vendor directly.
+ *
+ * A lead is identified by the pair (entry_id, source) — entry IDs are only
+ * unique within their own form plugin.
  */
 
 if (!defined('ABSPATH')) {
@@ -12,6 +16,47 @@ if (!defined('ABSPATH')) {
 class DXLEDA_Leads {
 
     /**
+     * Build the UNION that presents every source's entries as one result set
+     * with a uniform shape: entry_id, form_id, date_created, source.
+     *
+     * @param string $only_source Restrict to a single source, or '' for all.
+     * @return string Parenthesised SQL, or '' when no source is available.
+     */
+    private static function entries_union($only_source = '') {
+        $parts = array();
+
+        foreach (array_keys(DXLEDA_Sources::available()) as $slug) {
+            if ($only_source !== '' && $slug !== $only_source) {
+                continue;
+            }
+
+            $table = DXLEDA_Sources::entries_table($slug);
+
+            if (!$table) {
+                continue;
+            }
+
+            // Table names come from $wpdb->prefix; $slug is one of our own
+            // constants, never user input.
+            $sql = "SELECT entry_id, form_id, date_created, '" . esc_sql($slug) . "' AS source FROM $table";
+
+            $where = DXLEDA_Sources::entries_where($slug);
+
+            if ($where) {
+                $sql .= " WHERE $where";
+            }
+
+            $parts[] = $sql;
+        }
+
+        if (empty($parts)) {
+            return '';
+        }
+
+        return '(' . implode(' UNION ALL ', $parts) . ')';
+    }
+
+    /**
      * Get leads with filters
      */
     public static function get_leads($args = array()) {
@@ -19,6 +64,7 @@ class DXLEDA_Leads {
 
         $defaults = array(
             'form_id' => 0,
+            'source' => '',
             'status' => '',
             'page' => 1,
             'per_page' => 20,
@@ -31,20 +77,37 @@ class DXLEDA_Leads {
         );
 
         $args = wp_parse_args($args, $defaults);
-        
-        $table_entries = $wpdb->prefix . 'frmt_form_entry';
-        $table_meta = $wpdb->prefix . 'frmt_form_entry_meta';
+
+        // An unrecognised source filter would silently widen to "everything";
+        // treat it as "no filter" only when it is genuinely empty.
+        $source_filter = '';
+        if ($args['source'] !== '' && DXLEDA_Sources::is_valid($args['source'])) {
+            $source_filter = $args['source'];
+        }
+
+        $entries = self::entries_union($source_filter);
+
+        if ($entries === '') {
+            return array(
+                'leads' => array(),
+                'total' => 0,
+                'pages' => 0,
+                'current_page' => $args['page'],
+            );
+        }
+
         $table_status = $wpdb->prefix . 'dxleda_lead_status';
 
         // Base query
-        $query = "SELECT e.*, 
+        $query = "SELECT e.*,
                          COALESCE(s.status, 'new') as lead_status,
                          s.assigned_to,
                          s.priority,
-                         s.source
-                  FROM $table_entries e
-                  LEFT JOIN $table_status s ON e.entry_id = s.entry_id
-                  WHERE e.entry_type = 'custom-forms'";
+                         s.lead_source
+                  FROM $entries e
+                  LEFT JOIN $table_status s
+                         ON e.entry_id = s.entry_id AND e.source = s.source
+                  WHERE 1=1";
 
         $query_args = array();
 
@@ -81,20 +144,38 @@ class DXLEDA_Leads {
             $query_args[] = $args['assigned_to'];
         }
 
-        // Search filter (searches in entry meta)
+        // Search filter (searches in entry meta). Each source keeps its field
+        // values in its own table, so the term is matched per source.
         if (!empty($args['search'])) {
             $search_term = '%' . $wpdb->esc_like($args['search']) . '%';
-            $query .= " AND e.entry_id IN (
-                SELECT DISTINCT entry_id FROM $table_meta 
-                WHERE meta_value LIKE %s
-            )";
-            $query_args[] = $search_term;
+            $clauses     = array();
+
+            foreach (array_keys(DXLEDA_Sources::available()) as $slug) {
+                if ($source_filter !== '' && $slug !== $source_filter) {
+                    continue;
+                }
+
+                $meta_table = DXLEDA_Sources::meta_table($slug);
+
+                if (!$meta_table) {
+                    continue;
+                }
+
+                $clauses[] = "(e.source = '" . esc_sql($slug) . "' AND e.entry_id IN (
+                    SELECT DISTINCT entry_id FROM $meta_table WHERE meta_value LIKE %s
+                ))";
+                $query_args[] = $search_term;
+            }
+
+            if (!empty($clauses)) {
+                $query .= ' AND (' . implode(' OR ', $clauses) . ')';
+            }
         }
 
         // Count total — wrap in subquery to avoid ONLY_FULL_GROUP_BY issues
         // (the inner SELECT has mixed aggregate + non-aggregate columns)
-        // $query is assembled from hardcoded SQL and {$wpdb->prefix} table names;
-        // all user values are bound through $wpdb->prepare() above.
+        // $query is assembled from hardcoded SQL, {$wpdb->prefix} table names and
+        // our own source constants; all user values are bound through prepare().
         // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         if (!empty($query_args)) {
             $total = $wpdb->get_var(
@@ -109,7 +190,7 @@ class DXLEDA_Leads {
         $allowed_orderby = array('date_created', 'entry_id', 'lead_status');
         $orderby = in_array($args['orderby'], $allowed_orderby) ? $args['orderby'] : 'date_created';
         $order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
-        
+
         if ($orderby === 'date_created') {
             $query .= " ORDER BY e.date_created $order";
         } else {
@@ -126,30 +207,45 @@ class DXLEDA_Leads {
         // all values are bound via $wpdb->prepare().
         // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         if (!empty($query_args)) {
-            $entries = $wpdb->get_results($wpdb->prepare($query, $query_args));
+            $rows = $wpdb->get_results($wpdb->prepare($query, $query_args));
         } else {
-            $entries = $wpdb->get_results($query);
+            $rows = $wpdb->get_results($query);
         }
         // phpcs:enable
 
-        // Batch-load meta and feedback counts for all entries in two queries
-        // (instead of two queries per row) to avoid an N+1 pattern.
-        $entry_ids = wp_list_pluck($entries, 'entry_id');
-        $meta_map  = self::get_entry_meta_bulk($entry_ids);
-        $count_map = DXLEDA_Feedback::get_feedback_counts($entry_ids);
+        // Batch-load meta and feedback counts for all entries, grouped by source,
+        // to avoid an N+1 pattern.
+        $ids_by_source = array();
+        foreach ($rows as $row) {
+            $ids_by_source[$row->source][] = (int) $row->entry_id;
+        }
+
+        $meta_map  = array();
+        $count_map = array();
+
+        foreach ($ids_by_source as $slug => $ids) {
+            $meta_map[$slug]  = self::get_entry_meta_bulk($ids, $slug);
+            $count_map[$slug] = DXLEDA_Feedback::get_feedback_counts($ids, $slug);
+        }
 
         $leads = array();
-        foreach ($entries as $entry) {
+        foreach ($rows as $entry) {
+            $slug = $entry->source;
+            $eid  = (int) $entry->entry_id;
+
             $leads[] = array(
                 'entry_id' => $entry->entry_id,
                 'form_id' => $entry->form_id,
+                'source' => $slug,
+                'source_label' => DXLEDA_Sources::label($slug),
+                'form_name' => self::form_name($entry->form_id, $slug),
                 'date_created' => $entry->date_created,
                 'status' => $entry->lead_status,
                 'assigned_to' => $entry->assigned_to,
                 'priority' => $entry->priority,
-                'source' => $entry->source,
-                'meta' => isset($meta_map[$entry->entry_id]) ? $meta_map[$entry->entry_id] : array(),
-                'feedback_count' => isset($count_map[$entry->entry_id]) ? $count_map[$entry->entry_id] : 0
+                'lead_source' => $entry->lead_source,
+                'meta' => isset($meta_map[$slug][$eid]) ? $meta_map[$slug][$eid] : array(),
+                'feedback_count' => isset($count_map[$slug][$eid]) ? $count_map[$slug][$eid] : 0
             );
         }
 
@@ -163,32 +259,25 @@ class DXLEDA_Leads {
 
     /**
      * Get entry meta data
+     *
+     * @param int    $entry_id
+     * @param string $source
+     * @return array<string,mixed>
      */
-    public static function get_entry_meta($entry_id) {
-        global $wpdb;
-        
-        $table_meta = $wpdb->prefix . 'frmt_form_entry_meta';
-        
-        $meta = $wpdb->get_results($wpdb->prepare(
-            "SELECT meta_key, meta_value FROM $table_meta WHERE entry_id = %d",
-            $entry_id
-        ), OBJECT_K);
+    public static function get_entry_meta($entry_id, $source = DXLEDA_Sources::FORMINATOR) {
+        $map = self::get_entry_meta_bulk(array($entry_id), $source);
 
-        $formatted = array();
-        foreach ($meta as $key => $row) {
-            $formatted[$key] = maybe_unserialize($row->meta_value);
-        }
-
-        return $formatted;
+        return isset($map[(int) $entry_id]) ? $map[(int) $entry_id] : array();
     }
 
     /**
-     * Bulk-load entry meta for many entries in a single query.
+     * Bulk-load entry meta for many entries of one source in a single query.
      *
-     * @param int[] $entry_ids
+     * @param int[]  $entry_ids
+     * @param string $source
      * @return array<int,array<string,mixed>> Map of entry_id => [meta_key => value].
      */
-    public static function get_entry_meta_bulk($entry_ids) {
+    public static function get_entry_meta_bulk($entry_ids, $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
 
         $entry_ids = array_values(array_unique(array_map('intval', (array) $entry_ids)));
@@ -196,7 +285,11 @@ class DXLEDA_Leads {
             return array();
         }
 
-        $table_meta   = $wpdb->prefix . 'frmt_form_entry_meta';
+        $table_meta = DXLEDA_Sources::meta_table(DXLEDA_Sources::sanitize($source));
+        if (!$table_meta) {
+            return array();
+        }
+
         $placeholders = implode(',', array_fill(0, count($entry_ids), '%d'));
 
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders are built from a count and passed to prepare().
@@ -214,9 +307,38 @@ class DXLEDA_Leads {
     }
 
     /**
-     * Update lead status
+     * Look up the form_id for an entry within its own source.
+     *
+     * @param int    $entry_id
+     * @param string $source
+     * @return int
      */
-    public static function update_lead_status($entry_id, $status, $additional = array()) {
+    private static function lookup_form_id($entry_id, $source) {
+        global $wpdb;
+
+        $table = DXLEDA_Sources::entries_table($source);
+
+        if (!$table) {
+            return 0;
+        }
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from trusted prefix; entry_id bound via prepare().
+        return (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT form_id FROM $table WHERE entry_id = %d",
+            (int) $entry_id
+        ));
+    }
+
+    /**
+     * Update lead status
+     *
+     * @param int    $entry_id
+     * @param string $status
+     * @param array  $additional
+     * @param string $source
+     * @return bool
+     */
+    public static function update_lead_status($entry_id, $status, $additional = array(), $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
 
         // Defence in depth: only ever persist a known status value.
@@ -224,18 +346,15 @@ class DXLEDA_Leads {
             return false;
         }
 
-        $table = $wpdb->prefix . 'dxleda_lead_status';
+        $source   = DXLEDA_Sources::sanitize($source);
+        $entry_id = (int) $entry_id;
+        $table    = $wpdb->prefix . 'dxleda_lead_status';
 
         // Check if record exists
         $exists = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM $table WHERE entry_id = %d",
-            $entry_id
-        ));
-
-        // Get form_id from entry
-        $form_id = $wpdb->get_var($wpdb->prepare(
-            "SELECT form_id FROM {$wpdb->prefix}frmt_form_entry WHERE entry_id = %d",
-            $entry_id
+            "SELECT id FROM $table WHERE entry_id = %d AND source = %s",
+            $entry_id,
+            $source
         ));
 
         $data = array(
@@ -250,15 +369,16 @@ class DXLEDA_Leads {
         if (!empty($additional['priority'])) {
             $data['priority'] = sanitize_text_field($additional['priority']);
         }
-        if (!empty($additional['source'])) {
-            $data['source'] = sanitize_text_field($additional['source']);
+        if (!empty($additional['lead_source'])) {
+            $data['lead_source'] = sanitize_text_field($additional['lead_source']);
         }
 
         if ($exists) {
-            $result = $wpdb->update($table, $data, array('entry_id' => $entry_id));
+            $result = $wpdb->update($table, $data, array('entry_id' => $entry_id, 'source' => $source));
         } else {
-            $data['entry_id'] = $entry_id;
-            $data['form_id'] = $form_id;
+            $data['entry_id']   = $entry_id;
+            $data['source']     = $source;
+            $data['form_id']    = self::lookup_form_id($entry_id, $source);
             $data['created_at'] = current_time('mysql');
             $result = $wpdb->insert($table, $data);
         }
@@ -267,30 +387,44 @@ class DXLEDA_Leads {
         self::log_activity($entry_id, 'status_change', array(
             'new_status' => $status,
             'user' => get_current_user_id()
-        ));
+        ), $source);
 
         return $result !== false;
     }
 
     /**
      * Get lead by entry ID
+     *
+     * @param int    $entry_id
+     * @param string $source
+     * @return array|null
      */
-    public static function get_lead($entry_id) {
+    public static function get_lead($entry_id, $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
 
-        $table_entries = $wpdb->prefix . 'frmt_form_entry';
+        $source   = DXLEDA_Sources::sanitize($source);
+        $entry_id = (int) $entry_id;
+
+        $entries = self::entries_union($source);
+
+        if ($entries === '') {
+            return null;
+        }
+
         $table_status = $wpdb->prefix . 'dxleda_lead_status';
 
-        // Table names come from $wpdb->prefix; entry_id is bound via prepare().
+        // Table names come from $wpdb->prefix and our own source constants;
+        // entry_id is bound via prepare().
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
         $entry = $wpdb->get_row($wpdb->prepare(
             "SELECT e.*,
                     COALESCE(s.status, 'new') as lead_status,
                     s.assigned_to,
                     s.priority,
-                    s.source
-             FROM $table_entries e
-             LEFT JOIN $table_status s ON e.entry_id = s.entry_id
+                    s.lead_source
+             FROM $entries e
+             LEFT JOIN $table_status s
+                    ON e.entry_id = s.entry_id AND e.source = s.source
              WHERE e.entry_id = %d",
             $entry_id
         ));
@@ -299,19 +433,19 @@ class DXLEDA_Leads {
             return null;
         }
 
-        $meta = self::get_entry_meta($entry_id);
-        $feedback = DXLEDA_Feedback::get_feedback($entry_id);
-
         return array(
             'entry_id' => $entry->entry_id,
             'form_id' => $entry->form_id,
+            'source' => $entry->source,
+            'source_label' => DXLEDA_Sources::label($entry->source),
+            'form_name' => self::form_name($entry->form_id, $entry->source),
             'date_created' => $entry->date_created,
             'status' => $entry->lead_status,
             'assigned_to' => $entry->assigned_to,
             'priority' => $entry->priority,
-            'source' => $entry->source,
-            'meta' => $meta,
-            'feedback' => $feedback
+            'lead_source' => $entry->lead_source,
+            'meta' => self::get_entry_meta($entry_id, $entry->source),
+            'feedback' => DXLEDA_Feedback::get_feedback($entry_id, $entry->source)
         );
     }
 
@@ -321,54 +455,87 @@ class DXLEDA_Leads {
     public static function get_dashboard_stats($days = 30) {
         global $wpdb;
 
-        $table_entries = $wpdb->prefix . 'frmt_form_entry';
-        $table_status = $wpdb->prefix . 'dxleda_lead_status';
+        $entries = self::entries_union();
 
-        $date_from = gmdate( 'Y-m-d', strtotime( "-{$days} days" ) );
+        if ($entries === '') {
+            return array(
+                'total_leads' => 0,
+                'status_counts' => array(),
+                'leads_by_day' => array(),
+                'leads_by_form' => array(),
+                'leads_by_source' => array(),
+                'conversion_rate' => 0,
+                'positive_leads' => 0,
+                'negative_leads' => 0,
+                'new_leads' => 0,
+            );
+        }
+
+        $table_status = $wpdb->prefix . 'dxleda_lead_status';
+        $date_from    = gmdate( 'Y-m-d', strtotime( "-{$days} days" ) );
+
+        // Table names come from $wpdb->prefix and our own source constants;
+        // the date is bound via prepare().
+        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
 
         // Total leads
         $total_leads = $wpdb->get_var($wpdb->prepare(
-            "SELECT COUNT(*) FROM $table_entries 
-             WHERE entry_type = 'custom-forms' AND date_created >= %s",
+            "SELECT COUNT(*) FROM $entries e WHERE e.date_created >= %s",
             $date_from
         ));
 
         // Leads by status
         $status_counts = $wpdb->get_results($wpdb->prepare(
             "SELECT COALESCE(s.status, 'new') as status, COUNT(*) as count
-             FROM $table_entries e
-             LEFT JOIN $table_status s ON e.entry_id = s.entry_id
-             WHERE e.entry_type = 'custom-forms' AND e.date_created >= %s
+             FROM $entries e
+             LEFT JOIN $table_status s
+                    ON e.entry_id = s.entry_id AND e.source = s.source
+             WHERE e.date_created >= %s
              GROUP BY COALESCE(s.status, 'new')",
             $date_from
         ), OBJECT_K);
 
         // Leads by day (for chart)
         $leads_by_day = $wpdb->get_results($wpdb->prepare(
-            "SELECT DATE(date_created) as date, COUNT(*) as count
-             FROM $table_entries
-             WHERE entry_type = 'custom-forms' AND date_created >= %s
-             GROUP BY DATE(date_created)
+            "SELECT DATE(e.date_created) as date, COUNT(*) as count
+             FROM $entries e
+             WHERE e.date_created >= %s
+             GROUP BY DATE(e.date_created)
              ORDER BY date ASC",
             $date_from
         ));
 
         // Leads by form
         $leads_by_form = $wpdb->get_results($wpdb->prepare(
-            "SELECT e.form_id, COUNT(*) as count
-             FROM $table_entries e
-             WHERE e.entry_type = 'custom-forms' AND e.date_created >= %s
-             GROUP BY e.form_id
+            "SELECT e.form_id, e.source, COUNT(*) as count
+             FROM $entries e
+             WHERE e.date_created >= %s
+             GROUP BY e.form_id, e.source
              ORDER BY count DESC
              LIMIT 10",
             $date_from
         ));
 
-        // Add form names from the cached map (one API call, not one per form)
-        $names = self::form_names();
+        // Leads by source
+        $leads_by_source = $wpdb->get_results($wpdb->prepare(
+            "SELECT e.source, COUNT(*) as count
+             FROM $entries e
+             WHERE e.date_created >= %s
+             GROUP BY e.source
+             ORDER BY count DESC",
+            $date_from
+        ));
+
+        // phpcs:enable
+
+        // Add form names from the cached map (one API call per source)
         foreach ($leads_by_form as $item) {
-            $fid = (int) $item->form_id;
-            $item->form_name = isset($names[$fid]) ? $names[$fid] : ('Form #' . $fid);
+            $item->form_name    = self::form_name($item->form_id, $item->source);
+            $item->source_label = DXLEDA_Sources::label($item->source);
+        }
+
+        foreach ($leads_by_source as $item) {
+            $item->source_label = DXLEDA_Sources::label($item->source);
         }
 
         // Conversion rate (positive leads / total)
@@ -381,6 +548,7 @@ class DXLEDA_Leads {
             'status_counts' => $status_counts,
             'leads_by_day' => $leads_by_day,
             'leads_by_form' => $leads_by_form,
+            'leads_by_source' => $leads_by_source,
             'conversion_rate' => $conversion_rate,
             'positive_leads' => intval($positive_count),
             'negative_leads' => isset($status_counts['negative']) ? intval($status_counts['negative']->count) : 0,
@@ -391,10 +559,11 @@ class DXLEDA_Leads {
     /**
      * Export leads to CSV
      */
-    public static function export_leads_csv($form_id = 0, $status = '') {
+    public static function export_leads_csv($form_id = 0, $status = '', $source = '') {
         $leads_data = self::get_leads(array(
             'form_id' => $form_id,
             'status' => $status,
+            'source' => $source,
             'per_page' => 10000
         ));
 
@@ -418,7 +587,7 @@ class DXLEDA_Leads {
 
         // Header row
         $header = array_merge(
-            array('Entry ID', 'Form ID', 'Date', 'Status', 'Feedback Count'),
+            array('Entry ID', 'Source', 'Form ID', 'Form Name', 'Date', 'Status', 'Feedback Count'),
             $all_keys
         );
         fputcsv($output, $header);
@@ -427,7 +596,9 @@ class DXLEDA_Leads {
         foreach ($leads as $lead) {
             $row = array(
                 $lead['entry_id'],
+                $lead['source_label'],
                 $lead['form_id'],
+                $lead['form_name'],
                 $lead['date_created'],
                 $lead['status'],
                 $lead['feedback_count']
@@ -475,14 +646,21 @@ class DXLEDA_Leads {
 
     /**
      * Log activity
+     *
+     * @param int    $entry_id
+     * @param string $action
+     * @param array  $details
+     * @param string $source
+     * @return int|false
      */
-    public static function log_activity($entry_id, $action, $details = array()) {
+    public static function log_activity($entry_id, $action, $details = array(), $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
-        
+
         $table = $wpdb->prefix . 'dxleda_activity_log';
 
         return $wpdb->insert($table, array(
-            'entry_id' => $entry_id,
+            'entry_id' => (int) $entry_id,
+            'source' => DXLEDA_Sources::sanitize($source),
             'user_id' => get_current_user_id(),
             'action' => $action,
             'details' => wp_json_encode($details),
@@ -491,10 +669,12 @@ class DXLEDA_Leads {
     }
 
     /**
-     * Cached map of Forminator form ID => form name.
-     * Resolved once per request (one API call) and reused everywhere.
+     * Cached map of source => [form ID => form name].
      *
-     * @return array<int,string>
+     * Resolved once per request (one lookup per source) and reused everywhere.
+     * Form IDs are only unique within a source, hence the two-level map.
+     *
+     * @return array<string,array<int,string>>
      */
     public static function form_names() {
         static $map = null;
@@ -505,37 +685,63 @@ class DXLEDA_Leads {
 
         $map = array();
 
-        if (class_exists('Forminator_API')) {
-            // Pass a high per-page so we get every form, not just the first 10.
-            $forms = Forminator_API::get_forms(null, 1, 999);
-            if (is_array($forms)) {
-                foreach ($forms as $form) {
-                    $settings = (array) $form->settings;
-                    $map[(int) $form->id] = !empty($settings['formName'])
-                        ? $settings['formName']
-                        : ('Form #' . $form->id);
-                }
-            }
+        foreach (array_keys(DXLEDA_Sources::available()) as $slug) {
+            $map[$slug] = DXLEDA_Sources::form_names($slug);
         }
 
         return $map;
     }
 
     /**
-     * Get available forms as a list of id/name pairs (for dropdowns).
+     * Display name for one form, falling back to its ID.
+     *
+     * @param int    $form_id
+     * @param string $source
+     * @return string
+     */
+    public static function form_name($form_id, $source) {
+        $names   = self::form_names();
+        $form_id = (int) $form_id;
+
+        if (isset($names[$source][$form_id])) {
+            return $names[$source][$form_id];
+        }
+
+        return 'Form #' . $form_id;
+    }
+
+    /**
+     * Get available forms as a flat list for dropdowns.
+     *
+     * Each item carries its source, since a form ID alone is ambiguous.
+     *
+     * @return array<int,array{id:int,name:string,source:string,source_label:string}>
      */
     public static function get_forms() {
         $list = array();
-        foreach (self::form_names() as $id => $name) {
-            $list[] = array('id' => $id, 'name' => $name);
+
+        foreach (self::form_names() as $slug => $names) {
+            foreach ($names as $id => $name) {
+                $list[] = array(
+                    'id'           => $id,
+                    'name'         => $name,
+                    'source'       => $slug,
+                    'source_label' => DXLEDA_Sources::label($slug),
+                );
+            }
         }
+
         return $list;
     }
 
     /**
      * Get the activity log for a single entry, newest first.
+     *
+     * @param int    $entry_id
+     * @param string $source
+     * @return array
      */
-    public static function get_activity($entry_id) {
+    public static function get_activity($entry_id, $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
 
         $table = $wpdb->prefix . 'dxleda_activity_log';
@@ -544,9 +750,10 @@ class DXLEDA_Leads {
             "SELECT a.action, a.details, a.created_at, u.display_name AS user_name
              FROM $table a
              LEFT JOIN {$wpdb->users} u ON a.user_id = u.ID
-             WHERE a.entry_id = %d
+             WHERE a.entry_id = %d AND a.source = %s
              ORDER BY a.created_at DESC",
-            intval($entry_id)
+            intval($entry_id),
+            DXLEDA_Sources::sanitize($source)
         ));
 
         return is_array($rows) ? $rows : array();
@@ -585,29 +792,36 @@ class DXLEDA_Leads {
      * Assign a lead to a user without altering its status.
      * Creates the status row (status "new") if none exists yet.
      *
+     * @param int    $entry_id
+     * @param int    $form_id
+     * @param int    $user_id
+     * @param string $source
      * @return bool
      */
-    public static function assign_lead($entry_id, $form_id, $user_id) {
+    public static function assign_lead($entry_id, $form_id, $user_id, $source = DXLEDA_Sources::FORMINATOR) {
         global $wpdb;
 
         $table    = $wpdb->prefix . 'dxleda_lead_status';
         $entry_id = intval($entry_id);
         $user_id  = intval($user_id);
+        $source   = DXLEDA_Sources::sanitize($source);
 
         $exists = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM $table WHERE entry_id = %d",
-            $entry_id
+            "SELECT id FROM $table WHERE entry_id = %d AND source = %s",
+            $entry_id,
+            $source
         ));
 
         if ($exists) {
             $result = $wpdb->update(
                 $table,
                 array('assigned_to' => $user_id, 'updated_at' => current_time('mysql')),
-                array('entry_id' => $entry_id)
+                array('entry_id' => $entry_id, 'source' => $source)
             );
         } else {
             $result = $wpdb->insert($table, array(
                 'entry_id'    => $entry_id,
+                'source'      => $source,
                 'form_id'     => intval($form_id),
                 'status'      => 'new',
                 'assigned_to' => $user_id,
@@ -617,7 +831,7 @@ class DXLEDA_Leads {
         }
 
         if ($result !== false) {
-            self::log_activity($entry_id, 'assigned', array('assigned_to' => $user_id));
+            self::log_activity($entry_id, 'assigned', array('assigned_to' => $user_id), $source);
             return true;
         }
 

@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) {
 $forms = DXLEDA_Leads::get_forms();
 $statuses = DXLEDA_Leads::get_statuses();
 $users = DXLEDA_Roles::get_team_users();
+$sources = DXLEDA_Sources::available();
 ?>
 
 <div class="wrap fld-leads-page">
@@ -25,13 +26,35 @@ $users = DXLEDA_Roles::get_team_users();
     <!-- Filters -->
     <div class="fld-filters">
         <div class="fld-filter-row">
+            <?php if (count($sources) > 1): ?>
+            <div class="fld-filter-item">
+                <label><?php esc_html_e('Source:', 'devxpert-lead-dashboard-for-forminator'); ?></label>
+                <select id="fld-filter-source">
+                    <option value=""><?php esc_html_e('All Sources', 'devxpert-lead-dashboard-for-forminator'); ?></option>
+                    <?php foreach ($sources as $slug => $label): ?>
+                        <option value="<?php echo esc_attr($slug); ?>"><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php endif; ?>
+
             <div class="fld-filter-item">
                 <label><?php esc_html_e('Form:', 'devxpert-lead-dashboard-for-forminator'); ?></label>
                 <select id="fld-filter-form">
                     <option value=""><?php esc_html_e('All Forms', 'devxpert-lead-dashboard-for-forminator'); ?></option>
                     <?php foreach ($forms as $form): ?>
-                        <option value="<?php echo esc_attr($form['id']); ?>">
-                            <?php echo esc_html($form['name']); ?>
+                        <?php
+                        // Form IDs repeat across plugins, so the value carries
+                        // the source too. The JS splits on "|".
+                        ?>
+                        <option value="<?php echo esc_attr($form['source'] . '|' . $form['id']); ?>">
+                            <?php
+                            echo esc_html(
+                                count($sources) > 1
+                                    ? $form['name'] . ' (' . $form['source_label'] . ')'
+                                    : $form['name']
+                            );
+                            ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
