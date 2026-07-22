@@ -8,12 +8,18 @@
  *
  * Only submissions received after activation are captured; there is no history
  * to import.
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Captures Contact Form 7 submissions into the plugin's own tables,
+ * since CF7 does not store entries itself.
+ */
 class DXLEDA_CF7 {
 
 	/**
@@ -33,7 +39,7 @@ class DXLEDA_CF7 {
 	/**
 	 * Store a submission as a lead.
 	 *
-	 * @param WPCF7_ContactForm $contact_form
+	 * @param WPCF7_ContactForm $contact_form The CF7 form instance.
 	 * @param array             $result       CF7 submission result.
 	 * @return void
 	 */
@@ -81,7 +87,7 @@ class DXLEDA_CF7 {
 	/**
 	 * Write one entry plus its field values.
 	 *
-	 * @param int   $form_id
+	 * @param int   $form_id Form ID.
 	 * @param array $posted Raw posted data keyed by field name.
 	 * @return int Entry ID, or 0 on failure.
 	 */
@@ -127,7 +133,7 @@ class DXLEDA_CF7 {
 	 * CF7 mixes its own bookkeeping fields into the posted data. They are not
 	 * lead content and would only clutter the dashboard and CSV export.
 	 *
-	 * @param string $key
+	 * @param string $key Key.
 	 * @return bool
 	 */
 	private static function is_internal_field( $key ) {
@@ -143,7 +149,7 @@ class DXLEDA_CF7 {
 	 * string. Arrays are serialized so maybe_unserialize() on read gives the
 	 * array back, matching how Forminator meta behaves.
 	 *
-	 * @param mixed $value
+	 * @param mixed $value Value.
 	 * @return string
 	 */
 	private static function normalise_value( $value ) {
@@ -157,7 +163,7 @@ class DXLEDA_CF7 {
 	/**
 	 * Remove a CF7 entry and its field values.
 	 *
-	 * @param int $entry_id
+	 * @param int $entry_id Entry ID.
 	 * @return bool
 	 */
 	public static function delete_entry( $entry_id ) {

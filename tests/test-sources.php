@@ -1,15 +1,27 @@
 <?php
 /**
+ * Tests for DXLEDA_Sources and cross-source lead identity.
+ *
+ * @package DevXpert_Lead_Dashboard
+ */
+
+/**
  * Multi-source behaviour: the same entry ID coming from two different form
  * plugins must stay two independent leads.
  */
 class Test_DXLEDA_Sources extends WP_UnitTestCase {
 
+	/**
+	 * Set up.
+	 */
 	public function set_up() {
 		parent::set_up();
 		DXLEDA_Database::create_tables();
 	}
 
+	/**
+	 * Test that sanitize falls back to forminator.
+	 */
 	public function test_sanitize_falls_back_to_forminator() {
 		$this->assertSame( DXLEDA_Sources::FORMINATOR, DXLEDA_Sources::sanitize( 'nonsense' ) );
 		$this->assertSame( DXLEDA_Sources::FORMINATOR, DXLEDA_Sources::sanitize( '' ) );
@@ -17,6 +29,9 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 		$this->assertSame( DXLEDA_Sources::CF7, DXLEDA_Sources::sanitize( 'cf7' ) );
 	}
 
+	/**
+	 * Test that known sources have distinct tables.
+	 */
 	public function test_known_sources_have_distinct_tables() {
 		$this->assertNotSame(
 			DXLEDA_Sources::entries_table( DXLEDA_Sources::FORMINATOR ),
@@ -25,6 +40,9 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 		$this->assertSame( '', DXLEDA_Sources::entries_table( 'nope' ) );
 	}
 
+	/**
+	 * Test that same entry id in two sources keeps separate status.
+	 */
 	public function test_same_entry_id_in_two_sources_keeps_separate_status() {
 		DXLEDA_Leads::update_lead_status( 500, 'positive', array(), DXLEDA_Sources::FORMINATOR );
 		DXLEDA_Leads::update_lead_status( 500, 'negative', array(), DXLEDA_Sources::CF7 );
@@ -40,7 +58,7 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 				DXLEDA_Sources::FORMINATOR
 			)
 		);
-		$cf7        = $wpdb->get_var(
+		$cf7 = $wpdb->get_var(
 			$wpdb->prepare(
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name is built from $wpdb->prefix.
 				"SELECT status FROM $table WHERE entry_id = %d AND source = %s",
@@ -53,6 +71,9 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 		$this->assertSame( 'negative', $cf7 );
 	}
 
+	/**
+	 * Test that same entry id in two sources keeps separate feedback.
+	 */
 	public function test_same_entry_id_in_two_sources_keeps_separate_feedback() {
 		DXLEDA_Feedback::add_feedback(
 			array(
@@ -85,6 +106,9 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 		$this->assertSame( array( 600 => 1 ), $counts );
 	}
 
+	/**
+	 * Test that same entry id in two sources keeps separate activity.
+	 */
 	public function test_same_entry_id_in_two_sources_keeps_separate_activity() {
 		DXLEDA_Leads::log_activity( 700, 'status_change', array(), DXLEDA_Sources::FORMINATOR );
 		DXLEDA_Leads::log_activity( 700, 'assigned', array(), DXLEDA_Sources::CF7 );
@@ -98,6 +122,9 @@ class Test_DXLEDA_Sources extends WP_UnitTestCase {
 		$this->assertSame( 'assigned', $cf7[0]->action );
 	}
 
+	/**
+	 * Test that assign lead is scoped to its source.
+	 */
 	public function test_assign_lead_is_scoped_to_its_source() {
 		DXLEDA_Leads::assign_lead( 800, 1, 11, DXLEDA_Sources::FORMINATOR );
 		DXLEDA_Leads::assign_lead( 800, 1, 22, DXLEDA_Sources::CF7 );

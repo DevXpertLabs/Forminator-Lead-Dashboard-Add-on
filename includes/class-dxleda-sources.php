@@ -7,12 +7,17 @@
  *
  * A "source" is the form plugin a lead came from. Entry IDs are only unique
  * within a source, so a lead is always identified by the pair (entry_id, source).
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Registry of supported form-plugin sources and their table locations.
+ */
 class DXLEDA_Sources {
 
 	const FORMINATOR = 'forminator';
@@ -50,7 +55,7 @@ class DXLEDA_Sources {
 	/**
 	 * Is this source's form plugin active?
 	 *
-	 * @param string $source
+	 * @param string $source Source slug.
 	 * @return bool
 	 */
 	public static function is_available( $source ) {
@@ -68,7 +73,7 @@ class DXLEDA_Sources {
 	/**
 	 * Is this a slug the plugin recognises?
 	 *
-	 * @param string $source
+	 * @param string $source Source slug.
 	 * @return bool
 	 */
 	public static function is_valid( $source ) {
@@ -80,7 +85,7 @@ class DXLEDA_Sources {
 	 *
 	 * Falls back to Forminator, which is what every pre-1.1 row is.
 	 *
-	 * @param mixed $source
+	 * @param mixed $source Source slug.
 	 * @return string
 	 */
 	public static function sanitize( $source ) {
@@ -92,7 +97,7 @@ class DXLEDA_Sources {
 	/**
 	 * Human-readable label for a source slug.
 	 *
-	 * @param string $source
+	 * @param string $source Source slug.
 	 * @return string
 	 */
 	public static function label( $source ) {
@@ -104,7 +109,7 @@ class DXLEDA_Sources {
 	/**
 	 * Table holding this source's submissions.
 	 *
-	 * @param string $source
+	 * @param string $source Source slug.
 	 * @return string Prefixed table name, empty for an unknown source.
 	 */
 	public static function entries_table( $source ) {
@@ -124,7 +129,7 @@ class DXLEDA_Sources {
 	/**
 	 * Table holding this source's submission field values.
 	 *
-	 * @param string $source
+	 * @param string $source Source slug.
 	 * @return string Prefixed table name, empty for an unknown source.
 	 */
 	public static function meta_table( $source ) {
@@ -148,7 +153,7 @@ class DXLEDA_Sources {
 	 * Forminator stores polls and quizzes in the same table as forms; our own
 	 * CF7 table holds nothing else, so it needs no filter.
 	 *
-	 * @param string $source
+	 * @param string $source Source slug.
 	 * @return string SQL fragment, or empty string.
 	 */
 	public static function entries_where( $source ) {
@@ -162,7 +167,7 @@ class DXLEDA_Sources {
 	/**
 	 * Map of form ID => form name for one source.
 	 *
-	 * @param string $source
+	 * @param string $source Source slug.
 	 * @return array<int,string>
 	 */
 	public static function form_names( $source ) {

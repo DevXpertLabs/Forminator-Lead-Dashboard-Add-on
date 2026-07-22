@@ -2,6 +2,8 @@
 /**
  * Uninstall routine — runs when the plugin is deleted from Plugins > Installed Plugins.
  * Drops all plugin tables and removes all plugin options from wp_options.
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {

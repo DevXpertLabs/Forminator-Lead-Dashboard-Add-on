@@ -7,12 +7,17 @@
  *
  * A lead is identified by the pair (entry_id, source) — entry IDs are only
  * unique within their own form plugin.
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Queries and updates leads across every supported form-plugin source.
+ */
 class DXLEDA_Leads {
 
 	/**
@@ -58,6 +63,8 @@ class DXLEDA_Leads {
 
 	/**
 	 * Get leads with filters
+	 *
+	 * @param array $args Optional arguments.
 	 */
 	public static function get_leads( $args = array() ) {
 		global $wpdb;
@@ -260,8 +267,8 @@ class DXLEDA_Leads {
 	/**
 	 * Get entry meta data
 	 *
-	 * @param int    $entry_id
-	 * @param string $source
+	 * @param int    $entry_id Entry ID.
+	 * @param string $source Source slug.
 	 * @return array<string,mixed>
 	 */
 	public static function get_entry_meta( $entry_id, $source = DXLEDA_Sources::FORMINATOR ) {
@@ -273,8 +280,8 @@ class DXLEDA_Leads {
 	/**
 	 * Bulk-load entry meta for many entries of one source in a single query.
 	 *
-	 * @param int[]  $entry_ids
-	 * @param string $source
+	 * @param int[]  $entry_ids Entry IDs.
+	 * @param string $source Source slug.
 	 * @return array<int,array<string,mixed>> Map of entry_id => [meta_key => value].
 	 */
 	public static function get_entry_meta_bulk( $entry_ids, $source = DXLEDA_Sources::FORMINATOR ) {
@@ -312,8 +319,8 @@ class DXLEDA_Leads {
 	/**
 	 * Look up the form_id for an entry within its own source.
 	 *
-	 * @param int    $entry_id
-	 * @param string $source
+	 * @param int    $entry_id Entry ID.
+	 * @param string $source Source slug.
 	 * @return int
 	 */
 	private static function lookup_form_id( $entry_id, $source ) {
@@ -338,10 +345,10 @@ class DXLEDA_Leads {
 	/**
 	 * Update lead status
 	 *
-	 * @param int    $entry_id
-	 * @param string $status
-	 * @param array  $additional
-	 * @param string $source
+	 * @param int    $entry_id Entry ID.
+	 * @param string $status Lead status slug.
+	 * @param array  $additional Additional.
+	 * @param string $source Source slug.
 	 * @return bool
 	 */
 	public static function update_lead_status( $entry_id, $status, $additional = array(), $source = DXLEDA_Sources::FORMINATOR ) {
@@ -416,8 +423,8 @@ class DXLEDA_Leads {
 	/**
 	 * Get lead by entry ID
 	 *
-	 * @param int    $entry_id
-	 * @param string $source
+	 * @param int    $entry_id Entry ID.
+	 * @param string $source Source slug.
 	 * @return array|null
 	 */
 	public static function get_lead( $entry_id, $source = DXLEDA_Sources::FORMINATOR ) {
@@ -475,6 +482,8 @@ class DXLEDA_Leads {
 
 	/**
 	 * Get dashboard statistics
+	 *
+	 * @param int $days Number of days to look back.
 	 */
 	public static function get_dashboard_stats( $days = 30 ) {
 		global $wpdb;
@@ -593,6 +602,10 @@ class DXLEDA_Leads {
 
 	/**
 	 * Export leads to CSV
+	 *
+	 * @param int    $form_id Form ID.
+	 * @param string $status Lead status slug.
+	 * @param string $source Source slug.
 	 */
 	public static function export_leads_csv( $form_id = 0, $status = '', $source = '' ) {
 		$leads_data = self::get_leads(
@@ -668,7 +681,7 @@ class DXLEDA_Leads {
 	 * interpreted as a formula by Excel/Sheets. Prefix such values with a
 	 * single quote so they are treated as literal text.
 	 *
-	 * @param mixed $value
+	 * @param mixed $value Value.
 	 * @return string
 	 */
 	private static function csv_escape( $value ) {
@@ -684,10 +697,10 @@ class DXLEDA_Leads {
 	/**
 	 * Log activity
 	 *
-	 * @param int    $entry_id
-	 * @param string $action
-	 * @param array  $details
-	 * @param string $source
+	 * @param int    $entry_id Entry ID.
+	 * @param string $action Action.
+	 * @param array  $details Details.
+	 * @param string $source Source slug.
 	 * @return int|false
 	 */
 	public static function log_activity( $entry_id, $action, $details = array(), $source = DXLEDA_Sources::FORMINATOR ) {
@@ -735,8 +748,8 @@ class DXLEDA_Leads {
 	/**
 	 * Display name for one form, falling back to its ID.
 	 *
-	 * @param int    $form_id
-	 * @param string $source
+	 * @param int    $form_id Form ID.
+	 * @param string $source Source slug.
 	 * @return string
 	 */
 	public static function form_name( $form_id, $source ) {
@@ -777,8 +790,8 @@ class DXLEDA_Leads {
 	/**
 	 * Get the activity log for a single entry, newest first.
 	 *
-	 * @param int    $entry_id
-	 * @param string $source
+	 * @param int    $entry_id Entry ID.
+	 * @param string $source Source slug.
 	 * @return array
 	 */
 	public static function get_activity( $entry_id, $source = DXLEDA_Sources::FORMINATOR ) {
@@ -836,10 +849,10 @@ class DXLEDA_Leads {
 	 * Assign a lead to a user without altering its status.
 	 * Creates the status row (status "new") if none exists yet.
 	 *
-	 * @param int    $entry_id
-	 * @param int    $form_id
-	 * @param int    $user_id
-	 * @param string $source
+	 * @param int    $entry_id Entry ID.
+	 * @param int    $form_id Form ID.
+	 * @param int    $user_id User ID.
+	 * @param string $source Source slug.
 	 * @return bool
 	 */
 	public static function assign_lead( $entry_id, $form_id, $user_id, $source = DXLEDA_Sources::FORMINATOR ) {

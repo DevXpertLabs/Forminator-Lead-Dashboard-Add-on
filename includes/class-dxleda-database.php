@@ -3,12 +3,17 @@
  * Database Handler Class
  *
  * Creates and manages custom database tables for lead tracking and feedback
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Creates and upgrades the plugin's custom database tables.
+ */
 class DXLEDA_Database {
 
 	/**
@@ -245,6 +250,8 @@ class DXLEDA_Database {
 
 	/**
 	 * Get table name with prefix
+	 *
+	 * @param mixed $table Table.
 	 */
 	public static function get_table( $table ) {
 		global $wpdb;

@@ -1,9 +1,18 @@
 <?php
 /**
+ * Tests for DXLEDA_OTP token handling and secret encryption.
+ *
+ * @package DevXpert_Lead_Dashboard
+ */
+
+/**
  * Smoke tests for DXLEDA_OTP (encryption + token lifecycle).
  */
 class Test_DXLEDA_OTP extends WP_UnitTestCase {
 
+	/**
+	 * Test that encrypt decrypt roundtrip.
+	 */
 	public function test_encrypt_decrypt_roundtrip() {
 		if ( ! function_exists( 'openssl_encrypt' ) ) {
 			$this->markTestSkipped( 'OpenSSL is not available.' );
@@ -17,14 +26,23 @@ class Test_DXLEDA_OTP extends WP_UnitTestCase {
 		$this->assertSame( $secret, DXLEDA_OTP::decrypt_secret( $stored ) );
 	}
 
+	/**
+	 * Test that decrypt treats unmarked value as legacy plaintext.
+	 */
 	public function test_decrypt_treats_unmarked_value_as_legacy_plaintext() {
 		$this->assertSame( 'old-plain-pw', DXLEDA_OTP::decrypt_secret( 'old-plain-pw' ) );
 	}
 
+	/**
+	 * Test that encrypt empty returns empty.
+	 */
 	public function test_encrypt_empty_returns_empty() {
 		$this->assertSame( '', DXLEDA_OTP::encrypt_secret( '' ) );
 	}
 
+	/**
+	 * Test that verify otp then consume token.
+	 */
 	public function test_verify_otp_then_consume_token() {
 		$email = 'user@example.com';
 
@@ -42,6 +60,9 @@ class Test_DXLEDA_OTP extends WP_UnitTestCase {
 		$this->assertFalse( DXLEDA_OTP::verify_token( $token ) );
 	}
 
+	/**
+	 * Test that verify otp rejects wrong code.
+	 */
 	public function test_verify_otp_rejects_wrong_code() {
 		$email = 'user2@example.com';
 		set_transient( 'dxleda_otp_' . md5( $email ), '111111', 600 );
@@ -49,6 +70,9 @@ class Test_DXLEDA_OTP extends WP_UnitTestCase {
 		$this->assertFalse( DXLEDA_OTP::verify_otp( $email, '999999' ) );
 	}
 
+	/**
+	 * Test that form not enabled by default.
+	 */
 	public function test_form_not_enabled_by_default() {
 		$this->assertFalse( DXLEDA_OTP::is_form_enabled( 4242 ) );
 	}

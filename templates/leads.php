@@ -1,6 +1,8 @@
 <?php
 /**
  * All Leads Template
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

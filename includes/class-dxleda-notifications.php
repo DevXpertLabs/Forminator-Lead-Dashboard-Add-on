@@ -6,12 +6,17 @@
  * action, so that whenever a submission becomes a lead — whichever plugin it
  * came from — the configured team is notified and the lead is optionally
  * assigned to a default team member.
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Sends new-lead email notifications and handles auto-assignment.
+ */
 class DXLEDA_Notifications {
 
 	/**
@@ -50,9 +55,9 @@ class DXLEDA_Notifications {
 	/**
 	 * Handle a freshly captured lead from any source.
 	 *
-	 * @param int    $entry_id
-	 * @param int    $form_id
-	 * @param string $source
+	 * @param int    $entry_id Entry ID.
+	 * @param int    $form_id Form ID.
+	 * @param string $source Source slug.
 	 */
 	public static function on_new_lead( $entry_id, $form_id, $source = DXLEDA_Sources::FORMINATOR ) {
 		$entry_id = intval( $entry_id );
@@ -65,6 +70,10 @@ class DXLEDA_Notifications {
 
 	/**
 	 * Assign the lead to the default assignee when auto-assign is enabled.
+	 *
+	 * @param int    $entry_id Entry ID.
+	 * @param int    $form_id Form ID.
+	 * @param string $source Source slug.
 	 */
 	private static function maybe_auto_assign( $entry_id, $form_id, $source ) {
 		if ( ! get_option( 'dxleda_auto_assign', 0 ) ) {
@@ -87,6 +96,10 @@ class DXLEDA_Notifications {
 
 	/**
 	 * Email the configured recipient about the new lead when enabled.
+	 *
+	 * @param int    $entry_id Entry ID.
+	 * @param int    $form_id Form ID.
+	 * @param string $source Source slug.
 	 */
 	private static function maybe_notify( $entry_id, $form_id, $source ) {
 		if ( ! get_option( 'dxleda_email_notifications', 0 ) ) {
@@ -141,6 +154,8 @@ class DXLEDA_Notifications {
 
 	/**
 	 * Turn a form field key into a human-readable label.
+	 *
+	 * @param string $key Key.
 	 */
 	private static function humanize_key( $key ) {
 		$key = preg_replace( '/-\d+$/', '', (string) $key );      // strip trailing "-1".

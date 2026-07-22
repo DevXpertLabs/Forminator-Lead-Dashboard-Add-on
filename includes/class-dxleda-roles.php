@@ -3,12 +3,17 @@
  * Roles and Capabilities Handler
  *
  * Manages the custom 'dxleda_sales_admin' role and 'dxleda_manage_leads' capability.
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Defines the Sales Admin role and the plugin's capability checks.
+ */
 class DXLEDA_Roles {
 
 	const ROLE_SLUG = 'dxleda_sales_admin';
@@ -92,7 +97,7 @@ class DXLEDA_Roles {
 	 * Assign the sales_admin role to a user.
 	 * Refuses to modify existing administrators.
 	 *
-	 * @param int $user_id
+	 * @param int $user_id User ID.
 	 * @return bool
 	 */
 	public static function assign( $user_id ) {
@@ -107,7 +112,7 @@ class DXLEDA_Roles {
 	/**
 	 * Remove the sales_admin role from a user (reverts to Subscriber).
 	 *
-	 * @param int $user_id
+	 * @param int $user_id User ID.
 	 * @return bool
 	 */
 	public static function remove( $user_id ) {

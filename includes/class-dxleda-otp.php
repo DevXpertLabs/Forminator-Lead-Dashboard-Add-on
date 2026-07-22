@@ -1,12 +1,18 @@
 <?php
 /**
  * OTP Handler — Email verification via Brevo SMTP
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Email OTP spam protection: sends one-time codes through Brevo SMTP
+ * and verifies them before a submission becomes a lead.
+ */
 class DXLEDA_OTP {
 
 	const OTP_TTL   = 600;   // 10 minutes
@@ -29,6 +35,8 @@ class DXLEDA_OTP {
 
 	/**
 	 * Check whether OTP is enabled for a given form ID.
+	 *
+	 * @param int $form_id Form ID.
 	 */
 	public static function is_form_enabled( $form_id ) {
 		$enabled = get_option( 'dxleda_otp_enabled_forms', array() );
@@ -39,6 +47,8 @@ class DXLEDA_OTP {
 	 * Generate a 6-digit OTP, store it in a transient, and send it via SMTP.
 	 *
 	 * @return true|WP_Error
+	 * @param string $email Email address.
+	 * @param int    $form_id Form ID.
 	 */
 	public static function send_otp( $email, $form_id ) {
 		$email = strtolower( trim( $email ) );
@@ -74,6 +84,9 @@ class DXLEDA_OTP {
 	 * Returns a one-time token on success, false on failure.
 	 *
 	 * @return string|false
+	 * @param string $email Email address.
+	 * @param string $code One-time code.
+	 * @param int    $form_id Form ID.
 	 */
 	public static function verify_otp( $email, $code, $form_id ) {
 		$email   = strtolower( trim( $email ) );
@@ -97,6 +110,9 @@ class DXLEDA_OTP {
 
 	/**
 	 * Check whether a verification token is valid AND bound to the given form.
+	 *
+	 * @param string $token Verification token.
+	 * @param int    $form_id Form ID.
 	 */
 	public static function verify_token( $token, $form_id ) {
 		if ( empty( $token ) ) {
@@ -114,6 +130,9 @@ class DXLEDA_OTP {
 
 	/**
 	 * Build the transient key for an email + form pair.
+	 *
+	 * @param string $email Email address.
+	 * @param int    $form_id Form ID.
 	 */
 	private static function otp_key( $email, $form_id ) {
 		return 'dxleda_otp_' . md5( strtolower( trim( $email ) ) . '|' . intval( $form_id ) );
@@ -121,6 +140,8 @@ class DXLEDA_OTP {
 
 	/**
 	 * Delete a token after successful form submission.
+	 *
+	 * @param string $token Verification token.
 	 */
 	public static function consume_token( $token ) {
 		delete_transient( 'dxleda_otp_token_' . sanitize_text_field( $token ) );
@@ -130,6 +151,9 @@ class DXLEDA_OTP {
 	 * Send an email via SMTP using wp_mail() + phpmailer_init hook.
 	 *
 	 * @return true|WP_Error
+	 * @param mixed $to_email Recipient email address.
+	 * @param mixed $subject Subject.
+	 * @param mixed $html Html.
 	 */
 	private static function smtp_send( $to_email, $subject, $html ) {
 		$username     = get_option( 'dxleda_smtp_username', '' );
@@ -171,7 +195,7 @@ class DXLEDA_OTP {
 	 * Configure PHPMailer to use Brevo SMTP.
 	 * Called via phpmailer_init action — must be public static.
 	 *
-	 * @param PHPMailer\PHPMailer\PHPMailer $phpmailer
+	 * @param PHPMailer\PHPMailer\PHPMailer $phpmailer The PHPMailer instance.
 	 */
 	public static function configure_phpmailer( $phpmailer ) {
 		// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- PHPMailer's own property names.
@@ -201,7 +225,7 @@ class DXLEDA_OTP {
 	 * Encrypt a secret for storage in wp_options.
 	 * Falls back to plaintext if OpenSSL is unavailable.
 	 *
-	 * @param string $plain
+	 * @param string $plain Plain-text secret.
 	 * @return string
 	 */
 	public static function encrypt_secret( $plain ) {
@@ -226,7 +250,7 @@ class DXLEDA_OTP {
 	 * Decrypt a stored secret. Values without the marker are treated as
 	 * legacy plaintext and returned unchanged.
 	 *
-	 * @param string $stored
+	 * @param string $stored Stored (possibly encrypted) value.
 	 * @return string
 	 */
 	public static function decrypt_secret( $stored ) {
@@ -251,6 +275,9 @@ class DXLEDA_OTP {
 
 	/**
 	 * Build the OTP email HTML body.
+	 *
+	 * @param string $code One-time code.
+	 * @param mixed  $site_name Site name.
 	 */
 	private static function build_email_html( $code, $site_name ) {
 		return '<!DOCTYPE html>

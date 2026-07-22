@@ -17,6 +17,8 @@
  * once). "Requires Plugins" is deliberately not declared because WordPress has
  * no way to express an either/or dependency, and declaring Forminator would
  * block Contact Form 7-only installs.
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 // Prevent direct access.
@@ -79,7 +81,7 @@ class DevXpert_Lead_Dashboard {
 	 * whichever sources are present.
 	 */
 	public function check_dependencies() {
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-sources.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-sources.php';
 
 		if ( ! DXLEDA_Sources::available() ) {
 			add_action( 'admin_notices', array( $this, 'dependency_missing_notice' ) );
@@ -186,7 +188,7 @@ class DevXpert_Lead_Dashboard {
 	 * Set up roles and capabilities
 	 */
 	public function setup_roles() {
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-roles.php';
 		DXLEDA_Roles::setup();
 	}
 
@@ -194,14 +196,14 @@ class DevXpert_Lead_Dashboard {
 	 * Include required files
 	 */
 	private function includes() {
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-sources.php';
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-database.php';
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-leads.php';
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-cf7.php';
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-feedback.php';
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-otp.php';
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-notifications.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-roles.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-sources.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-database.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-leads.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-cf7.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-feedback.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-otp.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-notifications.php';
 	}
 
 	/**
@@ -209,12 +211,12 @@ class DevXpert_Lead_Dashboard {
 	 */
 	public function activate() {
 		// Set up roles and capabilities.
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-roles.php';
 		DXLEDA_Roles::setup();
 
 		// Create custom tables.
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-sources.php';
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-database.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-sources.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-database.php';
 		DXLEDA_Database::create_tables();
 
 		// Set default options.
@@ -228,7 +230,7 @@ class DevXpert_Lead_Dashboard {
 	 * Plugin deactivation
 	 */
 	public function deactivate() {
-		require_once DXLEDA_PLUGIN_DIR . 'includes/class-fld-roles.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-roles.php';
 		DXLEDA_Roles::teardown();
 		flush_rewrite_rules();
 	}
@@ -281,6 +283,8 @@ class DevXpert_Lead_Dashboard {
 
 	/**
 	 * Enqueue admin assets
+	 *
+	 * @param string $hook Current admin page hook suffix.
 	 */
 	public function enqueue_admin_assets( $hook ) {
 		// Only load on our plugin pages. The page hook is built from the
@@ -385,6 +389,8 @@ class DevXpert_Lead_Dashboard {
 	/**
 	 * Remove unneeded WP admin bar nodes for Sales Admins.
 	 * Keeps: site name (home link), user account, logout.
+	 *
+	 * @param mixed $wp_admin_bar The admin bar instance.
 	 */
 	public function restrict_sales_admin_toolbar( $wp_admin_bar ) {
 		if ( ! DXLEDA_Roles::can_access() || DXLEDA_Roles::is_admin() ) {
@@ -413,6 +419,10 @@ class DevXpert_Lead_Dashboard {
 
 	/**
 	 * Redirect Sales Admin users to the Lead Dashboard immediately after login.
+	 *
+	 * @param mixed $redirect_to Redirect destination URL.
+	 * @param mixed $request Request.
+	 * @param mixed $user The logged-in user.
 	 */
 	public function sales_admin_login_redirect( $redirect_to, $request, $user ) {
 		if ( $user instanceof WP_User && in_array( DXLEDA_Roles::ROLE_SLUG, (array) $user->roles, true ) ) {
@@ -424,6 +434,9 @@ class DevXpert_Lead_Dashboard {
 	/**
 	 * Redirect Sales Admins after login via any non-wp-login.php form.
 	 * wp_login fires on every successful authentication.
+	 *
+	 * @param string $user_login The user login name.
+	 * @param mixed  $user The logged-in user.
 	 */
 	public function sales_admin_wp_login_redirect( $user_login, $user ) {
 		if ( $user instanceof WP_User && in_array( DXLEDA_Roles::ROLE_SLUG, (array) $user->roles, true ) ) {
@@ -435,6 +448,9 @@ class DevXpert_Lead_Dashboard {
 	/**
 	 * Override WooCommerce's own login redirect for Sales Admin users.
 	 * woocommerce_login_redirect filter is WooCommerce's final redirect decision.
+	 *
+	 * @param mixed $redirect Redirect.
+	 * @param mixed $user The logged-in user.
 	 */
 	public function sales_admin_woo_login_redirect( $redirect, $user ) {
 		if ( $user instanceof WP_User && in_array( DXLEDA_Roles::ROLE_SLUG, (array) $user->roles, true ) ) {
@@ -986,9 +1002,12 @@ class DevXpert_Lead_Dashboard {
 	 * Forminator AJAX only serializes its own registered fields, so the hidden
 	 * dxleda_otp_token input injected by JS is often absent from $_POST.
 	 * We check the cookie first (always present in XHR) then fall back to $_POST.
+	 *
+	 * @param mixed $errors Existing submission errors.
+	 * @param int   $form_id Form ID.
+	 * @param mixed $field_data_array Submitted field data.
 	 */
-	// phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature is fixed by Forminator's submit-errors filter.
-	public function check_otp_on_submit( $errors, $form_id, $field_data_array ) {
+	public function check_otp_on_submit( $errors, $form_id, $field_data_array ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- signature is fixed by Forminator's submit-errors filter.
 		if ( ! DXLEDA_OTP::is_form_enabled( $form_id ) ) {
 			return $errors;
 		}

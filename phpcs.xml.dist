@@ -49,6 +49,12 @@
         </properties>
     </rule>
 
+    <!-- The main plugin file must keep the plugin slug as its name, so the
+         class-file naming rule cannot apply to it. -->
+    <rule ref="WordPress.Files.FileName.InvalidClassFileName">
+        <exclude-pattern>devxpert-lead-dashboard-for-forminator\.php</exclude-pattern>
+    </rule>
+
     <!-- PHP cross-version compatibility for the versions we support. -->
     <rule ref="PHPCompatibilityWP"/>
 </ruleset>

@@ -3,16 +3,23 @@
  * Feedback Handler Class
  *
  * Manages sales team feedback for leads
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Stores, lists, and deletes sales-team feedback notes on leads.
+ */
 class DXLEDA_Feedback {
 
 	/**
 	 * Add feedback
+	 *
+	 * @param array $args Optional arguments.
 	 */
 	public static function add_feedback( $args ) {
 		global $wpdb;
@@ -52,6 +59,9 @@ class DXLEDA_Feedback {
 
 	/**
 	 * Get feedback for an entry
+	 *
+	 * @param int    $entry_id Entry ID.
+	 * @param string $source Source slug.
 	 */
 	public static function get_feedback( $entry_id, $source = DXLEDA_Sources::FORMINATOR ) {
 		global $wpdb;
@@ -77,6 +87,9 @@ class DXLEDA_Feedback {
 
 	/**
 	 * Get feedback count for an entry
+	 *
+	 * @param int    $entry_id Entry ID.
+	 * @param string $source Source slug.
 	 */
 	public static function get_feedback_count( $entry_id, $source = DXLEDA_Sources::FORMINATOR ) {
 		global $wpdb;
@@ -101,8 +114,8 @@ class DXLEDA_Feedback {
 	 * All ids must belong to the same source, since entry IDs are only unique
 	 * within one form plugin.
 	 *
-	 * @param int[]  $entry_ids
-	 * @param string $source
+	 * @param int[]  $entry_ids Entry IDs.
+	 * @param string $source Source slug.
 	 * @return array<int,int> Map of entry_id => count (only entries with feedback).
 	 */
 	public static function get_feedback_counts( $entry_ids, $source = DXLEDA_Sources::FORMINATOR ) {
@@ -138,7 +151,7 @@ class DXLEDA_Feedback {
 	/**
 	 * Get the user_id that owns a feedback entry
 	 *
-	 * @param int $feedback_id
+	 * @param int $feedback_id Feedback row ID.
 	 * @return int|null
 	 */
 	public static function get_feedback_owner( $feedback_id ) {
@@ -159,6 +172,8 @@ class DXLEDA_Feedback {
 
 	/**
 	 * Delete feedback
+	 *
+	 * @param int $feedback_id Feedback row ID.
 	 */
 	public static function delete_feedback( $feedback_id ) {
 		global $wpdb;
@@ -193,6 +208,9 @@ class DXLEDA_Feedback {
 
 	/**
 	 * Update feedback
+	 *
+	 * @param int   $feedback_id Feedback row ID.
+	 * @param array $args Optional arguments.
 	 */
 	public static function update_feedback( $feedback_id, $args ) {
 		global $wpdb;
@@ -241,6 +259,8 @@ class DXLEDA_Feedback {
 
 	/**
 	 * Get feedback statistics
+	 *
+	 * @param int $days Number of days to look back.
 	 */
 	public static function get_stats( $days = 30 ) {
 		global $wpdb;

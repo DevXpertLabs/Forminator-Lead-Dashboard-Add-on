@@ -1,6 +1,8 @@
 <?php
 /**
  * Settings Template — Administrators only
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

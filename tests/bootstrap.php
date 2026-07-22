@@ -4,6 +4,8 @@
  *
  * This file is only ever executed from the command line by PHPUnit. The guard
  * below blocks any direct web request while still allowing CLI execution.
+ *
+ * @package DevXpert_Lead_Dashboard
  */
 
 if ( ! defined( 'ABSPATH' ) && PHP_SAPI !== 'cli' ) {
@@ -36,14 +38,14 @@ function dxleda_manually_load_plugin() {
 
 	require $dir . '/devxpert-lead-dashboard-for-forminator.php';
 
-	require_once $dir . '/includes/class-fld-roles.php';
-	require_once $dir . '/includes/class-fld-sources.php';
-	require_once $dir . '/includes/class-fld-database.php';
-	require_once $dir . '/includes/class-fld-leads.php';
-	require_once $dir . '/includes/class-fld-cf7.php';
-	require_once $dir . '/includes/class-fld-feedback.php';
-	require_once $dir . '/includes/class-fld-otp.php';
-	require_once $dir . '/includes/class-fld-notifications.php';
+	require_once $dir . '/includes/class-dxleda-roles.php';
+	require_once $dir . '/includes/class-dxleda-sources.php';
+	require_once $dir . '/includes/class-dxleda-database.php';
+	require_once $dir . '/includes/class-dxleda-leads.php';
+	require_once $dir . '/includes/class-dxleda-cf7.php';
+	require_once $dir . '/includes/class-dxleda-feedback.php';
+	require_once $dir . '/includes/class-dxleda-otp.php';
+	require_once $dir . '/includes/class-dxleda-notifications.php';
 }
 tests_add_filter( 'muplugins_loaded', 'dxleda_manually_load_plugin' );
 
