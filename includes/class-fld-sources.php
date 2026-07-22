@@ -9,196 +9,196 @@
  * within a source, so a lead is always identified by the pair (entry_id, source).
  */
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 class DXLEDA_Sources {
 
-    const FORMINATOR = 'forminator';
-    const CF7        = 'cf7';
+	const FORMINATOR = 'forminator';
+	const CF7        = 'cf7';
 
-    /**
-     * Every source the plugin knows about, whether or not it is installed.
-     *
-     * @return array<string,string> Map of slug => human-readable label.
-     */
-    public static function all() {
-        return array(
-            self::FORMINATOR => __('Forminator', 'devxpert-lead-dashboard-for-forminator'),
-            self::CF7        => __('Contact Form 7', 'devxpert-lead-dashboard-for-forminator'),
-        );
-    }
+	/**
+	 * Every source the plugin knows about, whether or not it is installed.
+	 *
+	 * @return array<string,string> Map of slug => human-readable label.
+	 */
+	public static function all() {
+		return array(
+			self::FORMINATOR => __( 'Forminator', 'devxpert-lead-dashboard-for-forminator' ),
+			self::CF7        => __( 'Contact Form 7', 'devxpert-lead-dashboard-for-forminator' ),
+		);
+	}
 
-    /**
-     * Sources whose form plugin is actually active on this site.
-     *
-     * @return array<string,string> Map of slug => label.
-     */
-    public static function available() {
-        $available = array();
+	/**
+	 * Sources whose form plugin is actually active on this site.
+	 *
+	 * @return array<string,string> Map of slug => label.
+	 */
+	public static function available() {
+		$available = array();
 
-        foreach (self::all() as $slug => $label) {
-            if (self::is_available($slug)) {
-                $available[$slug] = $label;
-            }
-        }
+		foreach ( self::all() as $slug => $label ) {
+			if ( self::is_available( $slug ) ) {
+				$available[ $slug ] = $label;
+			}
+		}
 
-        return $available;
-    }
+		return $available;
+	}
 
-    /**
-     * Is this source's form plugin active?
-     *
-     * @param string $source
-     * @return bool
-     */
-    public static function is_available($source) {
-        switch ($source) {
-            case self::FORMINATOR:
-                return class_exists('Forminator');
+	/**
+	 * Is this source's form plugin active?
+	 *
+	 * @param string $source
+	 * @return bool
+	 */
+	public static function is_available( $source ) {
+		switch ( $source ) {
+			case self::FORMINATOR:
+				return class_exists( 'Forminator' );
 
-            case self::CF7:
-                return defined('WPCF7_VERSION') || class_exists('WPCF7_ContactForm');
-        }
+			case self::CF7:
+				return defined( 'WPCF7_VERSION' ) || class_exists( 'WPCF7_ContactForm' );
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    /**
-     * Is this a slug the plugin recognises?
-     *
-     * @param string $source
-     * @return bool
-     */
-    public static function is_valid($source) {
-        return array_key_exists($source, self::all());
-    }
+	/**
+	 * Is this a slug the plugin recognises?
+	 *
+	 * @param string $source
+	 * @return bool
+	 */
+	public static function is_valid( $source ) {
+		return array_key_exists( $source, self::all() );
+	}
 
-    /**
-     * Coerce untrusted input to a known source slug.
-     *
-     * Falls back to Forminator, which is what every pre-1.1 row is.
-     *
-     * @param mixed $source
-     * @return string
-     */
-    public static function sanitize($source) {
-        $source = is_string($source) ? $source : '';
+	/**
+	 * Coerce untrusted input to a known source slug.
+	 *
+	 * Falls back to Forminator, which is what every pre-1.1 row is.
+	 *
+	 * @param mixed $source
+	 * @return string
+	 */
+	public static function sanitize( $source ) {
+		$source = is_string( $source ) ? $source : '';
 
-        return self::is_valid($source) ? $source : self::FORMINATOR;
-    }
+		return self::is_valid( $source ) ? $source : self::FORMINATOR;
+	}
 
-    /**
-     * Human-readable label for a source slug.
-     *
-     * @param string $source
-     * @return string
-     */
-    public static function label($source) {
-        $all = self::all();
+	/**
+	 * Human-readable label for a source slug.
+	 *
+	 * @param string $source
+	 * @return string
+	 */
+	public static function label( $source ) {
+		$all = self::all();
 
-        return isset($all[$source]) ? $all[$source] : $source;
-    }
+		return isset( $all[ $source ] ) ? $all[ $source ] : $source;
+	}
 
-    /**
-     * Table holding this source's submissions.
-     *
-     * @param string $source
-     * @return string Prefixed table name, empty for an unknown source.
-     */
-    public static function entries_table($source) {
-        global $wpdb;
+	/**
+	 * Table holding this source's submissions.
+	 *
+	 * @param string $source
+	 * @return string Prefixed table name, empty for an unknown source.
+	 */
+	public static function entries_table( $source ) {
+		global $wpdb;
 
-        switch ($source) {
-            case self::FORMINATOR:
-                return $wpdb->prefix . 'frmt_form_entry';
+		switch ( $source ) {
+			case self::FORMINATOR:
+				return $wpdb->prefix . 'frmt_form_entry';
 
-            case self::CF7:
-                return $wpdb->prefix . 'dxleda_cf7_entries';
-        }
+			case self::CF7:
+				return $wpdb->prefix . 'dxleda_cf7_entries';
+		}
 
-        return '';
-    }
+		return '';
+	}
 
-    /**
-     * Table holding this source's submission field values.
-     *
-     * @param string $source
-     * @return string Prefixed table name, empty for an unknown source.
-     */
-    public static function meta_table($source) {
-        global $wpdb;
+	/**
+	 * Table holding this source's submission field values.
+	 *
+	 * @param string $source
+	 * @return string Prefixed table name, empty for an unknown source.
+	 */
+	public static function meta_table( $source ) {
+		global $wpdb;
 
-        switch ($source) {
-            case self::FORMINATOR:
-                return $wpdb->prefix . 'frmt_form_entry_meta';
+		switch ( $source ) {
+			case self::FORMINATOR:
+				return $wpdb->prefix . 'frmt_form_entry_meta';
 
-            case self::CF7:
-                return $wpdb->prefix . 'dxleda_cf7_entry_meta';
-        }
+			case self::CF7:
+				return $wpdb->prefix . 'dxleda_cf7_entry_meta';
+		}
 
-        return '';
-    }
+		return '';
+	}
 
-    /**
-     * Extra WHERE condition needed to isolate real form entries in the entries
-     * table, without a leading AND.
-     *
-     * Forminator stores polls and quizzes in the same table as forms; our own
-     * CF7 table holds nothing else, so it needs no filter.
-     *
-     * @param string $source
-     * @return string SQL fragment, or empty string.
-     */
-    public static function entries_where($source) {
-        if ($source === self::FORMINATOR) {
-            return "entry_type = 'custom-forms'";
-        }
+	/**
+	 * Extra WHERE condition needed to isolate real form entries in the entries
+	 * table, without a leading AND.
+	 *
+	 * Forminator stores polls and quizzes in the same table as forms; our own
+	 * CF7 table holds nothing else, so it needs no filter.
+	 *
+	 * @param string $source
+	 * @return string SQL fragment, or empty string.
+	 */
+	public static function entries_where( $source ) {
+		if ( self::FORMINATOR === $source ) {
+			return "entry_type = 'custom-forms'";
+		}
 
-        return '';
-    }
+		return '';
+	}
 
-    /**
-     * Map of form ID => form name for one source.
-     *
-     * @param string $source
-     * @return array<int,string>
-     */
-    public static function form_names($source) {
-        $map = array();
+	/**
+	 * Map of form ID => form name for one source.
+	 *
+	 * @param string $source
+	 * @return array<int,string>
+	 */
+	public static function form_names( $source ) {
+		$map = array();
 
-        if (!self::is_available($source)) {
-            return $map;
-        }
+		if ( ! self::is_available( $source ) ) {
+			return $map;
+		}
 
-        if ($source === self::FORMINATOR && class_exists('Forminator_API')) {
-            // Pass a high per-page so we get every form, not just the first 10.
-            $forms = Forminator_API::get_forms(null, 1, 999);
+		if ( self::FORMINATOR === $source && class_exists( 'Forminator_API' ) ) {
+			// Pass a high per-page so we get every form, not just the first 10.
+			$forms = Forminator_API::get_forms( null, 1, 999 );
 
-            if (is_array($forms)) {
-                foreach ($forms as $form) {
-                    $settings = (array) $form->settings;
+			if ( is_array( $forms ) ) {
+				foreach ( $forms as $form ) {
+					$settings = (array) $form->settings;
 
-                    $map[(int) $form->id] = !empty($settings['formName'])
-                        ? $settings['formName']
-                        : ('Form #' . $form->id);
-                }
-            }
-        }
+					$map[ (int) $form->id ] = ! empty( $settings['formName'] )
+						? $settings['formName']
+						: ( 'Form #' . $form->id );
+				}
+			}
+		}
 
-        if ($source === self::CF7 && class_exists('WPCF7_ContactForm')) {
-            $forms = WPCF7_ContactForm::find(array('posts_per_page' => -1));
+		if ( self::CF7 === $source && class_exists( 'WPCF7_ContactForm' ) ) {
+			$forms = WPCF7_ContactForm::find( array( 'posts_per_page' => -1 ) );
 
-            if (is_array($forms)) {
-                foreach ($forms as $form) {
-                    $title = $form->title();
+			if ( is_array( $forms ) ) {
+				foreach ( $forms as $form ) {
+					$title = $form->title();
 
-                    $map[(int) $form->id()] = $title !== '' ? $title : ('Form #' . $form->id());
-                }
-            }
-        }
+					$map[ (int) $form->id() ] = '' !== $title ? $title : ( 'Form #' . $form->id() );
+				}
+			}
+		}
 
-        return $map;
-    }
+		return $map;
+	}
 }
