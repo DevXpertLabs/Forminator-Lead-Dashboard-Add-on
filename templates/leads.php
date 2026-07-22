@@ -18,10 +18,17 @@ $sources = DXLEDA_Sources::available();
 ?>
 
 <div class="wrap fld-leads-page">
-    <h1 class="fld-page-title">
-        <span class="dashicons dashicons-id"></span>
-        <?php esc_html_e('All Leads', 'devxpert-lead-dashboard-for-forminator'); ?>
-    </h1>
+    <div class="fld-hero">
+        <div class="fld-hero-brand">
+            <span class="fld-logo-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
+            </span>
+            <div>
+                <h1 class="fld-page-title"><?php esc_html_e('All Leads', 'devxpert-lead-dashboard-for-forminator'); ?></h1>
+                <p class="fld-hero-sub"><?php esc_html_e('Filter, review, and update every lead in one place.', 'devxpert-lead-dashboard-for-forminator'); ?></p>
+            </div>
+        </div>
+    </div>
 
     <!-- Filters -->
     <div class="fld-filters">
