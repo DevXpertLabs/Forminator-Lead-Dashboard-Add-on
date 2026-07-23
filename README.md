@@ -1,19 +1,21 @@
-# DevXpert Lead Dashboard for Forminator
+# DevXpert Lead Dashboard for Forminator & Contact Form 7
 
 ![Dashboard View](image-1.png)
 
-**A lead-management add-on for the [Forminator](https://wordpress.org/plugins/forminator/) WordPress plugin.**
+**A lead-management add-on for the [Forminator](https://wordpress.org/plugins/forminator/) and [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) WordPress plugins.**
 
 Built by [Anup Kankale](https://anupkankale.com) · [DevXpert Labs](https://github.com/DevXpertLabs)
 
-> **Status:** Submitted to the WordPress.org plugin directory (slug `devxpert-lead-dashboard-for-forminator`) — in review.
-> Requires WordPress 5.0+, PHP 7.4+, and the free Forminator plugin.
+> **Status:** Live on the [WordPress.org plugin directory](https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/).
+> Requires WordPress 5.0+, PHP 7.4+, and Forminator **or** Contact Form 7 (either one is enough).
+
+📖 **New here? Read the [User Guide](docs/user-guide.md)** — a plain-language walkthrough of installation and day-to-day lead management, written for non-developers.
 
 ---
 
 ## What Does This Plugin Do?
 
-When someone fills out a Forminator form on your site, that submission becomes a **lead**. This plugin gives your team a proper dashboard inside WordPress to:
+When someone fills out a form on your site, that submission becomes a **lead**. This plugin gives your team a proper dashboard inside WordPress to:
 
 - See all leads in one place
 - Mark leads as positive, negative, converted, and more
