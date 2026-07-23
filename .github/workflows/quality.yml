@@ -48,10 +48,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build release contents (honor .distignore)
+        run: |
+          rsync -a --exclude-from=.distignore --exclude=/build \
+            ./ build/devxpert-lead-dashboard-for-forminator/
       - name: Run Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
-          build-dir: '.'
+          build-dir: 'build/devxpert-lead-dashboard-for-forminator'
 
   phpunit:
     name: PHPUnit
