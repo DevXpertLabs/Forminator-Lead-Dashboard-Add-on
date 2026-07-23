@@ -328,7 +328,9 @@ class DXLEDA_Leads {
 
 		$table = DXLEDA_Sources::entries_table( $source );
 
-		if ( ! $table ) {
+		// No table for the source, or its form plugin (and therefore its
+		// entries table) is absent — nothing to look up.
+		if ( ! $table || ! DXLEDA_Sources::is_available( $source ) ) {
 			return 0;
 		}
 
@@ -806,7 +808,7 @@ class DXLEDA_Leads {
              FROM $table a
              LEFT JOIN {$wpdb->users} u ON a.user_id = u.ID
              WHERE a.entry_id = %d AND a.source = %s
-             ORDER BY a.created_at DESC",
+             ORDER BY a.created_at DESC, a.id DESC",
 				intval( $entry_id ),
 				DXLEDA_Sources::sanitize( $source )
 			)

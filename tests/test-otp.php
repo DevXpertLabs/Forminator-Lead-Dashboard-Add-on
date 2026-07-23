@@ -44,30 +44,39 @@ class Test_DXLEDA_OTP extends WP_UnitTestCase {
 	 * Test that verify otp then consume token.
 	 */
 	public function test_verify_otp_then_consume_token() {
-		$email = 'user@example.com';
+		$email   = 'user@example.com';
+		$form_id = 12;
 
-		// Emulate a code having been sent (send_otp stores it this way).
-		set_transient( 'dxleda_otp_' . md5( $email ), '123456', 600 );
+		// Emulate a code having been sent (send_otp stores it this way,
+		// keyed to the email + form pair).
+		set_transient( 'dxleda_otp_' . md5( strtolower( $email ) . '|' . $form_id ), '123456', 600 );
 
-		$token = DXLEDA_OTP::verify_otp( $email, '123456' );
+		// The code is bound to the form it was requested for.
+		$this->assertFalse( DXLEDA_OTP::verify_otp( $email, '123456', 99 ) );
+
+		$token = DXLEDA_OTP::verify_otp( $email, '123456', $form_id );
 		$this->assertNotEmpty( $token );
-		$this->assertTrue( DXLEDA_OTP::verify_token( $token ) );
+		$this->assertTrue( DXLEDA_OTP::verify_token( $token, $form_id ) );
+
+		// The token is bound to the same form.
+		$this->assertFalse( DXLEDA_OTP::verify_token( $token, 99 ) );
 
 		// Correct code is single-use.
-		$this->assertFalse( DXLEDA_OTP::verify_otp( $email, '123456' ) );
+		$this->assertFalse( DXLEDA_OTP::verify_otp( $email, '123456', $form_id ) );
 
 		DXLEDA_OTP::consume_token( $token );
-		$this->assertFalse( DXLEDA_OTP::verify_token( $token ) );
+		$this->assertFalse( DXLEDA_OTP::verify_token( $token, $form_id ) );
 	}
 
 	/**
 	 * Test that verify otp rejects wrong code.
 	 */
 	public function test_verify_otp_rejects_wrong_code() {
-		$email = 'user2@example.com';
-		set_transient( 'dxleda_otp_' . md5( $email ), '111111', 600 );
+		$email   = 'user2@example.com';
+		$form_id = 12;
+		set_transient( 'dxleda_otp_' . md5( strtolower( $email ) . '|' . $form_id ), '111111', 600 );
 
-		$this->assertFalse( DXLEDA_OTP::verify_otp( $email, '999999' ) );
+		$this->assertFalse( DXLEDA_OTP::verify_otp( $email, '999999', $form_id ) );
 	}
 
 	/**
