@@ -2,51 +2,56 @@
 
 ![Dashboard View](image-1.png)
 
-**Turn your form submissions into a simple sales pipeline — right inside WordPress.**
+**Turn your Forminator and Contact Form 7 submissions into trackable leads with a simple sales dashboard, statuses, feedback notes, and CSV export.**
 
-Built by [Anup Kankale](https://anupkankale.com) · [DevXpert Labs](https://github.com/DevXpertLabs)
-
-> **Status:** Live on the [WordPress.org plugin directory](https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/).
-> Requires WordPress 5.0+, PHP 7.4+, and Forminator **or** Contact Form 7 (either one is enough).
+| | |
+|---|---|
+| **Contributors** | [anupkankale](https://profiles.wordpress.org/anupkankale/) |
+| **Plugin page** | [wordpress.org/plugins/devxpert-lead-dashboard-for-forminator](https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/) |
+| **Tags** | forminator, contact form 7, leads, crm, lead management |
+| **Requires at least** | WordPress 5.0 |
+| **Tested up to** | WordPress 7.0 |
+| **Requires PHP** | 7.4 |
+| **Stable tag** | 1.1.0 |
+| **License** | [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html) |
 
 *This guide is written in plain language for site owners and sales teams — no coding knowledge needed. Developers: see the [Developer Guide](docs/developer-guide.md).*
 
 ---
 
-## 1. What this plugin does
+## Description
+
+**Built to solve a real problem.** A travel agency was collecting leads through their Forminator forms every day — and losing track of them. Spreadsheets got messy fast, and a full CRM was too expensive for what they actually needed. So instead of another monthly subscription, this plugin was born: put every lead in one place, right inside WordPress.
 
 Every time someone fills in a form on your website — a contact form, a quote request, an enquiry — that person is a **potential customer** (a "lead"). Normally those submissions just arrive as emails and pile up in an inbox where they are easy to lose.
 
 This plugin collects every form submission in **one dashboard inside WordPress**, and lets you:
 
-- See **every lead in one place**, from both Forminator and Contact Form 7 forms
-- Mark each lead with a **status** (New, Follow Up, Converted, and more) so you always know where things stand
-- **Assign leads** to a team member so nothing falls through the cracks
-- Add **notes and ratings** to each lead after you talk to them
-- **Export everything to a spreadsheet** (CSV) with one click
-- Optionally **block spam** by making visitors confirm their email address before the form is accepted
+* See **every lead in one place**, from both Forminator and Contact Form 7 forms
+* Mark each lead with a **status** (New, Follow Up, Converted, and more) so you always know where things stand
+* **Assign leads** to a team member so nothing falls through the cracks
+* Add **notes and ratings** to each lead after you talk to them
+* **Export everything to a spreadsheet** (CSV) with one click
+* Give team members a locked-down **Sales Admin** role that only sees the dashboard
+* Optionally **block spam** on Forminator forms with email verification (OTP)
 
 Think of it as a simple sales pipeline that lives right inside your WordPress admin.
 
----
-
-## 2. Before you start
-
-You need:
+### What you need
 
 | Requirement | Details |
 |---|---|
-| A WordPress website | With administrator access (you can log in to `/wp-admin`) |
-| A form plugin | **Forminator** *or* **Contact Form 7** — either one is enough; both work together too |
+| A WordPress website | Version 5.0 or newer, with administrator access |
+| A form plugin | [Forminator](https://wordpress.org/plugins/forminator/) *or* [Contact Form 7](https://wordpress.org/plugins/contact-form-7/) — both free; either one is enough, both together work too |
 | PHP 7.4 or newer | Almost all modern hosting has this; your host can confirm |
 
 > **Don't have a form plugin yet?** In your WordPress admin go to **Plugins → Add New Plugin**, search for "Forminator" or "Contact Form 7", then click **Install Now** and **Activate**. Create at least one form and place it on a page.
 
 ---
 
-## 3. Installation
+## Installation
 
-### Method A — from the WordPress dashboard (recommended)
+### From the WordPress dashboard (recommended)
 
 1. Log in to your WordPress admin (`yoursite.com/wp-admin`).
 2. In the left menu go to **Plugins → Add New Plugin**.
@@ -54,9 +59,9 @@ You need:
 4. Find **DevXpert Lead Dashboard for Forminator & Contact Form 7** and click **Install Now**.
 5. When the button changes to **Activate**, click it.
 
-That's it. A new **Lead Dashboard** item appears in your left admin menu.
+That's it. A new **Lead Dashboard** item appears in your left admin menu. The database tables are created automatically.
 
-### Method B — uploading the ZIP file
+### Uploading the ZIP file
 
 Use this if you downloaded the plugin as a `.zip` file (for example from [wordpress.org](https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/)).
 
@@ -67,13 +72,16 @@ Use this if you downloaded the plugin as a `.zip` file (for example from [wordpr
 
 ### After activating
 
-- If Forminator was already collecting submissions, **your existing entries appear straight away** — no import needed.
-- Contact Form 7 normally doesn't store submissions at all, so for CF7 forms the dashboard shows **new submissions from this point on**. Older CF7 submissions only exist in your email inbox and can't be recovered.
-- If neither form plugin is active you'll see a notice asking you to activate one — the dashboard stays hidden until you do.
+* If Forminator was already collecting submissions, **your existing entries appear straight away** — no import needed.
+* Contact Form 7 normally doesn't store submissions at all, so for CF7 forms the dashboard shows **new submissions from this point on**. Older CF7 submissions only exist in your email inbox and can't be recovered.
+* If neither form plugin is active you'll see a notice asking you to activate one — the dashboard stays hidden until you do.
+* Submit a test entry on any supported form — it shows up as a new lead.
 
 ---
 
-## 4. Finding your way around
+## How to manage your leads
+
+### Finding your way around
 
 After activation, look at the left admin menu for **Lead Dashboard**. It has three pages:
 
@@ -81,39 +89,23 @@ After activation, look at the left admin menu for **Lead Dashboard**. It has thr
 |---|---|
 | **Dashboard** | The big picture — totals, charts, and recent activity |
 | **All Leads** | The full list of leads; this is where you'll spend most of your time |
-| **Settings** | Spam protection (email verification) and maintenance tools — administrators only |
+| **Settings** | Team roles, spam protection, and maintenance tools — administrators only |
 
----
-
-## 5. The Dashboard page
+### The Dashboard page
 
 The Dashboard gives you an at-a-glance overview:
 
-- **Stat cards** — how many leads you have in total and per status
-- **Charts** — how leads are trending, so you can see busy and quiet periods
-- If you use more than one form plugin, leads are labelled with a **source badge** (Forminator or Contact Form 7) so you can tell where each one came from
+* **Stat cards** — how many leads you have in total and per status
+* **Charts** — how leads are trending, so you can see busy and quiet periods
+* If you use more than one form plugin, leads are labelled with a **source badge** (Forminator or Contact Form 7) so you can tell where each one came from
 
 Use this page for a morning check-in: *How many new leads came in? How many are waiting for a follow-up?*
 
----
-
-## 6. Managing your leads (the All Leads page)
+### The All Leads page
 
 ![All Leads](image-2.png)
 
-This page lists every lead, newest first. Each row shows the person's details, which form they used, when they submitted, and their current status.
-
-### Finding a specific lead
-
-At the top of the list you can narrow things down:
-
-- **Source** — show only Forminator or only Contact Form 7 leads (appears when both are active)
-- **Form** — show leads from one particular form
-- **Status** — e.g. show only "Follow Up" leads
-- **Date from / to** — leads submitted in a date range
-- **Search box** — type a name, email, or anything else the person entered
-
-### Statuses — the heart of lead management
+This page lists every lead, newest first. At the top you can narrow things down by **source**, **form**, **status**, **date range**, or with the **search box** (type a name, email, or anything else the person entered).
 
 Every lead has one status. Change it as your conversation with the person progresses:
 
@@ -128,21 +120,12 @@ Every lead has one status. Change it as your conversation with the person progre
 
 Keeping statuses up to date is the single most useful habit — it means anyone on the team can open the dashboard and instantly see what needs attention.
 
-### Assigning leads to people
+Beyond statuses, each lead supports:
 
-Each lead can be **assigned to a team member**, so it's always clear who owns the conversation. You can also set a **priority** to mark which leads deserve attention first.
-
-### Notes and ratings (feedback)
-
-Open a lead to see its full details. After you've spoken with the person, leave **feedback**: a rating — **Positive**, **Neutral**, or **Negative** — plus a written note ("Called Tuesday, asked for a quote, send proposal by Friday"). Notes from the whole team stay attached to the lead, so the history is never lost.
-
-### Activity history
-
-Every lead keeps a **timeline** of what happened: when it was assigned, when the status changed, and who did it. If you're ever unsure what's been done with a lead, the timeline tells you.
-
-### Bulk actions
-
-Tick several leads and use the **bulk action** menu to update them in one go — handy for clearing out old leads or marking a batch as closed.
+* **Assignment** — give the lead to a team member so it's clear who owns the conversation, and set a **priority**
+* **Feedback** — after you've spoken with the person, leave a rating (**Positive**, **Neutral**, or **Negative**) plus a written note; the whole team's notes stay attached to the lead
+* **Activity timeline** — every assignment and status change is recorded with who did it and when
+* **Bulk actions** — tick several leads and update them in one go
 
 ### A simple daily routine
 
@@ -152,41 +135,29 @@ Tick several leads and use the **bulk action** menu to update them in one go —
 4. Once a week, filter by **Follow Up** and work through the list.
 5. When someone becomes a customer, set them to **Converted**.
 
----
-
-## 7. Giving your sales team access
+### Giving your sales team access
 
 You probably don't want to give sales staff full administrator access to your website. You don't have to.
 
-The plugin creates a WordPress role called **Sales Admin**:
+The plugin provides a WordPress role called **Sales Admin**:
 
-- Sales Admins can see and manage the **Lead Dashboard** — and *nothing else* in your WordPress admin (no plugins, no settings, no pages)
-- After logging in they land straight on the Lead Dashboard
-- The **Settings** page stays visible to administrators only
+* Sales Admins can see and manage the **Lead Dashboard** — and *nothing else* in your WordPress admin (no plugins, no settings, no pages)
+* After logging in they land straight on the Lead Dashboard
+* The **Settings** page stays visible to administrators only
 
-To add a team member:
+Assign the role from **Lead Dashboard → Settings**: pick any existing user and make them a Sales Admin. (Creating the person's account first, if needed, happens under **Users → Add New User**.)
 
-1. Go to **Users → Add New User**.
-2. Fill in their details, and under **Role** choose **Sales Admin**.
-3. Click **Add New User**. They can now log in and manage leads safely.
-
----
-
-## 8. Exporting leads to a spreadsheet
-
-Need your leads in Excel, Google Sheets, or another CRM?
+### Exporting leads to a spreadsheet
 
 1. Go to **Lead Dashboard → All Leads**.
 2. (Optional) Apply filters first — the export respects them, so you can export e.g. only "Converted" leads from one form.
 3. Click **Export CSV**.
 
-The file downloads to your computer and includes each lead's details plus the form name, source, and status. Open it with any spreadsheet program.
+The file downloads to your computer and includes each lead's details plus the form name, source, and status. Open it with Excel, Google Sheets, or import it into any CRM.
 
----
+### Optional: block spam with email verification (OTP)
 
-## 9. Optional: block spam with email verification (OTP)
-
-If a form gets a lot of fake or spam submissions, you can require visitors to **confirm their email address** before their submission is accepted. The visitor receives a one-time code (OTP) by email and must enter it — bots can't, so spam stops.
+If a **Forminator** form gets a lot of fake or spam submissions, you can require visitors to **confirm their email address** before their submission is accepted. The visitor receives a one-time 6-digit code by email and must enter it — bots can't, so spam stops. Codes expire in 10 minutes and are rate-limited. *(OTP is currently available for Forminator forms only — not yet for Contact Form 7.)*
 
 This is optional and off by default. To set it up you need free SMTP credentials from [Brevo](https://www.brevo.com) (or any SMTP provider):
 
@@ -196,13 +167,14 @@ This is optional and off by default. To set it up you need free SMTP credentials
 4. Tick the **forms** that should require verification. Forms you don't tick are unaffected.
 5. Save.
 
-From then on, ticked forms ask the visitor for their email code before the submission becomes a lead.
-
 > **Tip:** Only enable OTP on forms with a spam problem. Each extra step costs you a few genuine submissions too.
 
 ---
 
-## 10. Frequently asked questions
+## Frequently Asked Questions
+
+**Does it work with the free Forminator?**
+Yes. The free version of Forminator is all you need.
 
 **Do I need both Forminator and Contact Form 7?**
 No — either one is enough. If you run both, leads from both appear together, each labelled with its source.
@@ -210,8 +182,17 @@ No — either one is enough. If you run both, leads from both appear together, e
 **Will my old submissions show up?**
 Forminator: yes, all stored entries appear immediately. Contact Form 7: no — CF7 never stored them, so only submissions made after installing this plugin are captured.
 
+**Where are my leads stored?**
+Status, feedback, and activity are kept in the plugin's own database tables. Forminator submissions stay in Forminator's tables (never duplicated or moved). Contact Form 7 submissions are stored in the plugin's own tables, because CF7 does not keep them itself.
+
+**Does email verification (OTP) work with Contact Form 7?**
+Not yet — OTP is currently available for Forminator forms only.
+
 **Can two people work on leads at the same time?**
 Yes. Statuses, notes, and assignments are shared — everyone sees the same up-to-date list.
+
+**Can I have more than one Sales Admin?**
+Yes — assign the role to as many users as you like from **Lead Dashboard → Settings**.
 
 **What happens if I deactivate the plugin?**
 Nothing is lost. Your leads, statuses, and notes are kept in the database and reappear when you reactivate.
@@ -227,11 +208,45 @@ Yes — it's stored encrypted, not as plain text.
 
 ---
 
-## 11. Getting help
+## Screenshots
 
-- Plugin page & support forum: [wordpress.org/plugins/devxpert-lead-dashboard-for-forminator](https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/)
-- Bug reports and suggestions: [GitHub issues](https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on/issues)
-- Developer / contributor documentation: [Developer Guide](docs/developer-guide.md)
+1. Dashboard overview with stats and charts.
+2. All Leads page with filters and search.
+3. Lead detail view with status and feedback.
+4. Settings page.
+
+---
+
+## Changelog
+
+### 1.1.0
+* Added Contact Form 7 support: CF7 submissions are now captured and managed as leads alongside Forminator.
+* Added a Source filter and source badges so you can tell where each lead came from.
+* CSV export now includes the source and form name.
+* Leads are now identified by entry ID *and* source, so entries from different form plugins can no longer overwrite each other's status, feedback, or activity.
+* Forminator is no longer a hard requirement — either supported form plugin will do.
+
+### 1.0.1
+* Added optional email verification (OTP) with configurable SMTP.
+* Added a per-form OTP toggle in Settings.
+* Bug fixes.
+
+### 1.0.0
+* Initial release: dashboard, all-leads list, lead detail, statuses, feedback, CSV export, and the Sales Admin role.
+
+---
+
+## Third-Party Libraries
+
+Bundles [Chart.js v4.5.1](https://github.com/chartjs/Chart.js/releases/tag/v4.5.1) (MIT) for the dashboard charts, loaded locally with no external requests.
+
+---
+
+## Support & Contributing
+
+* Support forum: [wordpress.org/support/plugin/devxpert-lead-dashboard-for-forminator](https://wordpress.org/support/plugin/devxpert-lead-dashboard-for-forminator/)
+* Bug reports and suggestions: [GitHub issues](https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on/issues)
+* Developer / contributor documentation: [Developer Guide](docs/developer-guide.md)
 
 ---
 
