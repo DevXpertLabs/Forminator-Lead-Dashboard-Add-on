@@ -80,17 +80,49 @@
      * Update Stats Cards
      */
     function updateStatsCards(data) {
-        $('#stat-total-leads').text(data.total_leads || 0);
+        const total = parseInt(data.total_leads) || 0;
+
+        $('#stat-total-leads').text(total);
         $('#stat-new-leads').text(data.new_leads || 0);
         $('#stat-positive-leads').text(data.positive_leads || 0);
         $('#stat-negative-leads').text(data.negative_leads || 0);
         $('#stat-conversion-rate').text((data.conversion_rate || 0) + '%');
+
+        // Card meters show each count's share of the total, so the stat row
+        // reads as a funnel. The total card is the 100% baseline.
+        const share = n => total > 0 ? Math.round((n / total) * 100) : 0;
+        const setMeter = (key, pct, label) => {
+            $('#fld-meter-' + key).css('width', pct + '%');
+            $('#fld-share-' + key).text(label !== undefined ? label : pct + '%');
+        };
+
+        setMeter('total', total > 0 ? 100 : 0, total > 0 ? '100%' : '—');
+        setMeter('new', share(parseInt(data.new_leads) || 0));
+        setMeter('positive', share(parseInt(data.positive_leads) || 0));
+        setMeter('negative', share(parseInt(data.negative_leads) || 0));
+
+        const rate = parseFloat(data.conversion_rate) || 0;
+        setMeter('conversion', Math.min(rate, 100), rate + '%');
     }
 
     /**
      * Update Charts
      */
     function updateCharts(data) {
+        // Brand palette — keep in sync with the status dots in admin-styles.css
+        const ink = '#211c33';
+        const muted = '#665f7a';
+        const hairline = '#efedf5';
+        const brand = '#5e17eb';
+        const statusColors = {
+            'new': '#d08a1f',
+            'positive': '#2e9e57',
+            'negative': '#cf5b40',
+            'follow_up': '#4479c4',
+            'converted': '#17a08c',
+            'closed': '#93a09b'
+        };
+
         // Leads over time chart
         const leadsCtx = document.getElementById('fld-leads-chart');
         if (leadsCtx) {
@@ -104,6 +136,11 @@
             });
             const values = data.leads_by_day.map(item => parseInt(item.count));
 
+            // Soft gradient wash under the line
+            const fillGradient = leadsCtx.getContext('2d').createLinearGradient(0, 0, 0, 280);
+            fillGradient.addColorStop(0, 'rgba(94, 23, 235, 0.18)');
+            fillGradient.addColorStop(1, 'rgba(94, 23, 235, 0)');
+
             leadsChart = new Chart(leadsCtx, {
                 type: 'line',
                 data: {
@@ -111,10 +148,17 @@
                     datasets: [{
                         label: 'Leads',
                         data: values,
-                        borderColor: '#2271b1',
-                        backgroundColor: 'rgba(34, 113, 177, 0.1)',
+                        borderColor: brand,
+                        backgroundColor: fillGradient,
+                        borderWidth: 2.5,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        pointHitRadius: 12,
+                        pointBackgroundColor: brand,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.35
                     }]
                 },
                 options: {
@@ -126,10 +170,19 @@
                         }
                     },
                     scales: {
+                        x: {
+                            grid: { display: false },
+                            border: { color: hairline },
+                            ticks: { color: muted, font: { size: 11 }, maxTicksLimit: 12 }
+                        },
                         y: {
                             beginAtZero: true,
+                            grid: { color: hairline },
+                            border: { display: false },
                             ticks: {
-                                stepSize: 1
+                                stepSize: 1,
+                                color: muted,
+                                font: { size: 11 }
                             }
                         }
                     }
@@ -137,7 +190,7 @@
             });
         }
 
-        // Status pie chart
+        // Status doughnut
         const statusCtx = document.getElementById('fld-status-chart');
         if (statusCtx) {
             if (statusChart) {
@@ -146,20 +199,12 @@
 
             const statusLabels = [];
             const statusValues = [];
-            const statusColors = {
-                'new': '#fbbf24',
-                'positive': '#22c55e',
-                'negative': '#ef4444',
-                'follow_up': '#3b82f6',
-                'converted': '#a855f7',
-                'closed': '#64748b'
-            };
             const colors = [];
 
             for (const [status, info] of Object.entries(data.status_counts || {})) {
                 statusLabels.push(status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' '));
                 statusValues.push(parseInt(info.count));
-                colors.push(statusColors[status] || '#64748b');
+                colors.push(statusColors[status] || statusColors.closed);
             }
 
             // Add "New" if not present
@@ -168,7 +213,7 @@
                 if (newCount > 0) {
                     statusLabels.unshift('New');
                     statusValues.unshift(newCount);
-                    colors.unshift('#fbbf24');
+                    colors.unshift(statusColors.new);
                 }
             }
 
@@ -179,15 +224,29 @@
                     datasets: [{
                         data: statusValues,
                         backgroundColor: colors,
-                        borderWidth: 0
+                        borderWidth: 0,
+                        borderRadius: 6,
+                        spacing: 3,
+                        hoverOffset: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    cutout: '70%',
+                    layout: { padding: 6 },
                     plugins: {
                         legend: {
-                            position: 'bottom'
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                boxWidth: 7,
+                                boxHeight: 7,
+                                color: ink,
+                                font: { size: 11 },
+                                padding: 14
+                            }
                         }
                     }
                 }
@@ -203,7 +262,7 @@
         tbody.empty();
 
         if (!forms || forms.length === 0) {
-            tbody.html('<tr><td colspan="3" class="fld-empty-state">No forms found</td></tr>');
+            tbody.html('<tr><td colspan="3" class="fld-empty-state">No submissions in this date range yet</td></tr>');
             return;
         }
 
@@ -254,7 +313,7 @@
         tbody.empty();
 
         if (!leads || leads.length === 0) {
-            tbody.html('<tr><td colspan="6" class="fld-empty-state">No leads yet</td></tr>');
+            tbody.html('<tr><td colspan="6" class="fld-empty-state">No leads yet — new form submissions will appear here</td></tr>');
             return;
         }
 
@@ -271,7 +330,7 @@
                         <span class="fld-source-badge fld-source-${escapeHtml(lead.source)}">${escapeHtml(lead.source_label || lead.source)}</span>
                     </td>
                     <td><span class="fld-status-badge fld-status-${lead.status}">${formatStatus(lead.status)}</span></td>
-                    <td>${lead.feedback_count} feedback(s)</td>
+                    <td>${lead.feedback_count > 0 ? lead.feedback_count + (lead.feedback_count == 1 ? ' note' : ' notes') : '—'}</td>
                     <td>
                         <button class="fld-action-btn view fld-view-lead" data-id="${lead.entry_id}" data-source="${escapeHtml(lead.source)}">View</button>
                     </td>
@@ -425,7 +484,7 @@
                 <tr>
                     <td colspan="8" class="fld-empty-state">
                         <span class="dashicons dashicons-id"></span>
-                        <p>No leads found</p>
+                        <p>No leads match these filters — try widening the date range or clearing the search</p>
                     </td>
                 </tr>
             `);
@@ -782,7 +841,7 @@
         container.empty();
 
         if (!feedbackList || feedbackList.length === 0) {
-            container.html('<p class="fld-empty-state">No feedback yet</p>');
+            container.html('<p class="fld-empty-state">No notes on this lead yet — add the first one below</p>');
             return;
         }
 
@@ -1085,15 +1144,20 @@
             position: fixed;
             top: 50px;
             right: 20px;
-            padding: 15px 40px 15px 20px;
-            border-radius: 4px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 13px 40px 13px 18px;
+            background: #fff;
+            border: 1px solid #e5e3ec;
+            border-left-width: 3px;
+            border-radius: 10px;
+            font-size: 13px;
+            box-shadow: 0 8px 24px rgba(28,12,64,0.16);
             z-index: 100002;
             animation: slideIn 0.3s ease;
         }
-        .fld-notice-success { background: #dcfce7; color: #166534; border-left: 4px solid #22c55e; }
-        .fld-notice-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
-        .fld-notice-warning { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+        .fld-notice-success { color: #1d6b3c; border-left-color: #2e9e57; }
+        .fld-notice-error   { color: #9a3a26; border-left-color: #cf5b40; }
+        .fld-notice-warning { color: #90580a; border-left-color: #d08a1f; }
+        @media (prefers-reduced-motion: reduce) { .fld-notice { animation: none; } }
         .fld-notice p { margin: 0; }
         .fld-notice-close {
             position: absolute;

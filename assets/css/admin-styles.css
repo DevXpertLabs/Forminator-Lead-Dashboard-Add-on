@@ -1,24 +1,67 @@
 /**
- * Forminator Lead Dashboard - Admin Styles
+ * DevXpert Lead Dashboard — Admin Styles
+ *
+ * Visual language: premium plugin. A deep violet brand header with a gold
+ * mark, elevated white cards with soft layered shadows, pill status marks,
+ * gold CTAs, and violet interactive states (links, focus, charts).
  */
 
-/* ── Variables ─────────────────────────────────────────────────── */
+/* ── Tokens ────────────────────────────────────────────────────── */
 :root {
-    --fld-primary:        #2271b1;
-    --fld-primary-hover:  #135e96;
-    --fld-success:        #22c55e;
-    --fld-warning:        #eab308;
-    --fld-danger:         #ef4444;
-    --fld-info:           #3b82f6;
-    --fld-gray-100:       #f8fafc;
-    --fld-gray-200:       #e2e8f0;
-    --fld-gray-300:       #cbd5e1;
-    --fld-gray-500:       #64748b;
-    --fld-gray-700:       #334155;
-    --fld-gray-900:       #0f172a;
-    --fld-radius:         8px;
-    --fld-shadow:         0 1px 3px rgba(0,0,0,.10);
-    --fld-shadow-lg:      0 4px 12px rgba(0,0,0,.12);
+    /* Brand: DevXpert gold, with violet as the secondary/interactive color */
+    --fld-gold:      #fabf28;
+    --fld-gold-dark: #edb013;
+    --fld-gold-deep: #8a6503;
+    --fld-gold-tint: #fdf3d7;
+    --fld-gold-text: #241a02;   /* text on gold surfaces */
+
+    --fld-brand-900: #1c0745;
+    --fld-brand-800: #2b0a6b;
+    --fld-brand-700: #3c0ea0;
+    --fld-brand-600: #4c12c4;
+    --fld-brand-500: #5e17eb;
+    --fld-brand-100: #e9defc;
+    --fld-brand-50:  #f6f2fe;
+
+    --fld-text:   #211c33;
+    --fld-muted:  #665f7a;
+    --fld-line:   #e5e3ec;
+    --fld-line-soft: #efedf5;
+    --fld-card:   #ffffff;
+    --fld-well:   #f8f7fb;
+    --fld-danger: #b3412c;
+
+    /* Status colors: text / tint / dot */
+    --fld-new-ink:        #90580a;
+    --fld-new-tint:       #fdf3dd;
+    --fld-new-dot:        #d08a1f;
+
+    --fld-positive-ink:   #1d6b3c;
+    --fld-positive-tint:  #e9f6ec;
+    --fld-positive-dot:   #2e9e57;
+
+    --fld-negative-ink:   #9a3a26;
+    --fld-negative-tint:  #fdeeea;
+    --fld-negative-dot:   #cf5b40;
+
+    --fld-followup-ink:   #2a4f87;
+    --fld-followup-tint:  #e9f1fb;
+    --fld-followup-dot:   #4479c4;
+
+    --fld-converted-ink:  #0d6157;
+    --fld-converted-tint: #e2f4f1;
+    --fld-converted-dot:  #17a08c;
+
+    --fld-closed-ink:     #4b5854;
+    --fld-closed-tint:    #eff2f1;
+    --fld-closed-dot:     #93a09b;
+
+    --fld-radius:    12px;
+    --fld-radius-sm: 8px;
+
+    --fld-shadow-sm: 0 1px 2px rgba(28, 12, 64, .05), 0 1px 3px rgba(28, 12, 64, .06);
+    --fld-shadow-md: 0 2px 4px rgba(28, 12, 64, .04), 0 8px 20px rgba(28, 12, 64, .09);
+    --fld-shadow-lg: 0 24px 60px rgba(28, 12, 64, .22);
 }
 
 /* ── Page wrappers ─────────────────────────────────────────────── */
@@ -26,36 +69,256 @@
 .fld-leads-page,
 .fld-settings-page {
     max-width: 1400px;
+    color: var(--fld-text);
 }
 
-/* ── Page Title ────────────────────────────────────────────────── */
-.fld-page-title {
+/* ── Brand hero bar ────────────────────────────────────────────── */
+.fld-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin: 10px 0 22px;
+    padding: 22px 26px;
+    border-radius: 14px;
+    background: linear-gradient(118deg, var(--fld-brand-900) 0%, var(--fld-brand-700) 58%, var(--fld-brand-600) 100%);
+    box-shadow: var(--fld-shadow-md);
+}
+
+/* Soft light blooms give the band depth without a busy pattern */
+.fld-hero::before,
+.fld-hero::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.fld-hero::before {
+    width: 420px;
+    height: 420px;
+    right: -120px;
+    top: -260px;
+    background: radial-gradient(circle, rgba(255, 255, 255, .10) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+.fld-hero::after {
+    width: 300px;
+    height: 300px;
+    left: 30%;
+    bottom: -220px;
+    background: radial-gradient(circle, rgba(250, 191, 40, .22) 0%, rgba(250, 191, 40, 0) 70%);
+}
+
+.fld-hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    z-index: 1;
+}
+
+.fld-logo-mark {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .20);
+    color: var(--fld-gold);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+
+.fld-logo-mark svg { width: 22px; height: 22px; }
+
+.fld-hero h1.fld-page-title {
+    margin: 0;
+    padding: 0;
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    line-height: 1.25;
+    color: #fff;
+}
+
+.fld-hero-sub {
+    margin: 3px 0 0;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, .68);
+}
+
+.fld-hero-controls {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 23px;
+    position: relative;
+    z-index: 1;
+}
+
+.fld-hero-controls select {
+    padding: 7px 30px 7px 12px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, .10);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.5;
+    backdrop-filter: blur(3px);
+}
+
+.fld-hero-controls select option { color: var(--fld-text); }
+
+.fld-hero-controls .button {
+    background: rgba(255, 255, 255, .10);
+    border: 1px solid rgba(255, 255, 255, .28);
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: none;
+    transition: background .15s;
+}
+
+.fld-hero-controls .button:hover,
+.fld-hero-controls .button:focus {
+    background: rgba(255, 255, 255, .20);
+    border-color: rgba(255, 255, 255, .4);
+    color: #fff;
+}
+
+/* ── Stat cards ────────────────────────────────────────────────── */
+.fld-tally {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.fld-tally-col {
+    background: var(--fld-card);
+    border: 1px solid var(--fld-line);
+    border-radius: var(--fld-radius);
+    box-shadow: var(--fld-shadow-sm);
+    padding: 18px 20px 16px;
+    min-width: 0;
+    transition: box-shadow .2s, border-color .2s;
+}
+
+.fld-tally-col:hover {
+    box-shadow: var(--fld-shadow-md);
+    border-color: #d8d4e4;
+}
+
+.fld-tally-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.fld-tally-label {
+    font-size: 12px;
     font-weight: 600;
-    margin: 0 0 20px;
-    color: var(--fld-gray-900);
+    letter-spacing: .02em;
+    color: var(--fld-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.fld-page-title .dashicons {
-    font-size: 28px;
-    width: 28px;
-    height: 28px;
-    color: var(--fld-primary);
+.fld-tally-ico {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
 }
 
-/* ── Filters Bar (dashboard) ───────────────────────────────────── */
+.fld-tally-ico svg { width: 17px; height: 17px; }
+
+.fld-ico-total      { background: var(--fld-brand-100);     color: var(--fld-brand-600); }
+.fld-ico-new        { background: var(--fld-new-tint);       color: var(--fld-new-dot); }
+.fld-ico-positive   { background: var(--fld-positive-tint);  color: var(--fld-positive-dot); }
+.fld-ico-negative   { background: var(--fld-negative-tint);  color: var(--fld-negative-dot); }
+.fld-ico-conversion { background: var(--fld-gold-tint); color: #b3831a; }
+
+.fld-tally-num {
+    display: block;
+    margin: 12px 0 12px;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    line-height: 1;
+    color: var(--fld-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.fld-tally-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Share-of-total meter: JS sets the width to the status's real share,
+   so the card row doubles as a funnel read. */
+.fld-tally-meter {
+    display: block;
+    flex: 1;
+    height: 5px;
+    background: var(--fld-line-soft);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.fld-tally-meter i {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--fld-brand-500), var(--fld-brand-600));
+    transition: width .6s cubic-bezier(.22, .8, .36, 1);
+}
+
+.fld-meter-new       i { background: linear-gradient(90deg, #e0a33a, var(--fld-new-dot)); }
+.fld-meter-positive  i { background: linear-gradient(90deg, #43b96a, var(--fld-positive-dot)); }
+.fld-meter-negative  i { background: linear-gradient(90deg, #e0704f, var(--fld-negative-dot)); }
+.fld-meter-converted i { background: linear-gradient(90deg, var(--fld-gold), #e09b00); }
+
+.fld-tally-share {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--fld-muted);
+    min-width: 34px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Shared card recipe ────────────────────────────────────────── */
+.fld-filters-bar,
+.fld-filters,
+.fld-chart-card,
+.fld-table-card,
+.fld-settings-section,
+.fld-table-wrapper {
+    background: var(--fld-card);
+    border: 1px solid var(--fld-line);
+    border-radius: var(--fld-radius);
+    box-shadow: var(--fld-shadow-sm);
+}
+
+/* ── Filters bar (dashboard fallback) ──────────────────────────── */
 .fld-filters-bar {
     display: flex;
     align-items: center;
     gap: 15px;
     margin-bottom: 20px;
-    padding: 14px 18px;
-    background: #fff;
-    border-radius: var(--fld-radius);
-    box-shadow: var(--fld-shadow);
+    padding: 12px 18px;
 }
 
 .fld-date-range {
@@ -63,96 +326,27 @@
     align-items: center;
     gap: 10px;
     font-weight: 500;
-    color: var(--fld-gray-700);
+    color: var(--fld-muted);
     font-size: 13px;
 }
 
-.fld-date-range select {
-    padding: 7px 12px;
-    border: 1px solid var(--fld-gray-300);
-    border-radius: 4px;
-}
-
-/* ── Stats Grid ────────────────────────────────────────────────── */
-.fld-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.fld-stat-card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 20px;
-    background: #fff;
-    border-radius: var(--fld-radius);
-    box-shadow: var(--fld-shadow);
-    transition: transform .2s, box-shadow .2s;
-}
-
-.fld-stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--fld-shadow-lg);
-}
-
-.fld-stat-icon {
-    flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-}
-
-.fld-stat-icon .dashicons {
-    font-size: 22px;
-    width: 22px;
-    height: 22px;
-}
-
-.fld-stat-total    .fld-stat-icon { background: #dbeafe; color: #2563eb; }
-.fld-stat-new      .fld-stat-icon { background: #fef3c7; color: #d97706; }
-.fld-stat-positive .fld-stat-icon { background: #dcfce7; color: #16a34a; }
-.fld-stat-negative .fld-stat-icon { background: #fee2e2; color: #dc2626; }
-.fld-stat-conversion .fld-stat-icon { background: #f3e8ff; color: #9333ea; }
-
-.fld-stat-content h3 {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1;
-    color: var(--fld-gray-900);
-}
-
-.fld-stat-content p {
-    margin: 6px 0 0;
-    color: var(--fld-gray-500);
-    font-size: 13px;
-}
-
-/* ── Charts Row ────────────────────────────────────────────────── */
+/* ── Charts row ────────────────────────────────────────────────── */
 .fld-charts-row {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
-.fld-chart-card {
-    background: #fff;
-    border-radius: var(--fld-radius);
-    box-shadow: var(--fld-shadow);
-    padding: 20px;
-}
+.fld-chart-card { padding: 20px 22px; }
 
-.fld-chart-card h3 {
+.fld-chart-card h3,
+.fld-table-card h3 {
     margin: 0 0 16px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    color: var(--fld-gray-700);
+    letter-spacing: -.005em;
+    color: var(--fld-text);
 }
 
 /* Chart.js requires position:relative + explicit height on the wrapper.
@@ -175,20 +369,10 @@
     .fld-charts-row { grid-template-columns: 1fr; }
 }
 
-/* ── Table Card ────────────────────────────────────────────────── */
+/* ── Table cards ───────────────────────────────────────────────── */
 .fld-table-card {
-    background: #fff;
-    border-radius: var(--fld-radius);
-    box-shadow: var(--fld-shadow);
-    padding: 20px;
+    padding: 20px 22px;
     margin-bottom: 20px;
-}
-
-.fld-table-card h3 {
-    margin: 0 0 14px;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--fld-gray-700);
 }
 
 .fld-table-header {
@@ -204,6 +388,7 @@
 .fld-table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    padding: 6px 18px 12px;
 }
 
 .fld-table {
@@ -214,56 +399,75 @@
 
 .fld-table th,
 .fld-table td {
-    padding: 11px 14px;
+    padding: 12px;
     text-align: left;
-    border-bottom: 1px solid var(--fld-gray-200);
+    border-bottom: 1px solid var(--fld-line-soft);
     vertical-align: middle;
 }
 
 .fld-table th {
-    background: var(--fld-gray-100);
+    background: transparent;
     font-weight: 600;
-    color: var(--fld-gray-700);
+    color: var(--fld-muted);
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: .05em;
+    letter-spacing: .06em;
     white-space: nowrap;
+    border-bottom: 1px solid var(--fld-line);
 }
 
-.fld-table tbody tr:hover { background: #f1f5f9; }
+.fld-table tbody tr:last-child td { border-bottom: none; }
 
-.fld-table .fld-col-check   { width: 36px; }
-.fld-table .fld-col-id      { width: 70px; font-weight: 600; }
-.fld-table .fld-col-date    { width: 150px; white-space: nowrap; }
-.fld-table .fld-col-form    { width: 120px; }
-.fld-table .fld-col-status  { width: 120px; }
-.fld-table .fld-col-feedback { width: 90px; text-align: center; }
-.fld-table .fld-col-actions { width: 90px; text-align: center; }
+.fld-table tbody tr { transition: background .12s; }
+.fld-table tbody tr:hover { background: var(--fld-brand-50); }
 
-/* ── Status Badges ─────────────────────────────────────────────── */
+.fld-table .fld-col-check    { width: 36px; }
+.fld-table .fld-col-id       { width: 70px; font-weight: 600; color: var(--fld-muted); font-variant-numeric: tabular-nums; }
+.fld-table .fld-col-date     { width: 150px; white-space: nowrap; color: var(--fld-muted); }
+.fld-table .fld-col-form     { width: 140px; }
+.fld-table .fld-col-status   { width: 120px; }
+.fld-table .fld-col-feedback { width: 90px; text-align: center; color: var(--fld-muted); }
+.fld-table .fld-col-actions  { width: 90px; text-align: center; }
+
+/* ── Status pills ──────────────────────────────────────────────── */
 .fld-status-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 11px 3px 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
     font-weight: 600;
+    letter-spacing: .01em;
     text-transform: capitalize;
     white-space: nowrap;
+    line-height: 1.7;
 }
 
-.fld-status-new       { background: #fef3c7; color: #92400e; }
-.fld-status-positive  { background: #dcfce7; color: #166534; }
-.fld-status-negative  { background: #fee2e2; color: #991b1b; }
-.fld-status-follow_up { background: #dbeafe; color: #1e40af; }
-.fld-status-converted { background: #f3e8ff; color: #6b21a8; }
-.fld-status-closed    { background: #e2e8f0; color: #475569; }
+.fld-status-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.fld-status-new       { background: var(--fld-new-tint);       color: var(--fld-new-ink); }
+.fld-status-new::before       { background: var(--fld-new-dot); }
+.fld-status-positive  { background: var(--fld-positive-tint);  color: var(--fld-positive-ink); }
+.fld-status-positive::before  { background: var(--fld-positive-dot); }
+.fld-status-negative  { background: var(--fld-negative-tint);  color: var(--fld-negative-ink); }
+.fld-status-negative::before  { background: var(--fld-negative-dot); }
+.fld-status-follow_up { background: var(--fld-followup-tint);  color: var(--fld-followup-ink); }
+.fld-status-follow_up::before { background: var(--fld-followup-dot); }
+.fld-status-converted { background: var(--fld-converted-tint); color: var(--fld-converted-ink); }
+.fld-status-converted::before { background: var(--fld-converted-dot); }
+.fld-status-closed    { background: var(--fld-closed-tint);    color: var(--fld-closed-ink); }
+.fld-status-closed::before    { background: var(--fld-closed-dot); }
 
 /* ── Filters (leads page) ──────────────────────────────────────── */
 .fld-filters {
-    background: #fff;
-    border-radius: var(--fld-radius);
-    box-shadow: var(--fld-shadow);
-    padding: 18px 20px;
+    padding: 16px 20px;
     margin-bottom: 16px;
 }
 
@@ -281,20 +485,30 @@
 }
 
 .fld-filter-item label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
-    color: var(--fld-gray-700);
+    color: var(--fld-muted);
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: .05em;
 }
 
 .fld-filter-item input,
 .fld-filter-item select {
     padding: 7px 11px;
-    border: 1px solid var(--fld-gray-300);
-    border-radius: 4px;
+    border: 1px solid #d5d1e0;
+    border-radius: var(--fld-radius-sm);
     min-width: 140px;
     font-size: 13px;
+    background-color: var(--fld-card);
+    color: var(--fld-text);
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.fld-filter-item input:focus,
+.fld-filter-item select:focus {
+    border-color: var(--fld-brand-500);
+    box-shadow: 0 0 0 2px rgba(94, 23, 235, .15);
+    outline: none;
 }
 
 .fld-filter-actions {
@@ -304,20 +518,24 @@
     align-items: flex-end;
 }
 
-/* ── Bulk Actions ──────────────────────────────────────────────── */
+/* ── Bulk actions ──────────────────────────────────────────────── */
 .fld-bulk-actions {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-bottom: 12px;
-    padding: 10px 14px;
-    background: var(--fld-gray-100);
-    border-radius: 4px;
+    padding: 8px 2px;
+}
+
+.fld-bulk-actions select {
+    border-radius: var(--fld-radius-sm);
+    border-color: #d5d1e0;
 }
 
 #fld-selected-count {
-    color: var(--fld-gray-500);
-    font-size: 13px;
+    color: var(--fld-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
 }
 
 /* ── Pagination ────────────────────────────────────────────────── */
@@ -326,30 +544,85 @@
     justify-content: center;
     align-items: center;
     gap: 5px;
-    margin-top: 20px;
+    margin-top: 18px;
     flex-wrap: wrap;
 }
 
 .fld-pagination button,
 .fld-pagination span {
-    padding: 7px 12px;
-    border: 1px solid var(--fld-gray-300);
-    background: #fff;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border: 1px solid var(--fld-line);
+    background: var(--fld-card);
+    border-radius: var(--fld-radius-sm);
     cursor: pointer;
     font-size: 13px;
     line-height: 1.4;
+    color: var(--fld-text);
+    font-variant-numeric: tabular-nums;
+    transition: border-color .15s, background .15s;
 }
 
-.fld-pagination button:hover        { background: var(--fld-gray-100); }
-.fld-pagination button.active       { background: var(--fld-primary); color: #fff; border-color: var(--fld-primary); }
-.fld-pagination button:disabled     { opacity: .5; cursor: not-allowed; }
+.fld-pagination span { border-color: transparent; background: transparent; color: var(--fld-muted); cursor: default; }
+
+.fld-pagination button:hover    { border-color: var(--fld-brand-500); color: var(--fld-brand-600); }
+.fld-pagination button.active   { background: var(--fld-brand-600); color: #fff; border-color: var(--fld-brand-600); }
+.fld-pagination button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── Buttons: brand green inside plugin screens ────────────────── */
+.fld-dashboard .button-primary,
+.fld-leads-page .button-primary,
+.fld-settings-page .button-primary,
+.fld-modal .button-primary {
+    background: var(--fld-gold);
+    border-color: var(--fld-gold);
+    color: var(--fld-gold-text);
+    font-weight: 600;
+    text-shadow: none;
+    border-radius: var(--fld-radius-sm);
+    box-shadow: 0 1px 2px rgba(28, 12, 64, .18);
+    transition: background .15s;
+}
+
+.fld-dashboard .button-primary:hover,
+.fld-dashboard .button-primary:focus,
+.fld-leads-page .button-primary:hover,
+.fld-leads-page .button-primary:focus,
+.fld-settings-page .button-primary:hover,
+.fld-settings-page .button-primary:focus,
+.fld-modal .button-primary:hover,
+.fld-modal .button-primary:focus {
+    background: var(--fld-gold-dark);
+    border-color: var(--fld-gold-dark);
+    color: var(--fld-gold-text);
+}
+
+.fld-dashboard .wrap .button:not(.button-primary),
+.fld-dashboard .button:not(.button-primary):not(.fld-hero-controls .button),
+.fld-leads-page .button:not(.button-primary),
+.fld-settings-page .button:not(.button-primary),
+.fld-modal .button:not(.button-primary) {
+    border-radius: var(--fld-radius-sm);
+}
+
+.fld-dashboard a,
+.fld-leads-page a,
+.fld-settings-page a { color: var(--fld-brand-600); }
+
+/* Visible focus everywhere in the plugin */
+.fld-dashboard :focus-visible,
+.fld-leads-page :focus-visible,
+.fld-settings-page :focus-visible,
+.fld-modal :focus-visible {
+    outline: 2px solid var(--fld-brand-500);
+    outline-offset: 1px;
+}
 
 /* ── Modal ─────────────────────────────────────────────────────── */
 .fld-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.5);
+    background: rgba(28, 12, 64, .48);
+    backdrop-filter: blur(2px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -358,13 +631,13 @@
 }
 
 .fld-modal-content {
-    background: #fff;
-    border-radius: var(--fld-radius);
+    background: var(--fld-card);
+    border-radius: 14px;
     width: 100%;
     max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 25px 50px rgba(0,0,0,.25);
+    box-shadow: var(--fld-shadow-lg);
     display: flex;
     flex-direction: column;
 }
@@ -375,40 +648,42 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--fld-gray-200);
+    padding: 17px 22px;
+    border-bottom: 1px solid var(--fld-line);
     position: sticky;
     top: 0;
-    background: #fff;
+    background: var(--fld-card);
     z-index: 1;
 }
 
 .fld-modal-header h2 {
     margin: 0;
-    font-size: 17px;
-    color: var(--fld-gray-900);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fld-text);
+    font-variant-numeric: tabular-nums;
 }
 
 .fld-modal-close {
     background: none;
     border: none;
-    font-size: 26px;
+    font-size: 24px;
     cursor: pointer;
-    color: var(--fld-gray-500);
+    color: var(--fld-muted);
     line-height: 1;
-    padding: 0 4px;
-    border-radius: 4px;
+    padding: 2px 7px;
+    border-radius: 7px;
     transition: color .15s, background .15s;
 }
 
 .fld-modal-close:hover {
-    color: var(--fld-gray-900);
-    background: var(--fld-gray-100);
+    color: var(--fld-text);
+    background: var(--fld-well);
 }
 
-.fld-modal-body { padding: 20px; }
+.fld-modal-body { padding: 22px; }
 
-/* ── Lead Detail Grid (leads modal) ────────────────────────────── */
+/* ── Lead detail grid (leads modal) ────────────────────────────── */
 .fld-lead-detail-grid {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -420,51 +695,48 @@
 .fld-lead-actions-panel h4,
 .fld-feedback-panel h4,
 .fld-feedback-section h4,
-.fld-activity-panel h4 {
+.fld-activity-panel h4,
+.fld-lead-status-section h4 {
     margin: 0 0 12px;
     font-size: 11px;
     font-weight: 700;
-    color: var(--fld-gray-500);
+    color: var(--fld-muted);
     text-transform: uppercase;
     letter-spacing: .06em;
 }
 
-/* ── Lead Meta ─────────────────────────────────────────────────── */
+/* ── Lead meta ─────────────────────────────────────────────────── */
 #fld-lead-meta {
-    background: var(--fld-gray-100);
-    padding: 14px;
-    border-radius: 6px;
+    background: var(--fld-well);
+    border: 1px solid var(--fld-line-soft);
+    padding: 6px 16px;
+    border-radius: var(--fld-radius-sm);
 }
 
 .fld-meta-item {
     display: flex;
     gap: 10px;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--fld-gray-200);
+    padding: 10px 0;
+    border-bottom: 1px solid var(--fld-line-soft);
     font-size: 13px;
 }
 
-.fld-meta-item:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
+.fld-meta-item:last-child { border-bottom: none; }
 
 .fld-meta-label {
     font-weight: 600;
-    color: var(--fld-gray-700);
+    color: var(--fld-muted);
     width: 140px;
     flex-shrink: 0;
 }
 
-.fld-meta-value { color: var(--fld-gray-900); word-break: break-word; }
+.fld-meta-value { color: var(--fld-text); word-break: break-word; }
 
-/* ── Status Selector ───────────────────────────────────────────── */
+/* ── Status selector (leads modal) ─────────────────────────────── */
 .fld-status-selector {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 7px;
     margin-bottom: 14px;
 }
 
@@ -472,63 +744,51 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    padding: 7px 11px;
-    border: 2px solid var(--fld-gray-200);
-    border-radius: 6px;
+    padding: 7px 13px;
+    border: 1px solid #d5d1e0;
+    border-radius: 999px;
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
-    transition: border-color .15s, background .15s;
+    color: var(--fld-text);
+    background: var(--fld-card);
+    transition: border-color .15s, background .15s, box-shadow .15s;
 }
 
 .fld-status-option input[type="radio"] { display: none; }
 
-.fld-status-option:hover { border-color: var(--fld-primary); }
+.fld-status-option:hover { border-color: var(--fld-brand-500); }
 
 /* Selected state via :has() — supported in all modern browsers */
-.fld-status-option:has(input:checked) { font-weight: 700; }
-.fld-status-option.fld-status-new:has(input:checked)       { background: #fef3c7; border-color: #d97706; }
-.fld-status-option.fld-status-positive:has(input:checked)  { background: #dcfce7; border-color: #16a34a; }
-.fld-status-option.fld-status-negative:has(input:checked)  { background: #fee2e2; border-color: #dc2626; }
-.fld-status-option.fld-status-follow_up:has(input:checked) { background: #dbeafe; border-color: #2563eb; }
-.fld-status-option.fld-status-converted:has(input:checked) { background: #f3e8ff; border-color: #9333ea; }
-.fld-status-option.fld-status-closed:has(input:checked)    { background: #e2e8f0; border-color: #475569; }
+.fld-status-option:has(input:checked) { font-weight: 600; box-shadow: var(--fld-shadow-sm); }
+.fld-status-option.fld-status-new:has(input:checked)       { background: var(--fld-new-tint);       border-color: var(--fld-new-dot);       color: var(--fld-new-ink); }
+.fld-status-option.fld-status-positive:has(input:checked)  { background: var(--fld-positive-tint);  border-color: var(--fld-positive-dot);  color: var(--fld-positive-ink); }
+.fld-status-option.fld-status-negative:has(input:checked)  { background: var(--fld-negative-tint);  border-color: var(--fld-negative-dot);  color: var(--fld-negative-ink); }
+.fld-status-option.fld-status-follow_up:has(input:checked) { background: var(--fld-followup-tint);  border-color: var(--fld-followup-dot);  color: var(--fld-followup-ink); }
+.fld-status-option.fld-status-converted:has(input:checked) { background: var(--fld-converted-tint); border-color: var(--fld-converted-dot); color: var(--fld-converted-ink); }
+.fld-status-option.fld-status-closed:has(input:checked)    { background: var(--fld-closed-tint);    border-color: var(--fld-closed-dot);    color: var(--fld-closed-ink); }
 
-/* Dashboard modal – status + feedback sections use different class names */
+/* Dashboard modal — status section */
 .fld-lead-status-section {
     margin-bottom: 20px;
     padding-bottom: 20px;
-    border-bottom: 1px solid var(--fld-gray-200);
-}
-
-.fld-lead-status-section h4 {
-    margin: 0 0 12px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--fld-gray-700);
+    border-bottom: 1px solid var(--fld-line-soft);
 }
 
 .fld-lead-status-section select {
-    padding: 8px 12px;
-    border: 1px solid var(--fld-gray-300);
-    border-radius: 4px;
+    padding: 7px 30px 7px 12px;
+    border: 1px solid #d5d1e0;
+    border-radius: var(--fld-radius-sm);
     margin-right: 10px;
     font-size: 13px;
 }
 
-/* ── Feedback Panel (shared by both modals) ────────────────────── */
+/* ── Feedback panel ────────────────────────────────────────────── */
 .fld-feedback-panel,
 .fld-feedback-section {
-    border-top: 1px solid var(--fld-gray-200);
+    border-top: 1px solid var(--fld-line-soft);
     padding-top: 20px;
     margin-top: 20px;
-}
-
-.fld-feedback-section h4 {
-    margin: 0 0 12px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--fld-gray-700);
 }
 
 .fld-feedback-list {
@@ -540,28 +800,29 @@
 .fld-feedback-item {
     display: flex;
     gap: 12px;
-    padding: 12px 14px;
-    background: var(--fld-gray-100);
-    border-radius: 6px;
+    padding: 13px 14px;
+    background: var(--fld-well);
+    border: 1px solid var(--fld-line-soft);
+    border-radius: var(--fld-radius-sm);
     margin-bottom: 8px;
 }
 
-.fld-feedback-item .fld-feedback-rating { font-size: 22px; flex-shrink: 0; }
+.fld-feedback-item .fld-feedback-rating { flex-shrink: 0; }
 
 .fld-feedback-content { flex: 1; min-width: 0; }
 
 .fld-feedback-text {
-    margin: 0 0 8px;
-    color: var(--fld-gray-900);
+    margin: 0 0 7px;
+    color: var(--fld-text);
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.55;
 }
 
 .fld-feedback-meta {
     display: flex;
     gap: 12px;
     font-size: 11px;
-    color: var(--fld-gray-500);
+    color: var(--fld-muted);
     flex-wrap: wrap;
     align-items: center;
 }
@@ -577,97 +838,84 @@
 
 .fld-feedback-delete:hover { text-decoration: underline; }
 
-/* ── Add Feedback Form (both modals) ───────────────────────────── */
+/* ── Add feedback form ─────────────────────────────────────────── */
 .fld-add-feedback-form,
 .fld-add-feedback {
-    background: var(--fld-gray-100);
-    padding: 14px;
-    border-radius: 6px;
+    background: var(--fld-well);
+    border: 1px solid var(--fld-line-soft);
+    padding: 16px;
+    border-radius: var(--fld-radius-sm);
     margin-top: 12px;
 }
 
 .fld-add-feedback-form h5,
 .fld-add-feedback h5 {
     margin: 0 0 10px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
-    color: var(--fld-gray-700);
+    color: var(--fld-muted);
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: .05em;
 }
 
 .fld-feedback-rating-selector,
 .fld-feedback-rating {
     display: flex;
-    gap: 8px;
+    gap: 7px;
     margin-bottom: 10px;
     flex-wrap: wrap;
-}
-
-/* Dashboard modal uses label-based radio layout */
-.fld-feedback-section .fld-feedback-rating label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 7px 12px;
-    border: 2px solid var(--fld-gray-300);
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: border-color .15s;
-}
-
-.fld-feedback-section .fld-feedback-rating label:has(input:checked) {
-    border-color: var(--fld-primary);
-    background: #fff;
-    font-weight: 600;
 }
 
 .fld-rating-option {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 7px 12px;
-    border: 2px solid var(--fld-gray-300);
-    border-radius: 4px;
+    gap: 6px;
+    padding: 6px 13px;
+    border: 1px solid #d5d1e0;
+    border-radius: 999px;
     cursor: pointer;
     font-size: 13px;
-    transition: border-color .15s, background .15s;
+    background: var(--fld-card);
+    transition: border-color .15s, background .15s, box-shadow .15s;
 }
 
 .fld-rating-option input[type="radio"] { display: none; }
-.fld-rating-option:has(input:checked)           { border-color: var(--fld-primary); background: #fff; font-weight: 600; }
-.fld-rating-positive:has(input:checked)         { border-color: var(--fld-success); }
-.fld-rating-neutral:has(input:checked)          { border-color: var(--fld-warning); }
-.fld-rating-negative:has(input:checked)         { border-color: var(--fld-danger); }
+.fld-rating-option:has(input:checked)   { font-weight: 600; box-shadow: var(--fld-shadow-sm); }
+.fld-rating-positive:has(input:checked) { border-color: var(--fld-positive-dot); background: var(--fld-positive-tint); }
+.fld-rating-neutral:has(input:checked)  { border-color: var(--fld-new-dot);      background: var(--fld-new-tint); }
+.fld-rating-negative:has(input:checked) { border-color: var(--fld-negative-dot); background: var(--fld-negative-tint); }
 
-/* Premium line-style rating icons (replace emoji) */
+/* Line-style rating icons */
 .fld-rating-ico {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     line-height: 0;
 }
+
 .fld-rating-ico svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     display: block;
 }
-.fld-rating-ico--positive { color: var(--fld-success); }
-.fld-rating-ico--neutral  { color: var(--fld-warning); }
-.fld-rating-ico--negative { color: var(--fld-danger); }
 
-/* Slightly larger, in a tinted chip, inside the saved-feedback list */
+.fld-rating-ico--positive { color: var(--fld-positive-dot); }
+.fld-rating-ico--neutral  { color: var(--fld-new-dot); }
+.fld-rating-ico--negative { color: var(--fld-negative-dot); }
+
+/* Saved-feedback list: icon in a tinted chip */
 .fld-feedback-item .fld-feedback-rating {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 34px;
     height: 34px;
-    border-radius: 8px;
-    background: var(--fld-gray-100, #f1f5f9);
+    border-radius: 9px;
+    border: 1px solid var(--fld-line);
+    background: var(--fld-card);
 }
-.fld-feedback-item .fld-rating-ico svg { width: 20px; height: 20px; }
+
+.fld-feedback-item .fld-rating-ico svg { width: 18px; height: 18px; }
 
 .fld-add-feedback-form textarea,
 .fld-add-feedback textarea,
@@ -675,18 +923,29 @@
 #fld-feedback-text {
     width: 100%;
     min-height: 80px;
-    padding: 9px 11px;
-    border: 1px solid var(--fld-gray-300);
-    border-radius: 4px;
+    padding: 10px 12px;
+    border: 1px solid #d5d1e0;
+    border-radius: var(--fld-radius-sm);
     margin-bottom: 10px;
     resize: vertical;
     font-size: 13px;
     box-sizing: border-box;
+    background: var(--fld-card);
+    transition: border-color .15s, box-shadow .15s;
 }
 
-/* ── Activity Log ──────────────────────────────────────────────── */
+.fld-add-feedback-form textarea:focus,
+.fld-add-feedback textarea:focus,
+#fld-new-feedback:focus,
+#fld-feedback-text:focus {
+    border-color: var(--fld-brand-500);
+    box-shadow: 0 0 0 2px rgba(94, 23, 235, .15);
+    outline: none;
+}
+
+/* ── Activity log ──────────────────────────────────────────────── */
 .fld-activity-panel {
-    border-top: 1px solid var(--fld-gray-200);
+    border-top: 1px solid var(--fld-line-soft);
     padding-top: 20px;
     margin-top: 20px;
 }
@@ -700,83 +959,86 @@
     display: flex;
     gap: 10px;
     padding: 9px 0;
-    border-bottom: 1px solid var(--fld-gray-200);
+    border-bottom: 1px solid var(--fld-line-soft);
     font-size: 12px;
-    color: var(--fld-gray-700);
+    color: var(--fld-text);
 }
 
-.fld-activity-icon  { color: var(--fld-gray-500); }
-.fld-activity-time  { color: var(--fld-gray-500); margin-left: auto; white-space: nowrap; }
+.fld-activity-item:last-child { border-bottom: none; }
 
-/* ── Settings Page ─────────────────────────────────────────────── */
+.fld-activity-time { color: var(--fld-muted); margin-left: auto; white-space: nowrap; }
+
+/* ── Settings page ─────────────────────────────────────────────── */
 .fld-settings-section {
-    background: #fff;
-    border-radius: var(--fld-radius);
-    box-shadow: var(--fld-shadow);
-    padding: 22px 24px;
+    padding: 24px 26px;
     margin-bottom: 20px;
 }
 
 .fld-settings-section > h2 {
     margin: 0 0 18px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--fld-gray-200);
-    font-size: 17px;
-    color: var(--fld-gray-900);
+    padding-bottom: 13px;
+    border-bottom: 1px solid var(--fld-line);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fld-text);
 }
 
 .fld-settings-section > h3 {
-    margin: 20px 0 12px;
-    font-size: 14px;
-    color: var(--fld-gray-700);
+    margin: 22px 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--fld-muted);
 }
 
 .fld-status-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 10px;
+    gap: 8px;
 }
 
 .fld-status-item {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 10px 12px;
-    background: var(--fld-gray-100);
-    border-radius: 6px;
+    padding: 11px 13px;
+    background: var(--fld-well);
+    border: 1px solid var(--fld-line-soft);
+    border-radius: var(--fld-radius-sm);
 }
 
 .fld-status-desc {
-    color: var(--fld-gray-500);
+    color: var(--fld-muted);
     font-size: 13px;
 }
 
-/* Danger zone */
-.fld-danger-zone { border: 2px solid var(--fld-danger); }
-.fld-danger-zone h2 { color: var(--fld-danger); }
+/* Danger zone: quiet until you get here, then unambiguous */
+.fld-danger-zone { border-color: #ecc8bd; }
+.fld-danger-zone > h2 { color: var(--fld-danger); border-bottom-color: #ecc8bd; }
 .fld-tools { display: flex; gap: 10px; flex-wrap: wrap; }
 
-/* ── User Management (settings page) ──────────────────────────── */
+/* ── User management (settings page) ───────────────────────────── */
 .fld-user-management #fld-sales-admin-table {
     margin-bottom: 8px;
-    border: 1px solid var(--fld-gray-200);
-    border-radius: 6px;
+    border: 1px solid var(--fld-line);
+    border-radius: var(--fld-radius-sm);
     overflow: hidden;
 }
 
 .fld-user-management #fld-sales-admin-table th {
-    background: var(--fld-gray-100);
+    background: var(--fld-well);
     padding: 10px 14px;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: .05em;
-    color: var(--fld-gray-700);
+    color: var(--fld-muted);
     font-weight: 600;
 }
 
 .fld-user-management #fld-sales-admin-table td {
     padding: 10px 14px;
-    border-bottom: 1px solid var(--fld-gray-200);
+    border-bottom: 1px solid var(--fld-line-soft);
     font-size: 13px;
     vertical-align: middle;
 }
@@ -794,69 +1056,115 @@
 }
 
 .fld-add-sales-admin-form select {
-    padding: 8px 12px;
-    border: 1px solid var(--fld-gray-300);
-    border-radius: 4px;
+    padding: 7px 30px 7px 12px;
+    border: 1px solid #d5d1e0;
+    border-radius: var(--fld-radius-sm);
     font-size: 13px;
     min-width: 260px;
 }
 
-/* ── Loading Overlay ───────────────────────────────────────────── */
+/* ── Loading overlay ───────────────────────────────────────────── */
 .fld-loading {
     position: fixed;
     inset: 0;
-    background: rgba(255,255,255,.8);
+    background: rgba(255, 255, 255, .75);
+    backdrop-filter: blur(1px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 100001;
+    color: var(--fld-muted);
 }
 
 .fld-spinner {
-    width: 38px;
-    height: 38px;
-    border: 4px solid var(--fld-gray-200);
-    border-top-color: var(--fld-primary);
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--fld-brand-100);
+    border-top-color: var(--fld-brand-600);
     border-radius: 50%;
-    animation: fld-spin 0.8s linear infinite;
+    animation: fld-spin .8s linear infinite;
 }
 
 @keyframes fld-spin { to { transform: rotate(360deg); } }
 
-/* ── Action Buttons ────────────────────────────────────────────── */
+/* ── Action buttons ────────────────────────────────────────────── */
 .fld-action-btn {
-    padding: 5px 12px;
-    border: none;
-    border-radius: 4px;
+    padding: 5px 14px;
+    border: 1px solid #d5d1e0;
+    background: var(--fld-card);
+    color: var(--fld-brand-600);
+    border-radius: 999px;
     cursor: pointer;
     font-size: 12px;
-    font-weight: 500;
-    transition: background .15s;
+    font-weight: 600;
+    transition: border-color .15s, background .15s, color .15s;
 }
 
-.fld-action-btn.view       { background: var(--fld-info); color: #fff; }
-.fld-action-btn.view:hover { background: #2563eb; }
+.fld-action-btn:hover {
+    border-color: var(--fld-brand-600);
+    background: var(--fld-brand-50);
+    color: var(--fld-brand-700);
+}
 
-/* ── Empty State ───────────────────────────────────────────────── */
+/* ── Empty states ──────────────────────────────────────────────── */
 .fld-empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: var(--fld-gray-500);
+    color: var(--fld-muted);
 }
 
 .fld-empty-state .dashicons {
-    display: block;
-    font-size: 48px;
-    width: 48px;
-    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    width: 56px;
+    height: 56px;
     margin: 0 auto 14px;
-    color: var(--fld-gray-300);
+    border-radius: 50%;
+    background: var(--fld-brand-50);
+    color: var(--fld-brand-500);
 }
 
 .fld-empty-state p {
     margin: 0;
-    font-size: 14px;
+    font-size: 13px;
+}
+
+/* ── Source badges ─────────────────────────────────────────────── */
+/* Mark which form plugin a lead came from. Only meaningful when more than
+   one source is active, but harmless when there is just one. */
+.fld-source-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 9px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.8;
+    letter-spacing: .02em;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.fld-source-badge.fld-source-forminator {
+    background: #eef1fb;
+    color: #4453a6;
+}
+
+.fld-source-badge.fld-source-cf7 {
+    background: #e8f4ee;
+    color: #256d4f;
+}
+
+/* ── Motion & accessibility ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .fld-tally-meter i { transition: none; }
+    .fld-spinner { animation-duration: 1.6s; }
+    .fld-dashboard *, .fld-leads-page *, .fld-settings-page *, .fld-modal * {
+        transition-duration: .01ms !important;
+    }
 }
 
 /* ── Responsive ────────────────────────────────────────────────── */
@@ -865,7 +1173,11 @@
 }
 
 @media (max-width: 782px) {
-    .fld-stats-grid { grid-template-columns: 1fr 1fr; }
+    .fld-hero { padding: 18px 20px; }
+    .fld-hero-controls { width: 100%; }
+
+    .fld-tally { grid-template-columns: 1fr 1fr; }
+    .fld-tally-num { font-size: 26px; }
 
     .fld-filter-row {
         flex-direction: column;
@@ -884,38 +1196,6 @@
 }
 
 @media (max-width: 480px) {
-    .fld-stats-grid { grid-template-columns: 1fr; }
+    .fld-tally { grid-template-columns: 1fr; }
     .fld-chart-wrap { height: 200px; }
-}
-
-/* ==========================================================================
-   Source badges
-   Mark which form plugin a lead came from. Only meaningful when more than one
-   source is active, but harmless when there is just one.
-   ========================================================================== */
-
-.fld-source-badge {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 7px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 600;
-    line-height: 1.6;
-    letter-spacing: .01em;
-    vertical-align: middle;
-    white-space: nowrap;
-    border: 1px solid transparent;
-}
-
-.fld-source-badge.fld-source-forminator {
-    background: #eef2ff;
-    border-color: #c7d2fe;
-    color: #3730a3;
-}
-
-.fld-source-badge.fld-source-cf7 {
-    background: #ecfdf5;
-    border-color: #a7f3d0;
-    color: #065f46;
 }
