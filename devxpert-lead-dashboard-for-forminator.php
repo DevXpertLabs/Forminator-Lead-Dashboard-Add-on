@@ -3,7 +3,7 @@
  * Plugin Name: DevXpert Lead Dashboard for Forminator & Contact Form 7
  * Plugin URI: https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on
  * Description: A Lead Management Dashboard for Forminator and Contact Form 7. Track form submissions as leads, add feedback, categorize them by status, and export to CSV.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Anup Kankale
  * Author URI: https://anupkankale.com
  * License: GPL v2 or later
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'DXLEDA_VERSION', '1.1.0' );
+define( 'DXLEDA_VERSION', '1.2.0' );
 define( 'DXLEDA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DXLEDA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DXLEDA_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -129,6 +129,12 @@ class DevXpert_Lead_Dashboard {
 		// New-lead automation: email notifications + auto-assignment.
 		DXLEDA_Notifications::init();
 
+		// New-lead alerts pushed to Telegram (opt-in, one-way).
+		DXLEDA_Telegram::init();
+
+		// Read-only REST API for consuming leads outside wp-admin.
+		DXLEDA_REST::init();
+
 		// Admin hooks.
 		if ( is_admin() ) {
 			add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
@@ -182,6 +188,9 @@ class DevXpert_Lead_Dashboard {
 		// Database tools AJAX — admin only.
 		add_action( 'wp_ajax_dxleda_clear_activity_log', array( $this, 'ajax_clear_activity_log' ) );
 		add_action( 'wp_ajax_dxleda_reset_statuses', array( $this, 'ajax_reset_statuses' ) );
+
+		// Telegram connection test — admin only.
+		add_action( 'wp_ajax_dxleda_test_telegram', array( $this, 'ajax_test_telegram' ) );
 	}
 
 	/**
@@ -204,6 +213,8 @@ class DevXpert_Lead_Dashboard {
 		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-feedback.php';
 		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-otp.php';
 		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-notifications.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-telegram.php';
+		require_once DXLEDA_PLUGIN_DIR . 'includes/class-dxleda-rest.php';
 	}
 
 	/**
@@ -532,6 +543,27 @@ class DevXpert_Lead_Dashboard {
 	}
 
 	/**
+	 * Accept a date only in the Y-m-d shape the date inputs produce.
+	 *
+	 * Anything else becomes an empty string, i.e. "no filter", rather than a
+	 * partial date that would silently match nothing.
+	 *
+	 * @param string $value Raw value.
+	 * @return string
+	 */
+	private static function sanitize_date( $value ) {
+		$value = trim( (string) $value );
+
+		if ( '' === $value ) {
+			return '';
+		}
+
+		$parsed = DateTime::createFromFormat( 'Y-m-d', $value );
+
+		return ( $parsed && $parsed->format( 'Y-m-d' ) === $value ) ? $value : '';
+	}
+
+	/**
 	 * AJAX: Get Leads
 	 */
 	public function ajax_get_leads() {
@@ -547,6 +579,11 @@ class DevXpert_Lead_Dashboard {
 		$per_page = isset( $_POST['per_page'] ) ? intval( $_POST['per_page'] ) : 20;
 		$search   = isset( $_POST['search'] ) ? sanitize_text_field( wp_unslash( $_POST['search'] ) ) : '';
 
+		// The leads screen has always sent these two, but they were never read
+		// here, so the Date From / Date To filters did nothing.
+		$date_from = isset( $_POST['date_from'] ) ? sanitize_text_field( wp_unslash( $_POST['date_from'] ) ) : '';
+		$date_to   = isset( $_POST['date_to'] ) ? sanitize_text_field( wp_unslash( $_POST['date_to'] ) ) : '';
+
 		// An empty source means "all sources", so this filter is read directly
 		// rather than through posted_source(), which defaults to Forminator.
 		$source = isset( $_POST['source'] ) ? sanitize_text_field( wp_unslash( $_POST['source'] ) ) : '';
@@ -554,12 +591,14 @@ class DevXpert_Lead_Dashboard {
 
 		$leads = DXLEDA_Leads::get_leads(
 			array(
-				'form_id'  => $form_id,
-				'source'   => $source,
-				'status'   => $status,
-				'page'     => $page,
-				'per_page' => $per_page,
-				'search'   => $search,
+				'form_id'   => $form_id,
+				'source'    => $source,
+				'status'    => $status,
+				'page'      => $page,
+				'per_page'  => $per_page,
+				'search'    => $search,
+				'date_from' => self::sanitize_date( $date_from ),
+				'date_to'   => self::sanitize_date( $date_to ),
 			)
 		);
 
@@ -805,6 +844,37 @@ class DevXpert_Lead_Dashboard {
 			array(
 				/* translators: %d: number of leads reset to "new" */
 				'message' => sprintf( __( 'All statuses reset to "new" (%d leads affected).', 'devxpert-lead-dashboard-for-forminator' ), $removed ),
+			)
+		);
+	}
+
+	/**
+	 * AJAX: Send a Telegram test message using the saved credentials.
+	 *
+	 * Obtaining a chat ID is the one genuinely fiddly setup step, so this
+	 * surfaces Telegram's own error text ("chat not found", "Unauthorized")
+	 * rather than a generic failure.
+	 */
+	public function ajax_test_telegram() {
+		check_ajax_referer( 'dxleda_nonce', 'nonce' );
+
+		if ( ! DXLEDA_Roles::is_admin() ) {
+			wp_send_json_error( 'Unauthorized' );
+		}
+
+		if ( '' === DXLEDA_Telegram::bot_token() || '' === DXLEDA_Telegram::chat_id() ) {
+			wp_send_json_error( __( 'Enter a bot token and chat ID, save the settings, then test.', 'devxpert-lead-dashboard-for-forminator' ) );
+		}
+
+		$result = DXLEDA_Telegram::send_test_message();
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( $result->get_error_message() );
+		}
+
+		wp_send_json_success(
+			array(
+				'message' => __( 'Test message sent. Check your Telegram chat.', 'devxpert-lead-dashboard-for-forminator' ),
 			)
 		);
 	}

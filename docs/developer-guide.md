@@ -34,7 +34,9 @@ Sales Admin users log in and land directly on the Lead Dashboard; the rest of th
 Stats cards (Total / New / Positive / Negative / Conversion Rate), a "Leads Over Time" chart, a "Leads by Status" chart, and top forms by lead count. Source badges appear when more than one form plugin is active.
 
 ### All Leads
-Paginated, filterable list (source, form, status, date range, assignee) with search. Click any lead to open its detail panel.
+Paginated, filterable list (source, form, status, date range) with search. Click any lead to open its detail panel. Deep-linkable: `?page=dxleda-leads&entry=<id>&source=<slug>` opens that lead's panel on load, which is how the Telegram alert links back.
+
+> `DXLEDA_Leads::get_leads()` also supports an `assigned_to` filter. It is reachable through the REST API but has no admin UI control yet.
 
 ### Lead Detail Panel
 All submitted fields, a status selector (New / Positive / Negative / Follow Up / Converted / Closed), rated feedback (positive / neutral / negative), full team feedback history, and an **activity log** of every change (ordered newest first, id-tiebroken).
@@ -47,6 +49,29 @@ Optionally email your team when a new lead arrives, and/or auto-assign new leads
 
 ### Email OTP Spam Prevention
 Optionally require visitors to verify their email via a one-time code before a submission becomes a lead. Codes are scoped per form + email, expire in 10 minutes, and are rate-limited. Verification tokens are bound to the form they were issued for. Uses `wp_mail()` with your own SMTP settings (pre-filled for Brevo, fully editable). The SMTP password is **encrypted at rest**.
+
+### Telegram Alerts
+Optional one-way push of each new lead to a Telegram chat (`DXLEDA_Telegram`). Hangs off the shared `dxleda_lead_captured` action, so both sources are covered without per-source code.
+
+- **Delivered out-of-band.** `queue_alert()` runs the cheap checks and schedules a `dxleda_send_telegram_alert` single event; `send_alert()` performs the request. A form submission never blocks on Telegram.
+- **HTML parse mode, not Markdown.** MarkdownV2 requires escaping ~18 characters and legacy Markdown breaks on a stray `_`/`*` in a submitted value; HTML needs only `&`, `<`, `>`.
+- **Budgeted assembly.** Fields are added while a character budget lasts (4096 Telegram limit, 300 per field) rather than truncating the finished string, so a tag is never severed and the footer link always survives.
+- **Credentials.** The bot token is encrypted at rest via `DXLEDA_OTP::encrypt_secret()` and constrained to Telegram's issued charset before entering the request path. The chat ID is stored as a string — group IDs are negative and channels may be `@name`.
+- **Per-form opt-in** uses a `source|id` composite, since a form ID is only unique within its source. An empty list means all forms.
+- **Failures** are recorded in `dxleda_activity_log` as `telegram_failed` with Telegram's own `description`, and surface in the lead's Activity panel. Note Telegram reports application errors with HTTP 200 and `ok:false`, so status code alone is not a success signal.
+
+### REST API
+Read-only routes under `dxleda/v1` (`DXLEDA_REST`), reusing the existing query layer:
+
+| Route | Backed by |
+|---|---|
+| `GET /leads` | `DXLEDA_Leads::get_leads()` (all filters, `X-WP-Total` / `X-WP-TotalPages` headers) |
+| `GET /leads/(?P<source>[a-z0-9_-]+)/(?P<id>\d+)` | `DXLEDA_Leads::get_lead()` |
+| `GET /stats` | `DXLEDA_Leads::get_dashboard_stats()` |
+
+All gated on `DXLEDA_Roles::CAP`; external clients use application passwords. There is no write surface.
+
+> **Gotcha worth knowing:** every argument declares `validate_callback` explicitly. WordPress only wires up `rest_validate_request_arg` for args generated from a schema by `rest_get_endpoint_args_for_schema()` — on a hand-written `args` array, `enum`, `minimum` and `maximum` are silently ignored without it.
 
 ---
 
@@ -73,7 +98,9 @@ devxpert-lead-dashboard-for-forminator/
 │   ├── class-dxleda-cf7.php            # CF7 submission capture (wpcf7_submit)
 │   ├── class-dxleda-feedback.php       # Feedback CRUD
 │   ├── class-dxleda-otp.php            # Email OTP + SMTP + secret encryption
-│   └── class-dxleda-notifications.php  # New-lead email + auto-assign
+│   ├── class-dxleda-notifications.php  # New-lead email + auto-assign
+│   ├── class-dxleda-telegram.php       # New-lead Telegram alerts (cron-dispatched)
+│   └── class-dxleda-rest.php           # Read-only dxleda/v1 REST routes
 ├── templates/                       # dashboard.php, leads.php, settings.php
 ├── assets/
 │   ├── css/  (admin-styles.css, fld-otp.css)

@@ -483,6 +483,59 @@ class DXLEDA_Leads {
 	}
 
 	/**
+	 * Flatten a lead's submitted fields into readable label/value pairs.
+	 *
+	 * Shared by every new-lead notification channel (email, Telegram) so the
+	 * two cannot drift apart. Empty values are dropped and array values —
+	 * checkbox groups, multi-selects — are joined into one string.
+	 *
+	 * A list of pairs is returned rather than a label-keyed map because two
+	 * distinct keys can humanize to the same label ("name-1" and "name_1" both
+	 * become "Name"); keying by label would silently drop one of them.
+	 *
+	 * @param array|null $lead Lead array as returned by get_lead().
+	 * @return array<int,array{label:string,value:string}>
+	 */
+	public static function humanize_fields( $lead ) {
+		$fields = array();
+
+		if ( empty( $lead['meta'] ) || ! is_array( $lead['meta'] ) ) {
+			return $fields;
+		}
+
+		foreach ( $lead['meta'] as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$value = implode( ', ', $value );
+			}
+
+			$value = trim( (string) $value );
+
+			if ( '' === $value ) {
+				continue;
+			}
+
+			$fields[] = array(
+				'label' => self::humanize_key( $key ),
+				'value' => $value,
+			);
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Turn a form field key into a human-readable label.
+	 *
+	 * @param string $key Field key.
+	 * @return string
+	 */
+	private static function humanize_key( $key ) {
+		$key = preg_replace( '/-\d+$/', '', (string) $key );      // strip trailing "-1".
+		$key = str_replace( array( '-', '_' ), ' ', $key );
+		return ucwords( trim( $key ) );
+	}
+
+	/**
 	 * Get dashboard statistics
 	 *
 	 * @param int $days Number of days to look back.

@@ -155,6 +155,45 @@ Assign the role from **Lead Dashboard → Settings**: pick any existing user and
 
 The file downloads to your computer and includes each lead's details plus the form name, source, and status. Open it with Excel, Google Sheets, or import it into any CRM.
 
+### Optional: get lead alerts on your phone via Telegram
+
+Instead of waiting until somebody opens WordPress, you can have every new lead pushed straight to your phone. The message shows the submitted details and links directly to that lead in your dashboard.
+
+This is optional and off by default. Setting it up takes about two minutes:
+
+1. On Telegram, message **@BotFather** and send `/newbot`. Follow the prompts and it replies with a **bot token** — a long string like `123456789:AAE...`.
+2. Get the **chat ID** for wherever you want alerts to land:
+   * **Just you:** message **@userinfobot** and it replies with your ID.
+   * **Your whole team:** create a Telegram group, add your new bot to it, and use the group's ID (it starts with a minus sign).
+3. In WordPress, go to **Lead Dashboard → Settings → Telegram Alerts**.
+4. Tick **Send a Telegram message for each new lead**, paste in the token and chat ID, and **Save**. The token is stored encrypted.
+5. Click **Send test message**. If it arrives, you're done. If not, the exact reason from Telegram appears next to the button.
+
+Leave the form checkboxes empty to get alerts from every form, or tick specific forms to narrow it down.
+
+> **Note:** Alerts are one-way. You read the lead in Telegram and tap through to the dashboard to change its status or add feedback — the plugin never opens a public endpoint on your site to receive commands back.
+
+If alerts stop arriving, check the lead's **Activity** panel: failed deliveries are logged there with Telegram's own explanation.
+
+### Optional: read your leads from outside WordPress
+
+Version 1.2.0 adds a read-only API, so another app, a script, or an automation tool can fetch your leads as JSON:
+
+```
+GET /wp-json/dxleda/v1/leads
+GET /wp-json/dxleda/v1/leads/{source}/{entry_id}
+GET /wp-json/dxleda/v1/stats
+```
+
+The collection route accepts the same filters as the All Leads screen (`source`, `form_id`, `status`, `assigned_to`, `search`, `date_from`, `date_to`, plus `page` and `per_page`). Authenticate with a WordPress [application password](https://wordpress.org/documentation/article/application-passwords/) belonging to an account with Lead Dashboard access:
+
+```bash
+curl -u "username:xxxx xxxx xxxx xxxx xxxx xxxx" \
+  "https://example.com/wp-json/dxleda/v1/leads?status=new&per_page=10"
+```
+
+The API can only read. Nothing it exposes can change a lead.
+
 ### Optional: block spam with email verification (OTP)
 
 If a **Forminator** form gets a lot of fake or spam submissions, you can require visitors to **confirm their email address** before their submission is accepted. The visitor receives a one-time 6-digit code by email and must enter it — bots can't, so spam stops. Codes expire in 10 minutes and are rate-limited. *(OTP is currently available for Forminator forms only — not yet for Contact Form 7.)*
@@ -188,6 +227,15 @@ Status, feedback, and activity are kept in the plugin's own database tables. For
 **Does email verification (OTP) work with Contact Form 7?**
 Not yet — OTP is currently available for Forminator forms only.
 
+**Can I reply to a lead from Telegram?**
+No. Alerts are one-way: read the details in Telegram, then tap the link to work the lead in your dashboard. This avoids exposing a public endpoint on your site for Telegram to call back into.
+
+**My Telegram alerts are slow or missing. What should I check?**
+Press **Send test message** in Settings first — it shows Telegram's own error text, which usually identifies the problem straight away. If the test works but real leads lag, alerts are sent in the background using WP-Cron, so a site with `DISABLE_WP_CRON` set and no system cron will delay them. Failed deliveries appear in the lead's Activity panel.
+
+**Does the plugin send my data anywhere?**
+Only if you switch Telegram alerts on. In that case the submitted field values for each new lead go to the Telegram Bot API and into the chat you configured — nowhere else, and never to the plugin author. With Telegram disabled, the plugin makes no external requests at all.
+
 **Can two people work on leads at the same time?**
 Yes. Statuses, notes, and assignments are shared — everyone sees the same up-to-date list.
 
@@ -218,6 +266,13 @@ Yes — it's stored encrypted, not as plain text.
 ---
 
 ## Changelog
+
+### 1.2.0
+* Added optional Telegram alerts — every new lead pushed to your phone, with a link straight to that lead in the dashboard.
+* Alerts can be limited to specific forms, and a **Send test message** button confirms your setup before you rely on it.
+* Alerts send in the background so form submissions stay fast; delivery failures are recorded in the lead's Activity Log.
+* Added a read-only REST API (`/wp-json/dxleda/v1/`) for reading leads and stats from outside WordPress.
+* Fixed: the Date From and Date To filters on the All Leads screen did nothing.
 
 ### 1.1.0
 * Added Contact Form 7 support: CF7 submissions are now captured and managed as leads alongside Forminator.

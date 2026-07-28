@@ -42,6 +42,29 @@ if ( isset( $_POST['dxleda_save_settings'] ) && wp_verify_nonce( $dxleda_setting
 	update_option( 'dxleda_brevo_sender_email', sanitize_email( wp_unslash( $_POST['dxleda_brevo_sender_email'] ?? '' ) ) );
 	update_option( 'dxleda_otp_enabled_forms', array_map( 'intval', (array) ( $_POST['dxleda_otp_enabled_forms'] ?? array() ) ) );
 
+	// Telegram alerts.
+	update_option( 'dxleda_telegram_enabled', isset( $_POST['dxleda_telegram_enabled'] ) ? 1 : 0 );
+	// Chat IDs are negative for groups and may be "@channelname", so this is
+	// deliberately not cast to an integer.
+	update_option( 'dxleda_telegram_chat_id', sanitize_text_field( wp_unslash( $_POST['dxleda_telegram_chat_id'] ?? '' ) ) );
+	// As with the SMTP password: only overwrite when something was typed, and
+	// store it encrypted at rest.
+	if ( ! empty( $_POST['dxleda_telegram_bot_token'] ) ) {
+		$dxleda_new_token = sanitize_text_field( wp_unslash( $_POST['dxleda_telegram_bot_token'] ) );
+		update_option( 'dxleda_telegram_bot_token', DXLEDA_OTP::encrypt_secret( $dxleda_new_token ) );
+	}
+	// Keep only well-formed "source|id" composites.
+	$dxleda_tg_forms = array_values(
+		array_filter(
+			array_map( 'sanitize_text_field', wp_unslash( (array) ( $_POST['dxleda_telegram_enabled_forms'] ?? array() ) ) ),
+			function ( $key ) {
+				$parts = explode( '|', $key );
+				return 2 === count( $parts ) && DXLEDA_Sources::is_valid( $parts[0] ) && ctype_digit( $parts[1] );
+			}
+		)
+	);
+	update_option( 'dxleda_telegram_enabled_forms', $dxleda_tg_forms );
+
 	echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved successfully!', 'devxpert-lead-dashboard-for-forminator' ) . '</p></div>';
 }
 
@@ -70,6 +93,15 @@ $all_forms = array_values(
 		}
 	)
 );
+
+// Telegram alerts. Unlike OTP, alerts work for every source, so this list is
+// not filtered — and forms are keyed by "source|id" because a form ID is only
+// unique within its own source.
+$telegram_enabled       = get_option( 'dxleda_telegram_enabled', 0 );
+$telegram_chat_id       = get_option( 'dxleda_telegram_chat_id', '' );
+$telegram_has_token     = '' !== DXLEDA_Telegram::bot_token();
+$telegram_enabled_forms = array_map( 'strval', (array) get_option( 'dxleda_telegram_enabled_forms', array() ) );
+$telegram_all_forms     = DXLEDA_Leads::get_forms();
 
 $team_users   = DXLEDA_Roles::get_team_users();
 $sales_admins = DXLEDA_Roles::get_sales_admins();
@@ -137,6 +169,100 @@ $sales_admins = DXLEDA_Roles::get_sales_admins();
 					</td>
 				</tr>
 			</table>
+		</div>
+
+		<!-- Telegram Alerts -->
+		<div class="fld-settings-section">
+			<h2><?php esc_html_e( 'Telegram Alerts', 'devxpert-lead-dashboard-for-forminator' ); ?></h2>
+
+			<p class="description" style="margin-bottom:12px;">
+				<?php esc_html_e( 'Push every new lead straight to a Telegram chat so your team sees it without opening WordPress. Alerts are one-way: tap the link in the message to work the lead in the dashboard.', 'devxpert-lead-dashboard-for-forminator' ); ?>
+			</p>
+			<p class="description" style="margin-bottom:16px;">
+				<?php esc_html_e( 'Setup: message @BotFather on Telegram and send /newbot to create a bot and get its token. Then message @userinfobot to get your personal chat ID, or add the bot to a group and use that group\'s ID. Save these settings, then use the test button below to confirm it works.', 'devxpert-lead-dashboard-for-forminator' ); ?>
+			</p>
+
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="dxleda_telegram_enabled"><?php esc_html_e( 'Telegram Alerts', 'devxpert-lead-dashboard-for-forminator' ); ?></label>
+					</th>
+					<td>
+						<label>
+							<input type="checkbox" id="dxleda_telegram_enabled" name="dxleda_telegram_enabled"
+									value="1" <?php checked( $telegram_enabled, 1 ); ?>>
+							<?php esc_html_e( 'Send a Telegram message for each new lead', 'devxpert-lead-dashboard-for-forminator' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="dxleda_telegram_bot_token"><?php esc_html_e( 'Bot Token', 'devxpert-lead-dashboard-for-forminator' ); ?></label>
+					</th>
+					<td>
+						<input type="password" id="dxleda_telegram_bot_token" name="dxleda_telegram_bot_token"
+								value="" class="regular-text" autocomplete="new-password"
+								placeholder="<?php echo $telegram_has_token ? esc_attr__( 'Saved — leave blank to keep', 'devxpert-lead-dashboard-for-forminator' ) : esc_attr__( '123456789:AA...', 'devxpert-lead-dashboard-for-forminator' ); ?>">
+						<p class="description">
+							<?php esc_html_e( 'From @BotFather. Stored encrypted. Leave blank to keep the saved token.', 'devxpert-lead-dashboard-for-forminator' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="dxleda_telegram_chat_id"><?php esc_html_e( 'Chat ID', 'devxpert-lead-dashboard-for-forminator' ); ?></label>
+					</th>
+					<td>
+						<input type="text" id="dxleda_telegram_chat_id" name="dxleda_telegram_chat_id"
+								value="<?php echo esc_attr( $telegram_chat_id ); ?>" class="regular-text">
+						<p class="description">
+							<?php esc_html_e( 'Where alerts are sent. A personal chat is a positive number, a group is negative (for example -1001234567890), and a channel can be given as @channelname.', 'devxpert-lead-dashboard-for-forminator' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Test Connection', 'devxpert-lead-dashboard-for-forminator' ); ?></th>
+					<td>
+						<button type="button" class="button" id="dxleda-test-telegram">
+							<?php esc_html_e( 'Send test message', 'devxpert-lead-dashboard-for-forminator' ); ?>
+						</button>
+						<span id="dxleda-test-telegram-result" style="margin-left:10px;"></span>
+						<p class="description">
+							<?php esc_html_e( 'Save your settings first — the test uses the saved token and chat ID.', 'devxpert-lead-dashboard-for-forminator' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Forms', 'devxpert-lead-dashboard-for-forminator' ); ?></th>
+					<td>
+						<?php if ( empty( $telegram_all_forms ) ) : ?>
+							<p class="description"><?php esc_html_e( 'No forms found yet.', 'devxpert-lead-dashboard-for-forminator' ); ?></p>
+						<?php else : ?>
+							<?php foreach ( $telegram_all_forms as $telegram_form ) : ?>
+								<?php $telegram_form_key = $telegram_form['source'] . '|' . intval( $telegram_form['id'] ); ?>
+								<label style="display:block;margin-bottom:6px;">
+									<input type="checkbox"
+											name="dxleda_telegram_enabled_forms[]"
+											value="<?php echo esc_attr( $telegram_form_key ); ?>"
+											<?php checked( in_array( $telegram_form_key, $telegram_enabled_forms, true ) ); ?>>
+									<?php echo esc_html( $telegram_form['name'] ); ?>
+									<span style="color:#999;font-size:12px;">
+										(<?php echo esc_html( DXLEDA_Sources::label( $telegram_form['source'] ) ); ?>
+										— ID: <?php echo esc_html( $telegram_form['id'] ); ?>)
+									</span>
+								</label>
+							<?php endforeach; ?>
+							<p class="description" style="margin-top:8px;">
+								<?php esc_html_e( 'Leave every box unchecked to get alerts from all forms. Check specific forms to limit alerts to those.', 'devxpert-lead-dashboard-for-forminator' ); ?>
+							</p>
+						<?php endif; ?>
+					</td>
+				</tr>
+			</table>
+
+			<p class="description">
+				<?php esc_html_e( 'Alerts are sent in the background via WP-Cron so form submissions stay fast. If your site defines DISABLE_WP_CRON, make sure a real system cron is running or alerts will be delayed. Delivery failures are recorded in each lead\'s Activity Log.', 'devxpert-lead-dashboard-for-forminator' ); ?>
+			</p>
 		</div>
 
 		<!-- Assignment Settings -->

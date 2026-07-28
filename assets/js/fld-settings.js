@@ -46,7 +46,36 @@
             }
             runDbTool($(this), 'dxleda_reset_statuses');
         });
+
+        // Telegram — send a test message using the saved credentials.
+        $('#dxleda-test-telegram').on('click', function () {
+            testTelegram($(this));
+        });
     });
+
+    function testTelegram($btn) {
+        var original = $btn.text();
+        var colors = { success: '#22c55e', error: '#ef4444' };
+        var $result = $('#dxleda-test-telegram-result');
+
+        $btn.prop('disabled', true).text(dxleda_ajax.strings.loading);
+        $result.text('').css('color', '');
+
+        $.ajax({
+            url: dxleda_ajax.ajax_url,
+            type: 'POST',
+            data: { action: 'dxleda_test_telegram', nonce: dxleda_ajax.nonce },
+            success: function (response) {
+                // Telegram's own error text ("chat not found", "Unauthorized")
+                // comes back in response.data and is the useful part.
+                var ok = response.success;
+                $result.text(ok ? response.data.message : (response.data || dxleda_ajax.strings.error))
+                    .css('color', ok ? colors.success : colors.error);
+            },
+            error: function () { $result.text(dxleda_ajax.strings.error).css('color', colors.error); },
+            complete: function () { $btn.prop('disabled', false).text(original); }
+        });
+    }
 
     function runDbTool($btn, action) {
         var original = $btn.text();
