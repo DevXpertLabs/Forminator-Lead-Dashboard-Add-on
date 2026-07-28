@@ -130,16 +130,11 @@ class DXLEDA_Notifications {
 		);
 		$lines[] = '';
 
-		if ( $lead && ! empty( $lead['meta'] ) && is_array( $lead['meta'] ) ) {
-			foreach ( $lead['meta'] as $key => $value ) {
-				if ( is_array( $value ) ) {
-					$value = implode( ', ', $value );
-				}
-				$value = trim( (string) $value );
-				if ( '' === $value ) {
-					continue;
-				}
-				$lines[] = self::humanize_key( $key ) . ': ' . $value;
+		$fields = DXLEDA_Leads::humanize_fields( $lead );
+
+		if ( ! empty( $fields ) ) {
+			foreach ( $fields as $field ) {
+				$lines[] = $field['label'] . ': ' . $field['value'];
 			}
 			$lines[] = '';
 		}
@@ -150,16 +145,5 @@ class DXLEDA_Notifications {
 		$body = implode( "\n", $lines );
 
 		wp_mail( $to, $subject, $body );
-	}
-
-	/**
-	 * Turn a form field key into a human-readable label.
-	 *
-	 * @param string $key Key.
-	 */
-	private static function humanize_key( $key ) {
-		$key = preg_replace( '/-\d+$/', '', (string) $key );      // strip trailing "-1".
-		$key = str_replace( array( '-', '_' ), ' ', $key );
-		return ucwords( trim( $key ) );
 	}
 }

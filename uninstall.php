@@ -43,8 +43,29 @@ $dxleda_options = array(
 	'dxleda_brevo_sender_name',
 	'dxleda_brevo_sender_email',
 	'dxleda_otp_enabled_forms',
+	'dxleda_telegram_enabled',
+	'dxleda_telegram_bot_token',
+	'dxleda_telegram_chat_id',
+	'dxleda_telegram_enabled_forms',
 );
 
 foreach ( $dxleda_options as $dxleda_option ) {
 	delete_option( $dxleda_option );
+}
+
+// Drop any queued Telegram alerts that never ran. Single events carry their
+// arguments, so the whole hook has to be cleared out of the cron array rather
+// than unscheduled one call at a time.
+$dxleda_cron = _get_cron_array();
+
+if ( is_array( $dxleda_cron ) ) {
+	foreach ( $dxleda_cron as $dxleda_timestamp => $dxleda_hooks ) {
+		unset( $dxleda_cron[ $dxleda_timestamp ]['dxleda_send_telegram_alert'] );
+
+		if ( empty( $dxleda_cron[ $dxleda_timestamp ] ) ) {
+			unset( $dxleda_cron[ $dxleda_timestamp ] );
+		}
+	}
+
+	_set_cron_array( $dxleda_cron );
 }

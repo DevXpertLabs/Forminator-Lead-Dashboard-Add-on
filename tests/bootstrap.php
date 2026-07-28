@@ -46,6 +46,8 @@ function dxleda_manually_load_plugin() {
 	require_once $dir . '/includes/class-dxleda-feedback.php';
 	require_once $dir . '/includes/class-dxleda-otp.php';
 	require_once $dir . '/includes/class-dxleda-notifications.php';
+	require_once $dir . '/includes/class-dxleda-telegram.php';
+	require_once $dir . '/includes/class-dxleda-rest.php';
 }
 tests_add_filter( 'muplugins_loaded', 'dxleda_manually_load_plugin' );
 

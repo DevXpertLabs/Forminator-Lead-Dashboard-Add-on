@@ -345,6 +345,8 @@
     function initLeadsPage() {
         loadLeads();
 
+        openLeadFromUrl();
+
         // Apply filters
         $('#fld-apply-filters').on('click', function() {
             currentPage = 1;
@@ -701,6 +703,23 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    /**
+     * Open a specific lead when the page was reached from a deep link, such as
+     * the "Open in dashboard" link in a Telegram alert. The modal loads the
+     * lead over AJAX by itself, so this does not have to wait for the table.
+     */
+    function openLeadFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const entryId = parseInt(params.get('entry'), 10);
+        const source = params.get('source');
+
+        if (!entryId || !source) {
+            return;
+        }
+
+        openLeadModal(entryId, source);
     }
 
     /**

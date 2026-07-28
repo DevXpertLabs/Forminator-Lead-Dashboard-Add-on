@@ -8,12 +8,17 @@
 /.distignore
 /phpcs.xml.dist
 /phpunit.xml.dist
+# Any stray dotfile fails Plugin Check's "hidden_files" rule, which is an
+# ERROR and blocks a WordPress.org release.
+/.phpunit.result.cache
+.DS_Store
 /composer.json
 /composer.lock
 /README.md
 /CHANGELOG.md
 /HANDOVER.md
 /bin
+/docs
 /node_modules
 /vendor
 /tests
