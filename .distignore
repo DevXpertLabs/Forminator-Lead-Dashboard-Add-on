@@ -22,6 +22,7 @@
 /node_modules
 /vendor
 /tests
+.phpunit.result.cache
 
 # README screenshots (GitHub only; WP.org screenshots live in SVN /assets)
 /image.png
