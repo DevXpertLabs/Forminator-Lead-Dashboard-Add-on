@@ -189,6 +189,9 @@ class DevXpert_Lead_Dashboard {
 		add_action( 'wp_ajax_dxleda_clear_activity_log', array( $this, 'ajax_clear_activity_log' ) );
 		add_action( 'wp_ajax_dxleda_reset_statuses', array( $this, 'ajax_reset_statuses' ) );
 
+		// Permanently delete a single lead — admin only.
+		add_action( 'wp_ajax_dxleda_delete_lead', array( $this, 'ajax_delete_lead' ) );
+
 		// Telegram connection test — admin only.
 		add_action( 'wp_ajax_dxleda_test_telegram', array( $this, 'ajax_test_telegram' ) );
 	}
@@ -337,13 +340,18 @@ class DevXpert_Lead_Dashboard {
 			'dxleda-admin-scripts',
 			'dxleda_ajax',
 			array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'dxleda_nonce' ),
-				'strings'  => array(
-					'confirm_delete' => __( 'Are you sure you want to delete this?', 'devxpert-lead-dashboard-for-forminator' ),
-					'loading'        => __( 'Loading...', 'devxpert-lead-dashboard-for-forminator' ),
-					'error'          => __( 'An error occurred. Please try again.', 'devxpert-lead-dashboard-for-forminator' ),
-					'success'        => __( 'Success!', 'devxpert-lead-dashboard-for-forminator' ),
+				'ajax_url'   => admin_url( 'admin-ajax.php' ),
+				'nonce'      => wp_create_nonce( 'dxleda_nonce' ),
+				// Deleting a lead removes the submission itself, so the control is
+				// only rendered for administrators. The AJAX handler re-checks.
+				'can_delete' => DXLEDA_Roles::is_admin(),
+				'strings'    => array(
+					'confirm_delete'      => __( 'Are you sure you want to delete this?', 'devxpert-lead-dashboard-for-forminator' ),
+					'confirm_delete_lead' => __( 'Permanently delete this lead? The form submission itself will be removed and this cannot be undone.', 'devxpert-lead-dashboard-for-forminator' ),
+					'lead_deleted'        => __( 'Lead deleted.', 'devxpert-lead-dashboard-for-forminator' ),
+					'loading'             => __( 'Loading...', 'devxpert-lead-dashboard-for-forminator' ),
+					'error'               => __( 'An error occurred. Please try again.', 'devxpert-lead-dashboard-for-forminator' ),
+					'success'             => __( 'Success!', 'devxpert-lead-dashboard-for-forminator' ),
 				),
 			)
 		);
@@ -844,6 +852,39 @@ class DevXpert_Lead_Dashboard {
 			array(
 				/* translators: %d: number of leads reset to "new" */
 				'message' => sprintf( __( 'All statuses reset to "new" (%d leads affected).', 'devxpert-lead-dashboard-for-forminator' ), $removed ),
+			)
+		);
+	}
+
+	/**
+	 * AJAX: Permanently delete one lead (administrators only)
+	 *
+	 * This removes the form submission itself, not just the plugin's tracking
+	 * rows — the leads list is read from each source's entries table, so anything
+	 * less would leave a deleted test lead on screen.
+	 */
+	public function ajax_delete_lead() {
+		check_ajax_referer( 'dxleda_nonce', 'nonce' );
+
+		if ( ! DXLEDA_Roles::is_admin() ) {
+			wp_send_json_error( 'Unauthorized' );
+		}
+
+		$entry_id = isset( $_POST['entry_id'] ) ? intval( $_POST['entry_id'] ) : 0;
+
+		if ( ! $entry_id ) {
+			wp_send_json_error( 'Invalid entry ID' );
+		}
+
+		$result = DXLEDA_Leads::delete_lead( $entry_id, $this->posted_source() );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( $result->get_error_message() );
+		}
+
+		wp_send_json_success(
+			array(
+				'message' => __( 'Lead deleted.', 'devxpert-lead-dashboard-for-forminator' ),
 			)
 		);
 	}

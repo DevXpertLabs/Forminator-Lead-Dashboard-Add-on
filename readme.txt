@@ -2,7 +2,7 @@
 Contributors: anupkankale
 Tags: forminator, contact form 7, leads, crm, lead management
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 1.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
@@ -27,6 +27,7 @@ It adds a **Lead Dashboard** menu to your WordPress admin with charts, an all-le
 * Track six statuses: New, Positive, Negative, Follow Up, Converted, Closed.
 * Leave rated feedback notes (positive / neutral / negative) on each lead.
 * Export leads to CSV.
+* Delete a test or junk lead outright (administrators only).
 * Give team members a locked-down **Sales Admin** role that only sees the dashboard.
 * Optionally require email verification (OTP) before a submission counts as a lead (Forminator forms only).
 * Filter by source when you run both form plugins side by side.

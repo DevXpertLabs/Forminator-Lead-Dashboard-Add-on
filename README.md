@@ -10,7 +10,7 @@
 | **Plugin page** | [wordpress.org/plugins/devxpert-lead-dashboard-for-forminator](https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/) |
 | **Tags** | forminator, contact form 7, leads, crm, lead management |
 | **Requires at least** | WordPress 5.0 |
-| **Tested up to** | WordPress 7.0 |
+| **Tested up to** | WordPress 7.1 |
 | **Requires PHP** | 7.4 |
 | **Stable tag** | 1.1.0 |
 | **License** | [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html) |
@@ -32,6 +32,7 @@ This plugin collects every form submission in **one dashboard inside WordPress**
 * **Assign leads** to a team member so nothing falls through the cracks
 * Add **notes and ratings** to each lead after you talk to them
 * **Export everything to a spreadsheet** (CSV) with one click
+* **Delete test leads** you made while setting a form up, so they stop skewing your numbers
 * Give team members a locked-down **Sales Admin** role that only sees the dashboard
 * Optionally **block spam** on Forminator forms with email verification (OTP)
 
@@ -126,6 +127,14 @@ Beyond statuses, each lead supports:
 * **Feedback** — after you've spoken with the person, leave a rating (**Positive**, **Neutral**, or **Negative**) plus a written note; the whole team's notes stay attached to the lead
 * **Activity timeline** — every assignment and status change is recorded with who did it and when
 * **Bulk actions** — tick several leads and update them in one go
+
+#### Deleting a test lead
+
+While setting a form up you'll usually submit it once or twice yourself. Those test entries sit in the list like any other lead and count towards your dashboard totals.
+
+Administrators see a **Delete** button next to **View** on every row. It asks you to confirm, then removes the lead for good — including the original form submission, so it won't come back on the next page load. Sales Admins don't get this button.
+
+There is no undo, so read the row before you click. If you only want to tidy up statuses rather than remove anything, use **Settings → Reset statuses** instead.
 
 ### A simple daily routine
 

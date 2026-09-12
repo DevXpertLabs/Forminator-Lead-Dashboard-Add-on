@@ -1107,6 +1107,18 @@
     color: var(--fld-brand-700);
 }
 
+/* Destructive row action (delete a lead). Reuses the negative tone already in
+   the palette rather than introducing another red. */
+.fld-action-btn.danger {
+    color: #cf5b40;
+}
+
+.fld-action-btn.danger:hover {
+    border-color: #cf5b40;
+    background: #fdf1ee;
+    color: #9a3a26;
+}
+
 /* ── Empty states ──────────────────────────────────────────────── */
 .fld-empty-state {
     text-align: center;

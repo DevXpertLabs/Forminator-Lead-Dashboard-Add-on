@@ -394,6 +394,15 @@
             applyBulkAction();
         });
 
+        // Delete a lead (administrators only — the button is not rendered
+        // otherwise, and the server checks the capability again).
+        $(document).on('click', '.fld-delete-lead', function() {
+            if (!confirm(dxleda_ajax.strings.confirm_delete_lead)) {
+                return;
+            }
+            deleteLead($(this).data('id'), $(this).data('source'));
+        });
+
         // Check for URL params
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('source')) {
@@ -511,6 +520,12 @@
 
             const formLabel = lead.form_name || ('Form #' + lead.form_id);
 
+            // Deleting a lead removes the submission itself, so the button is
+            // only offered to administrators; the AJAX handler re-checks.
+            const deleteBtn = dxleda_ajax.can_delete
+                ? `<button class="fld-action-btn danger fld-delete-lead" data-id="${lead.entry_id}" data-source="${escapeHtml(lead.source)}">Delete</button>`
+                : '';
+
             tbody.append(`
                 <tr data-entry-id="${lead.entry_id}" data-source="${escapeHtml(lead.source)}">
                     <td class="fld-col-check">
@@ -531,6 +546,7 @@
                     </td>
                     <td class="fld-col-actions">
                         <button class="fld-action-btn view fld-view-lead" data-id="${lead.entry_id}" data-source="${escapeHtml(lead.source)}">View</button>
+                        ${deleteBtn}
                     </td>
                 </tr>
             `);
@@ -1065,6 +1081,42 @@
                 }
             },
             error: function() {
+                showNotice('error', dxleda_ajax.strings.error);
+            }
+        });
+    }
+
+    /**
+     * Delete Lead
+     *
+     * Permanent: the form submission is removed along with the plugin's own
+     * status, feedback and activity rows.
+     */
+    function deleteLead(entryId, source) {
+        showLoading(true);
+
+        $.ajax({
+            url: dxleda_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'dxleda_delete_lead',
+                nonce: dxleda_ajax.nonce,
+                entry_id: entryId,
+                source: source
+            },
+            success: function(response) {
+                showLoading(false);
+                if (response.success) {
+                    showNotice('success', dxleda_ajax.strings.lead_deleted);
+                    // Reload rather than dropping the row, so the pagination
+                    // and the total stay honest.
+                    loadLeads();
+                } else {
+                    showNotice('error', response.data || dxleda_ajax.strings.error);
+                }
+            },
+            error: function() {
+                showLoading(false);
                 showNotice('error', dxleda_ajax.strings.error);
             }
         });
