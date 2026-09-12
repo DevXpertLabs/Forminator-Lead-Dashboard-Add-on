@@ -12,7 +12,7 @@
 | **Requires at least** | WordPress 5.0 |
 | **Tested up to** | WordPress 7.1 |
 | **Requires PHP** | 7.4 |
-| **Stable tag** | 1.1.0 |
+| **Stable tag** | 1.3.0 |
 | **License** | [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html) |
 
 *This guide is written in plain language for site owners and sales teams — no coding knowledge needed. Developers: see the [Developer Guide](docs/developer-guide.md).*
@@ -275,6 +275,12 @@ Yes — it's stored encrypted, not as plain text.
 ---
 
 ## Changelog
+
+### 1.3.0
+* Added a **Delete** button to the All Leads list, so test submissions made while setting a form up can be removed instead of sitting in the list and skewing your totals.
+* Deleting is permanent and removes the original form submission, so the lead does not come back on the next page load.
+* Administrators only — Sales Admin users do not see the button.
+* Tested up to WordPress 7.1.
 
 ### 1.2.0
 * Added optional Telegram alerts — every new lead pushed to your phone, with a link straight to that lead in the dashboard.

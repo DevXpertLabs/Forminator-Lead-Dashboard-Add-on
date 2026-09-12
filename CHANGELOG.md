@@ -4,7 +4,7 @@ All notable changes to **DevXpert Lead Dashboard for Forminator & Contact Form 7
 The format is based on [Keep a Changelog](https://keepachangelog.com/); this project
 follows the version in the plugin header / `readme.txt` `Stable tag`.
 
-## [Unreleased]
+## [1.3.0] — Delete a lead
 
 ### Added
 - **Delete a lead** from the All Leads list. Each row gains a Delete button next

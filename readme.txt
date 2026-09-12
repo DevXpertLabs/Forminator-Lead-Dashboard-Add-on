@@ -3,7 +3,7 @@ Contributors: anupkankale
 Tags: forminator, contact form 7, leads, crm, lead management
 Requires at least: 5.0
 Tested up to: 7.1
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -122,6 +122,12 @@ Bundles Chart.js v4.5.1 (MIT) for the dashboard charts, loaded locally with no e
 Source: https://github.com/chartjs/Chart.js/releases/tag/v4.5.1
 
 == Changelog ==
+
+= 1.3.0 =
+* Added a Delete button to the All Leads list, so test submissions made while setting a form up can be removed instead of sitting in the list and skewing your totals.
+* Deleting is permanent and removes the original form submission, so the lead does not come back on the next page load.
+* Administrators only — Sales Admin users do not see the button.
+* Tested up to WordPress 7.1.
 
 = 1.2.0 =
 * Added optional Telegram alerts — get every new lead pushed to your phone the moment it arrives, with a link straight to that lead in the dashboard.

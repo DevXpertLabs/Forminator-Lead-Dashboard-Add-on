@@ -3,7 +3,7 @@
  * Plugin Name: DevXpert Lead Dashboard for Forminator & Contact Form 7
  * Plugin URI: https://github.com/DevXpertLabs/Forminator-Lead-Dashboard-Add-on
  * Description: A Lead Management Dashboard for Forminator and Contact Form 7. Track form submissions as leads, add feedback, categorize them by status, and export to CSV.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Anup Kankale
  * Author URI: https://anupkankale.com
  * License: GPL v2 or later
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-define( 'DXLEDA_VERSION', '1.2.0' );
+define( 'DXLEDA_VERSION', '1.3.0' );
 define( 'DXLEDA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'DXLEDA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DXLEDA_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
