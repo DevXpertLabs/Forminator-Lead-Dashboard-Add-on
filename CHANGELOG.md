@@ -4,6 +4,32 @@ All notable changes to **DevXpert Lead Dashboard for Forminator & Contact Form 7
 The format is based on [Keep a Changelog](https://keepachangelog.com/); this project
 follows the version in the plugin header / `readme.txt` `Stable tag`.
 
+## [Unreleased]
+
+### Added
+- **Delete a lead** from the All Leads list. Each row gains a Delete button next
+  to View, so a test submission made while setting a form up can be removed
+  instead of sitting in the list and skewing the dashboard totals.
+  - **Administrators only** (`manage_options`), matching the other destructive
+    tools. The button is not rendered for Sales Admins and `ajax_delete_lead()`
+    re-checks the capability, since hiding a control is not access control.
+  - **The submission itself is deleted**, not just the plugin's tracking rows.
+    The leads list is built from each source's entries table via
+    `DXLEDA_Leads::entries_union()`, so removing only the plugin's rows would
+    leave the lead on screen as "new" — the delete would appear to do nothing.
+  - `DXLEDA_Leads::delete_lead()` dispatches per source: Forminator entries go
+    through `Forminator_API::delete_entry()`, which also clears their meta and
+    any uploaded files; CF7 entries go through the previously unused
+    `DXLEDA_CF7::delete_entry()`. The CF7 branch deliberately does not resolve a
+    form ID first — those entries live in the plugin's own tables, so it must
+    keep working the way the tables do, and the ID is not needed to delete them.
+  - The submission is removed first and the status / feedback / activity rows
+    after. If the submission cannot be removed, the tracking data stays intact
+    rather than being orphaned.
+  - Nothing is written to the activity log for a deletion: the log is keyed by
+    `(entry_id, source)` and is only ever read from that lead's own detail
+    panel, which no longer exists once the lead is gone.
+
 ## [1.2.0] — Telegram alerts and a read-only REST API
 
 ### Added

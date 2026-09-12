@@ -963,6 +963,137 @@ class DXLEDA_Leads {
 	}
 
 	/**
+	 * Permanently delete a lead: the form submission itself, plus every row the
+	 * plugin keeps about it.
+	 *
+	 * The leads list is built straight from each source's entries table, so
+	 * removing only the plugin's own rows would leave the lead on screen as
+	 * "new". Getting rid of a test submission means deleting the entry.
+	 *
+	 * The submission goes first and the tracking rows after: if the submission
+	 * cannot be removed, its status/feedback/activity data is left intact rather
+	 * than orphaned.
+	 *
+	 * Nothing is written to the activity log. The log is keyed by
+	 * (entry_id, source) and is only ever read from that lead's own detail panel,
+	 * which no longer exists once the lead is gone.
+	 *
+	 * Administrators only (enforced by caller).
+	 *
+	 * @param int    $entry_id Entry ID.
+	 * @param string $source Source slug.
+	 * @return true|WP_Error
+	 */
+	public static function delete_lead( $entry_id, $source = DXLEDA_Sources::FORMINATOR ) {
+		global $wpdb;
+
+		$entry_id = (int) $entry_id;
+		$source   = DXLEDA_Sources::sanitize( $source );
+
+		if ( $entry_id <= 0 ) {
+			return new WP_Error(
+				'dxleda_invalid_entry',
+				__( 'Invalid entry ID.', 'devxpert-lead-dashboard-for-forminator' )
+			);
+		}
+
+		$removed = DXLEDA_Sources::CF7 === $source
+			? self::delete_cf7_entry( $entry_id )
+			: self::delete_forminator_entry( $entry_id );
+
+		if ( is_wp_error( $removed ) ) {
+			return $removed;
+		}
+
+		// Purge the plugin's own rows for this lead.
+		foreach ( array( 'dxleda_lead_status', 'dxleda_feedback', 'dxleda_activity_log' ) as $suffix ) {
+			$wpdb->delete(
+				$wpdb->prefix . $suffix,
+				array(
+					'entry_id' => $entry_id,
+					'source'   => $source,
+				),
+				array( '%d', '%s' )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Remove one Forminator submission through Forminator's own API, which also
+	 * clears its meta rows and any uploaded files.
+	 *
+	 * @param int $entry_id Entry ID.
+	 * @return true|WP_Error
+	 */
+	private static function delete_forminator_entry( $entry_id ) {
+		if ( ! class_exists( 'Forminator_API' ) ) {
+			return new WP_Error(
+				'dxleda_source_unavailable',
+				__( 'Forminator is not active, so its entries cannot be deleted.', 'devxpert-lead-dashboard-for-forminator' )
+			);
+		}
+
+		// delete_entry() needs the form ID; a zero here means the entry is gone.
+		$form_id = self::lookup_form_id( $entry_id, DXLEDA_Sources::FORMINATOR );
+
+		if ( ! $form_id ) {
+			return new WP_Error(
+				'dxleda_not_found',
+				__( 'That lead no longer exists.', 'devxpert-lead-dashboard-for-forminator' )
+			);
+		}
+
+		$result = Forminator_API::delete_entry( $form_id, $entry_id );
+
+		return is_wp_error( $result ) ? $result : true;
+	}
+
+	/**
+	 * Remove one captured Contact Form 7 submission.
+	 *
+	 * These entries live in the plugin's own tables, so this deliberately does
+	 * not go through lookup_form_id(): that bails when CF7 is inactive, and the
+	 * form ID is not needed to delete the row anyway.
+	 *
+	 * @param int $entry_id Entry ID.
+	 * @return true|WP_Error
+	 */
+	private static function delete_cf7_entry( $entry_id ) {
+		global $wpdb;
+
+		$table = DXLEDA_Sources::entries_table( DXLEDA_Sources::CF7 );
+
+		// $wpdb->delete() reports 0, not false, when nothing matched, so the row is
+		// looked up first to tell "deleted" apart from "was never there".
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- table name from $wpdb->prefix; entry_id bound via prepare().
+		$exists = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT entry_id FROM $table WHERE entry_id = %d",
+				$entry_id
+			)
+		);
+		// phpcs:enable
+
+		if ( ! $exists ) {
+			return new WP_Error(
+				'dxleda_not_found',
+				__( 'That lead no longer exists.', 'devxpert-lead-dashboard-for-forminator' )
+			);
+		}
+
+		if ( ! DXLEDA_CF7::delete_entry( $entry_id ) ) {
+			return new WP_Error(
+				'dxleda_delete_failed',
+				__( 'Could not delete that lead.', 'devxpert-lead-dashboard-for-forminator' )
+			);
+		}
+
+		return true;
+	}
+
+	/**
 	 * Get lead statuses
 	 */
 	public static function get_statuses() {

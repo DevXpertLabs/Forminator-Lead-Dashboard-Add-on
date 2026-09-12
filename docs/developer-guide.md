@@ -36,6 +36,8 @@ Stats cards (Total / New / Positive / Negative / Conversion Rate), a "Leads Over
 ### All Leads
 Paginated, filterable list (source, form, status, date range) with search. Click any lead to open its detail panel. Deep-linkable: `?page=dxleda-leads&entry=<id>&source=<slug>` opens that lead's panel on load, which is how the Telegram alert links back.
 
+Each row also carries a **Delete** button, rendered only for administrators (`DXLEDA_Roles::is_admin()`, re-checked in `ajax_delete_lead()`). It is permanent and removes the form submission itself — `DXLEDA_Leads::delete_lead()` dispatches to `Forminator_API::delete_entry()` or `DXLEDA_CF7::delete_entry()`, then purges the plugin's own status / feedback / activity rows for that `(entry_id, source)` pair. Deleting only the plugin rows would be pointless: the list is read from the source's entries table, so the lead would simply reappear as "New".
+
 > `DXLEDA_Leads::get_leads()` also supports an `assigned_to` filter. It is reachable through the REST API but has no admin UI control yet.
 
 ### Lead Detail Panel
