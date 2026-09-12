@@ -10,7 +10,7 @@
 | **Plugin page** | [wordpress.org/plugins/devxpert-lead-dashboard-for-forminator](https://wordpress.org/plugins/devxpert-lead-dashboard-for-forminator/) |
 | **Tags** | forminator, contact form 7, leads, crm, lead management |
 | **Requires at least** | WordPress 5.0 |
-| **Tested up to** | WordPress 7.0 |
+| **Tested up to** | WordPress 7.1 |
 | **Requires PHP** | 7.4 |
 | **Stable tag** | 1.1.0 |
 | **License** | [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html) |
